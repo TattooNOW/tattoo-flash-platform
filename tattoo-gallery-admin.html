@@ -85,7 +85,6 @@ Configuration:
                     <th class="col-price">Price</th>
                     <th class="col-bodypart">Body Part</th>
                     <th class="col-status">Status</th>
-                    <th class="col-linesheet">Line Sheet</th>
                     <th class="col-actions">Actions</th>
                 </tr>
             </thead>
@@ -486,7 +485,6 @@ Configuration:
 .col-price { width: 100px; }
 .col-bodypart { width: 100px; }
 .col-status { width: 100px; }
-.col-linesheet { width: 80px; text-align: center; }
 .col-actions { width: 120px; }
 
 .tnow-table-image {
@@ -579,18 +577,6 @@ Configuration:
 
 .tnow-edit-link:hover .tnow-table-image {
     border: 2px solid var(--tnow-orange);
-}
-
-/* Line sheet link */
-.tnow-linesheet-link {
-    font-size: 1.25rem;
-    text-decoration: none;
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
-}
-
-.tnow-linesheet-link:hover {
-    opacity: 1;
 }
 
 /* =================================================================
@@ -1507,9 +1493,6 @@ Configuration:
                     (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
-                '</td>' +
-                '<td class="col-linesheet">' +
-                    (d.lineSheet ? '<a href="' + escapeHtml(d.lineSheet) + '" target="_blank" class="tnow-linesheet-link" title="View Line Sheet">View</a>' : '-') +
                 '</td>' +
                 '<td class="col-actions">' +
                     '<button class="tnow-action-btn" onclick="TattooAdmin.openEdit(\'' + d.id + '\')" title="Edit">✏️</button>' +
