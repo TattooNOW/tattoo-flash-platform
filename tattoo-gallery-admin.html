@@ -49,6 +49,10 @@ Configuration:
             <option value="available">Available</option>
             <option value="unavailable">Unavailable</option>
         </select>
+        <div class="tnow-thumb-toggle">
+            <button class="tnow-thumb-btn active" data-size="small" onclick="TattooAdmin.setThumbSize('small')" title="Small thumbnails">▪</button>
+            <button class="tnow-thumb-btn" data-size="large" onclick="TattooAdmin.setThumbSize('large')" title="Large thumbnails">▪▪</button>
+        </div>
     </div>
 
     <!-- Category Navigation -->
@@ -474,12 +478,98 @@ Configuration:
 .col-status { width: 100px; }
 .col-actions { width: 120px; }
 
+/* =================================================================
+   THUMBNAIL SIZE TOGGLE
+   ================================================================= */
+.tnow-thumb-toggle {
+    display: flex;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.tnow-thumb-btn {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: -2px;
+}
+
+.tnow-thumb-btn:first-child {
+    border-right: 1px solid var(--card-border);
+}
+
+.tnow-thumb-btn:hover {
+    color: var(--tnow-white);
+}
+
+.tnow-thumb-btn.active {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+}
+
+/* =================================================================
+   TABLE IMAGE & FEATURED RIBBON
+   ================================================================= */
+.tnow-image-wrap {
+    position: relative;
+    display: inline-block;
+}
+
 .tnow-table-image {
     width: 60px;
     height: 60px;
     object-fit: cover;
     border-radius: var(--radius-sm);
     background: var(--card-bg);
+    transition: all 0.2s ease;
+}
+
+/* Large thumbnail mode */
+.tnow-admin-table.thumb-large .tnow-table-image {
+    width: 100px;
+    height: 100px;
+}
+
+.tnow-admin-table.thumb-large .col-image {
+    width: 120px;
+}
+
+.tnow-featured-ribbon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: var(--card-border);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 4px;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.tnow-featured-ribbon:hover {
+    background: rgba(250, 145, 1, 0.2);
+    color: var(--tnow-orange);
+}
+
+.tnow-featured-ribbon.is-featured {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+}
+
+.tnow-featured-ribbon.is-featured:hover {
+    background: var(--tnow-orange-dark);
 }
 
 .tnow-table-name {
@@ -1549,9 +1639,12 @@ Configuration:
         filtered.forEach(function(d) {
             html += '<tr data-id="' + d.id + '">' +
                 '<td class="col-image">' +
+                    '<div class="tnow-image-wrap">' +
                     '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
                     (d.image ? '<img src="' + escapeHtml(d.thumbnail || d.image) + '" class="tnow-table-image" alt="">' : '<span class="tnow-table-image">🎨</span>') +
                     '</a>' +
+                    '<button class="tnow-featured-ribbon' + (d.featured ? ' is-featured' : '') + '" onclick="TattooAdmin.toggleFeatured(\'' + d.id + '\')" title="' + (d.featured ? 'Remove from featured' : 'Mark as featured') + '">★</button>' +
+                    '</div>' +
                 '</td>' +
                 '<td class="col-name">' +
                     '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
@@ -1568,7 +1661,6 @@ Configuration:
                 '<td class="col-price">' + escapeHtml(d.priceRange || '-') + '</td>' +
 
                 '<td class="col-status">' +
-                    (d.featured ? '<span class="tnow-badge tnow-badge-featured">Featured</span> ' : '') +
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
                 '</td>' +
                 '<td class="col-actions">' +
@@ -2125,6 +2217,56 @@ Configuration:
         switchTab('images');
     }
 
+    // =================================================================
+    // TOGGLE FEATURED FROM LIST
+    // =================================================================
+    function toggleFeatured(id) {
+        var design = state.designs.find(function(d) { return d.id === id; });
+        if (!design) return;
+
+        var newFeatured = !design.featured;
+        var data = {
+            id: design.id,
+            featured: newFeatured,
+            action: 'updateDesign'
+        };
+
+        fetch(CONFIG.apiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                design.featured = newFeatured;
+                renderTable();
+                showToast(newFeatured ? 'Design featured!' : 'Removed from featured', 'success');
+            } else {
+                throw new Error(result.error || 'Failed to update');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        });
+    }
+
+    // =================================================================
+    // THUMBNAIL SIZE TOGGLE
+    // =================================================================
+    function setThumbSize(size) {
+        var table = document.getElementById('adminTable');
+        if (size === 'large') {
+            table.classList.add('thumb-large');
+        } else {
+            table.classList.remove('thumb-large');
+        }
+        // Update toggle buttons
+        document.querySelectorAll('.tnow-thumb-btn').forEach(function(btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-size') === size);
+        });
+    }
+
     window.TattooAdmin = {
         refresh: fetchData,
         openAdd: openAdd,
@@ -2138,6 +2280,8 @@ Configuration:
         nextTab: nextTab,
         handleFileSelect: handleFileSelect,
         removeImage: removeImage,
+        toggleFeatured: toggleFeatured,
+        setThumbSize: setThumbSize,
         getState: function() { return state; }
     };
 
