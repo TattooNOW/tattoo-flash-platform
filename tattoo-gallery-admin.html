@@ -83,7 +83,7 @@ Configuration:
                     <th class="col-category">Category</th>
                     <th class="col-size">Size</th>
                     <th class="col-price">Price</th>
-                    <th class="col-bodypart">Body Part</th>
+
                     <th class="col-status">Status</th>
                     <th class="col-actions">Actions</th>
                 </tr>
@@ -483,7 +483,7 @@ Configuration:
 .col-category { width: 120px; }
 .col-size { width: 80px; }
 .col-price { width: 100px; }
-.col-bodypart { width: 100px; }
+
 .col-status { width: 100px; }
 .col-actions { width: 120px; }
 
@@ -1219,8 +1219,7 @@ Configuration:
 
     .col-category,
     .col-size,
-    .col-price,
-    .col-bodypart {
+    .col-price {
         display: none;
     }
 }
@@ -1498,7 +1497,7 @@ Configuration:
                 '<td class="col-category">' + escapeHtml(d.categoryName || 'Uncategorized') + '</td>' +
                 '<td class="col-size">' + escapeHtml(d.sizeEstimate || '-') + '</td>' +
                 '<td class="col-price">' + escapeHtml(d.priceRange || '-') + '</td>' +
-                '<td class="col-bodypart">' + escapeHtml(d.bodyPart || '-') + '</td>' +
+
                 '<td class="col-status">' +
                     (d.featured ? '<span class="tnow-badge tnow-badge-featured">Featured</span> ' : '') +
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
