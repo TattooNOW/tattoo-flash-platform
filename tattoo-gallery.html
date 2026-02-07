@@ -1097,7 +1097,7 @@ a.tnow-design-card {
         locationId: getLocationId(),
 
         // Calendar booking URL - uses GHL custom value with fallback
-        calendarUrl: '{{custom_values.03__consultation_calendar}}',
+        calendarUrl: window.TNOW_CALENDAR_URL || '{{custom_values.03__consultation_calendar}}',
         defaultCalendarUrl: '/consultation', // Fallback if custom value not set
 
         // Categories page URL - for "More" link
