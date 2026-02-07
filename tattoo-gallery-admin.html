@@ -105,25 +105,29 @@ Configuration:
         <div class="tnow-modal-content tnow-modal-form">
             <div class="tnow-modal-header">
                 <h2 id="modalTitle">Add Design</h2>
-                <div class="tnow-header-options">
-                    <label class="tnow-toggle" title="Featured Design">
-                        <input type="checkbox" id="designFeatured">
-                        <span class="tnow-toggle-label">Featured</span>
-                    </label>
-                    <label class="tnow-toggle" title="Available for Booking">
-                        <input type="checkbox" id="designAvailable" checked>
-                        <span class="tnow-toggle-label">Available</span>
-                    </label>
-                    <label class="tnow-toggle" title="One-Time Flash">
-                        <input type="checkbox" id="designOneTimeFlash">
-                        <span class="tnow-toggle-label">1x Flash</span>
-                    </label>
-                    <label class="tnow-toggle" title="Add to TattooNOW Catalog">
-                        <input type="checkbox" id="designCommunity">
-                        <span class="tnow-toggle-label">Catalog</span>
-                    </label>
-                </div>
                 <button class="tnow-modal-close" onclick="TattooAdmin.closeModal()">&times;</button>
+            </div>
+            <div class="tnow-header-options">
+                <label class="tnow-toggle" title="Shows in featured sections and category thumbnails">
+                    <input type="checkbox" id="designFeatured">
+                    <span class="tnow-toggle-label">Featured</span>
+                    <span class="tnow-toggle-tip">Highlight in gallery</span>
+                </label>
+                <label class="tnow-toggle" title="Uncheck to hide from public gallery">
+                    <input type="checkbox" id="designAvailable" checked>
+                    <span class="tnow-toggle-label">Available</span>
+                    <span class="tnow-toggle-tip">Visible to customers</span>
+                </label>
+                <label class="tnow-toggle" title="Design can only be tattooed once. Mark as Taken after booking.">
+                    <input type="checkbox" id="designOneTimeFlash">
+                    <span class="tnow-toggle-label">1x Flash</span>
+                    <span class="tnow-toggle-tip">One-time only design</span>
+                </label>
+                <label class="tnow-toggle" title="Share this design with all TattooNOW locations">
+                    <input type="checkbox" id="designCommunity">
+                    <span class="tnow-toggle-label">Catalog</span>
+                    <span class="tnow-toggle-tip">Share across locations</span>
+                </label>
             </div>
             <form id="designForm" class="tnow-form" onsubmit="TattooAdmin.saveDesign(event)">
                 <input type="hidden" id="designId" value="">
@@ -483,16 +487,17 @@ Configuration:
     color: var(--tnow-white);
 }
 
+.tnow-name-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+}
+
 .tnow-table-artist {
     font-size: 0.8rem;
     color: var(--text-muted);
-}
-
-.tnow-name-tags {
-    display: flex;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
-    flex-wrap: wrap;
 }
 
 .tnow-badge {
@@ -718,11 +723,11 @@ Configuration:
    ================================================================= */
 .tnow-header-options {
     display: flex;
-    gap: 0.75rem;
-    align-items: center;
+    gap: 0.5rem;
     flex-wrap: wrap;
-    margin-left: auto;
-    margin-right: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .tnow-toggle {
@@ -733,11 +738,12 @@ Configuration:
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-muted);
-    padding: 0.35rem 0.6rem;
+    padding: 0.4rem 0.7rem;
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
     white-space: nowrap;
+    position: relative;
 }
 
 .tnow-toggle:hover {
@@ -759,6 +765,38 @@ Configuration:
 
 .tnow-toggle-label {
     pointer-events: none;
+}
+
+.tnow-toggle-tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4rem 0.6rem;
+    background: var(--tnow-black);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--tnow-white);
+    font-size: 0.7rem;
+    font-weight: 400;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.tnow-toggle-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--card-border);
+}
+
+.tnow-toggle:hover .tnow-toggle-tip {
+    display: block;
 }
 
 .tnow-modal-close {
@@ -1519,11 +1557,11 @@ Configuration:
                     '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
                     '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>' +
                     '</a>' +
-                    '<div class="tnow-name-tags">' +
+                    '<div class="tnow-name-sub">' +
+                        (d.artist ? '<span class="tnow-table-artist">' + escapeHtml(d.artist) + '</span>' : '') +
                         (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
-                    (d.artist ? '<div class="tnow-table-artist">' + escapeHtml(d.artist) + '</div>' : '') +
                 '</td>' +
                 '<td class="col-category">' + escapeHtml(d.categoryName || 'Uncategorized') + '</td>' +
                 '<td class="col-size">' + escapeHtml(d.sizeEstimate || '-') + '</td>' +
