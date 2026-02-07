@@ -105,6 +105,24 @@ Configuration:
         <div class="tnow-modal-content tnow-modal-form">
             <div class="tnow-modal-header">
                 <h2 id="modalTitle">Add Design</h2>
+                <div class="tnow-header-options">
+                    <label class="tnow-toggle" title="Featured Design">
+                        <input type="checkbox" id="designFeatured">
+                        <span class="tnow-toggle-label">Featured</span>
+                    </label>
+                    <label class="tnow-toggle" title="Available for Booking">
+                        <input type="checkbox" id="designAvailable" checked>
+                        <span class="tnow-toggle-label">Available</span>
+                    </label>
+                    <label class="tnow-toggle" title="One-Time Flash">
+                        <input type="checkbox" id="designOneTimeFlash">
+                        <span class="tnow-toggle-label">1x Flash</span>
+                    </label>
+                    <label class="tnow-toggle" title="Add to TattooNOW Catalog">
+                        <input type="checkbox" id="designCommunity">
+                        <span class="tnow-toggle-label">Catalog</span>
+                    </label>
+                </div>
                 <button class="tnow-modal-close" onclick="TattooAdmin.closeModal()">&times;</button>
             </div>
             <form id="designForm" class="tnow-form" onsubmit="TattooAdmin.saveDesign(event)">
@@ -240,43 +258,8 @@ Configuration:
                         </div>
                     </div>
 
-                    <div class="tnow-form-row">
-                        <div class="tnow-form-group checkbox-group">
-                            <label class="tnow-checkbox">
-                                <input type="checkbox" id="designFeatured">
-                                <span class="checkmark"></span>
-                                Featured Design
-                            </label>
-                            <small>Shows in featured sections and category thumbnails</small>
-                        </div>
-                        <div class="tnow-form-group checkbox-group">
-                            <label class="tnow-checkbox">
-                                <input type="checkbox" id="designAvailable" checked>
-                                <span class="checkmark"></span>
-                                Available for Booking
-                            </label>
-                            <small>Uncheck to hide from public gallery</small>
-                        </div>
-                    </div>
 
-                    <div class="tnow-form-row">
-                        <div class="tnow-form-group checkbox-group">
-                            <label class="tnow-checkbox">
-                                <input type="checkbox" id="designOneTimeFlash">
-                                <span class="checkmark"></span>
-                                One-Time Flash
-                            </label>
-                            <small>Design can only be tattooed once. Mark as "Taken" after booking.</small>
-                        </div>
-                        <div class="tnow-form-group checkbox-group">
-                            <label class="tnow-checkbox">
-                                <input type="checkbox" id="designCommunity">
-                                <span class="checkmark"></span>
-                                Add to TattooNOW Catalog
-                            </label>
-                            <small>Share this design with all TattooNOW locations</small>
-                        </div>
-                    </div>
+
                 </div>
 
                 <div class="tnow-form-actions">
@@ -728,6 +711,54 @@ Configuration:
     margin: 0;
     font-family: var(--font-headline);
     font-size: 1.25rem;
+}
+
+/* =================================================================
+   HEADER OPTIONS (inline toggles next to title)
+   ================================================================= */
+.tnow-header-options {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-left: auto;
+    margin-right: 1rem;
+}
+
+.tnow-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tnow-toggle:hover {
+    border-color: var(--tnow-orange);
+    color: var(--tnow-white);
+}
+
+.tnow-toggle:has(input:checked) {
+    background: rgba(250, 145, 1, 0.15);
+    border-color: var(--tnow-orange);
+    color: var(--tnow-orange);
+}
+
+.tnow-toggle input {
+    width: auto;
+    margin: 0;
+    accent-color: var(--tnow-orange);
+}
+
+.tnow-toggle-label {
+    pointer-events: none;
 }
 
 .tnow-modal-close {
