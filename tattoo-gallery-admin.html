@@ -1,0 +1,2099 @@
+<!--
+=================================================================
+TATTOO DESIGN GALLERY - ADMIN
+=================================================================
+Self-contained HTML/CSS/JS for GHL Custom Code element.
+Manages tattoo designs in Airtable via n8n webhook proxy.
+Supports: List, Add, Edit, Delete operations.
+
+Configuration:
+- Set window.TNOW_LOCATION_ID before this script, OR
+- Pass ?locationId=XXX in the URL
+=================================================================
+-->
+
+<div class="tnow-admin" id="tattooAdmin">
+    <!-- Header -->
+    <div class="tnow-admin-header">
+        <h1 class="tnow-admin-title">Tattoo Designs</h1>
+        <button class="tnow-add-btn" onclick="TattooAdmin.openAdd()">+ Add Design</button>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="tnow-admin-toolbar">
+        <div class="tnow-search-wrap">
+            <input type="text" class="tnow-search-input" id="adminSearch" placeholder="Search designs..." autocomplete="off">
+            <span class="tnow-search-icon">🔍</span>
+        </div>
+        <select class="tnow-filter-select" id="sizeFilter">
+            <option value="all">All Sizes</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+            <option value="XL">XL</option>
+        </select>
+        <select class="tnow-filter-select" id="priceFilter">
+            <option value="all">All Prices</option>
+            <option value="under500">Under $500</option>
+            <option value="500to1000">$500 - $1,000</option>
+            <option value="1000to2000">$1,000 - $2,000</option>
+            <option value="over2000">Over $2,000</option>
+        </select>
+        <select class="tnow-filter-select" id="featuredFilter">
+            <option value="all">All Designs</option>
+            <option value="featured">Featured Only</option>
+            <option value="notfeatured">Not Featured</option>
+        </select>
+        <select class="tnow-filter-select" id="statusFilter">
+            <option value="all">All Status</option>
+            <option value="available">Available</option>
+            <option value="unavailable">Unavailable</option>
+        </select>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="tnow-category-nav" id="categoryNav">
+        <button class="tnow-cat-btn active" data-category="all">
+            <span class="tnow-cat-icon">✨</span>
+            <span class="tnow-cat-label">All</span>
+        </button>
+        <!-- Dynamic category buttons inserted here -->
+    </div>
+
+    <!-- Loading State -->
+    <div class="tnow-admin-loading" id="adminLoading">
+        <div class="tnow-spinner"></div>
+        <p>Loading designs...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="tnow-admin-error" id="adminError" style="display:none;">
+        <span class="tnow-error-icon">⚠️</span>
+        <p id="errorMessage">Unable to load designs.</p>
+        <button class="tnow-retry-btn" onclick="TattooAdmin.refresh()">Retry</button>
+    </div>
+
+    <!-- Designs Table -->
+    <div class="tnow-admin-table-wrap" id="adminTableWrap" style="display:none;">
+        <table class="tnow-admin-table" id="adminTable">
+            <thead>
+                <tr>
+                    <th class="col-image">Image</th>
+                    <th class="col-name">Design</th>
+                    <th class="col-category">Category</th>
+                    <th class="col-size">Size</th>
+                    <th class="col-price">Price</th>
+                    <th class="col-bodypart">Body Part</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-linesheet">Line Sheet</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="adminTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="tnow-admin-empty" id="adminEmpty" style="display:none;">
+        <span class="tnow-empty-icon">🎨</span>
+        <p>No designs found.</p>
+        <button class="tnow-add-btn" onclick="TattooAdmin.openAdd()">Add Your First Design</button>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="tnow-modal" id="adminModal" style="display:none;">
+        <div class="tnow-modal-backdrop" onclick="TattooAdmin.closeModal()"></div>
+        <div class="tnow-modal-content tnow-modal-form">
+            <div class="tnow-modal-header">
+                <h2 id="modalTitle">Add Design</h2>
+                <button class="tnow-modal-close" onclick="TattooAdmin.closeModal()">&times;</button>
+            </div>
+            <form id="designForm" class="tnow-form" onsubmit="TattooAdmin.saveDesign(event)">
+                <input type="hidden" id="designId" value="">
+
+                <!-- Tab Navigation -->
+                <div class="tnow-form-tabs">
+                    <button type="button" class="tnow-tab active" data-tab="images" onclick="TattooAdmin.switchTab('images')">Design</button>
+                    <button type="button" class="tnow-tab" data-tab="details" onclick="TattooAdmin.switchTab('details')">Details</button>
+                    <button type="button" class="tnow-tab" data-tab="advanced" onclick="TattooAdmin.switchTab('advanced')">Advanced</button>
+                </div>
+
+                <!-- Tab 1: Images (Design Image + Line Drawing) -->
+                <div class="tnow-tab-panel active" id="tabImages">
+                    <!-- Design Image Upload -->
+                    <div class="tnow-image-section">
+                        <h3 class="tnow-section-title">Design Image *</h3>
+                        <div class="tnow-file-upload" id="fileUploadZone">
+                            <input type="file" id="designImageFile" accept="image/*" onchange="TattooAdmin.handleFileSelect(event, 'design')">
+                            <input type="hidden" id="designImage" value="">
+                            <div class="tnow-file-upload-content" id="uploadContent">
+                                <span class="tnow-upload-icon">📁</span>
+                                <span class="tnow-upload-text">Click to upload or drag & drop</span>
+                                <small>PNG, JPG, GIF up to 10MB</small>
+                            </div>
+                            <div class="tnow-file-uploading" id="uploadingState" style="display:none;">
+                                <div class="tnow-spinner-small"></div>
+                                <span>Uploading to GHL...</span>
+                            </div>
+                        </div>
+                        <div class="tnow-form-row" id="imagePreviewRow" style="display:none;">
+                            <div class="tnow-form-group full">
+                                <div class="tnow-image-preview">
+                                    <img id="imagePreview" src="" alt="Preview">
+                                    <button type="button" class="tnow-remove-image" onclick="TattooAdmin.removeImage('design')">&times;</button>
+                                </div>
+                                <small class="tnow-image-url" id="imageUrlDisplay"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Line Sheet Upload -->
+                    <div class="tnow-image-section tnow-linesheet-section">
+                        <h3 class="tnow-section-title">Line Sheet / Drawing <small>(optional)</small></h3>
+                        <div class="tnow-file-upload tnow-file-upload-slim" id="lineSheetUploadZone">
+                            <input type="file" id="lineSheetFile" accept="image/*" onchange="TattooAdmin.handleFileSelect(event, 'linesheet')">
+                            <input type="hidden" id="designLineSheet" value="">
+                            <div class="tnow-file-upload-content" id="lineSheetUploadContent">
+                                <span class="tnow-upload-text">Click to upload line sheet</span>
+                            </div>
+                            <div class="tnow-file-uploading" id="lineSheetUploadingState" style="display:none;">
+                                <div class="tnow-spinner-small"></div>
+                                <span>Uploading...</span>
+                            </div>
+                        </div>
+                        <div class="tnow-form-row" id="lineSheetPreviewRow" style="display:none;">
+                            <div class="tnow-form-group full">
+                                <div class="tnow-image-preview">
+                                    <img id="lineSheetPreview" src="" alt="Line Sheet Preview">
+                                    <button type="button" class="tnow-remove-image" onclick="TattooAdmin.removeImage('linesheet')">&times;</button>
+                                </div>
+                                <small class="tnow-image-url" id="lineSheetUrlDisplay"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Details (Basic Info) -->
+                <div class="tnow-tab-panel" id="tabDetails">
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group full">
+                            <label for="designName">Design Name *</label>
+                            <input type="text" id="designName" placeholder="e.g., American Eagle">
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group full">
+                            <label for="designCategory">Category *</label>
+                            <select id="designCategory">
+                                <option value="">Select category...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group full">
+                            <label for="designDescription">Description</label>
+                            <textarea id="designDescription" rows="3" placeholder="Describe the design..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group">
+                            <label for="designSize">Size Estimate</label>
+                            <select id="designSize">
+                                <option value="">Select size...</option>
+                                <option value="Small">Small</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Large">Large</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
+                        <div class="tnow-form-group">
+                            <label for="designTime">Time Estimate</label>
+                            <input type="text" id="designTime" placeholder="e.g., 2-4 hours">
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group">
+                            <label for="designPrice">Price Range</label>
+                            <input type="text" id="designPrice" placeholder="e.g., $300-500">
+                        </div>
+                        <div class="tnow-form-group">
+                            <label for="designBodyPart">Perfect Body Part</label>
+                            <input type="text" id="designBodyPart" placeholder="e.g., Forearm, Shoulder">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Advanced (Admin Options) -->
+                <div class="tnow-tab-panel" id="tabAdvanced">
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group">
+                            <label for="designArtist">Original Artist</label>
+                            <input type="text" id="designArtist" placeholder="Artist name (internal reference)">
+                        </div>
+                        <div class="tnow-form-group">
+                            <label for="designSort">Sort Order</label>
+                            <input type="number" id="designSort" placeholder="1" min="1">
+                            <small>Lower numbers appear first</small>
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group checkbox-group">
+                            <label class="tnow-checkbox">
+                                <input type="checkbox" id="designFeatured">
+                                <span class="checkmark"></span>
+                                Featured Design
+                            </label>
+                            <small>Shows in featured sections and category thumbnails</small>
+                        </div>
+                        <div class="tnow-form-group checkbox-group">
+                            <label class="tnow-checkbox">
+                                <input type="checkbox" id="designAvailable" checked>
+                                <span class="checkmark"></span>
+                                Available for Booking
+                            </label>
+                            <small>Uncheck to hide from public gallery</small>
+                        </div>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group checkbox-group">
+                            <label class="tnow-checkbox">
+                                <input type="checkbox" id="designOneTimeFlash">
+                                <span class="checkmark"></span>
+                                One-Time Flash
+                            </label>
+                            <small>Design can only be tattooed once. Mark as "Taken" after booking.</small>
+                        </div>
+                        <div class="tnow-form-group checkbox-group">
+                            <label class="tnow-checkbox">
+                                <input type="checkbox" id="designCommunity">
+                                <span class="checkmark"></span>
+                                Add to TattooNOW Catalog
+                            </label>
+                            <small>Share this design with all TattooNOW locations</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tnow-form-actions">
+                    <button type="button" class="tnow-btn-secondary" onclick="TattooAdmin.closeModal()">Cancel</button>
+                    <button type="button" class="tnow-btn-primary" id="nextBtn" onclick="TattooAdmin.nextTab()">Next</button>
+                    <button type="submit" class="tnow-btn-primary" id="saveBtn" style="display:none;">Save Design</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="tnow-modal" id="deleteModal" style="display:none;">
+        <div class="tnow-modal-backdrop" onclick="TattooAdmin.closeDeleteModal()"></div>
+        <div class="tnow-modal-content tnow-modal-confirm">
+            <h3>Delete Design?</h3>
+            <p>Are you sure you want to delete "<span id="deleteName"></span>"?</p>
+            <p class="tnow-warning">This action cannot be undone.</p>
+            <div class="tnow-form-actions">
+                <button type="button" class="tnow-btn-secondary" onclick="TattooAdmin.closeDeleteModal()">Cancel</button>
+                <button type="button" class="tnow-btn-danger" onclick="TattooAdmin.confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="tnow-toast-container" id="toastContainer"></div>
+</div>
+
+<style>
+/* =================================================================
+   CSS VARIABLES (TattooNOW Brand)
+   ================================================================= */
+.tnow-admin {
+    --tnow-orange: #fa9101;
+    --tnow-orange-dark: #cd7600;
+    --tnow-gold: #F8A507;
+    --tnow-black: #000000;
+    --tnow-navy: #000321;
+    --tnow-white: #ffffff;
+    --tnow-gray: #8893A8;
+    --tnow-gray-light: #C9D8E0;
+    --tnow-red: #e53e3e;
+    --tnow-green: #38a169;
+
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-muted: #a0a0a0;
+
+    --font-headline: 'Roboto Slab', 'Arial Black', sans-serif;
+    --font-body: 'Roboto', Arial, sans-serif;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    font-family: var(--font-body);
+    color: var(--tnow-white);
+    padding: 1rem;
+}
+
+/* =================================================================
+   HEADER
+   ================================================================= */
+.tnow-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tnow-admin-title {
+    font-family: var(--font-headline);
+    font-size: 1.75rem;
+    margin: 0;
+    color: var(--tnow-white);
+}
+
+.tnow-add-btn {
+    padding: 0.75rem 1.25rem;
+    background: var(--tnow-orange);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--tnow-black);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-add-btn:hover {
+    background: var(--tnow-gold);
+    transform: translateY(-1px);
+}
+
+/* =================================================================
+   TOOLBAR
+   ================================================================= */
+.tnow-admin-toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tnow-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.tnow-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--tnow-white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.tnow-search-input:focus {
+    border-color: var(--tnow-orange);
+}
+
+.tnow-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.tnow-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.tnow-filter-select {
+    padding: 0.75rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--tnow-white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.tnow-filter-select:focus {
+    border-color: var(--tnow-orange);
+}
+
+.tnow-filter-select option {
+    background: var(--tnow-navy);
+}
+
+/* =================================================================
+   TABLE
+   ================================================================= */
+.tnow-admin-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+}
+
+.tnow-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tnow-admin-table th,
+.tnow-admin-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.tnow-admin-table th {
+    background: rgba(255, 255, 255, 0.02);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.tnow-admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tnow-admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.col-image { width: 80px; }
+.col-name { min-width: 150px; }
+.col-category { width: 120px; }
+.col-size { width: 80px; }
+.col-price { width: 100px; }
+.col-bodypart { width: 100px; }
+.col-status { width: 100px; }
+.col-linesheet { width: 80px; text-align: center; }
+.col-actions { width: 120px; }
+
+.tnow-table-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+}
+
+.tnow-table-name {
+    font-weight: 600;
+    color: var(--tnow-white);
+}
+
+.tnow-table-artist {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.tnow-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tnow-badge-featured {
+    background: rgba(250, 145, 1, 0.2);
+    color: var(--tnow-orange);
+}
+
+.tnow-badge-available {
+    background: rgba(56, 161, 105, 0.2);
+    color: var(--tnow-green);
+}
+
+.tnow-badge-unavailable {
+    background: rgba(229, 62, 62, 0.2);
+    color: var(--tnow-red);
+}
+
+.tnow-badge-taken {
+    background: rgba(139, 0, 0, 0.3);
+    color: #ff6b6b;
+}
+
+.tnow-badge-flash {
+    background: rgba(138, 43, 226, 0.2);
+    color: #b19cd9;
+}
+
+.tnow-action-btn {
+    padding: 0.4rem 0.6rem;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 0.25rem;
+}
+
+.tnow-action-btn:hover {
+    border-color: var(--tnow-orange);
+    color: var(--tnow-orange);
+}
+
+.tnow-action-btn.delete:hover {
+    border-color: var(--tnow-red);
+    color: var(--tnow-red);
+}
+
+/* Clickable edit links */
+.tnow-edit-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.tnow-edit-link:hover {
+    opacity: 0.8;
+}
+
+.tnow-edit-link:hover .tnow-table-name {
+    color: var(--tnow-orange);
+}
+
+.tnow-edit-link:hover .tnow-table-image {
+    border: 2px solid var(--tnow-orange);
+}
+
+/* Line sheet link */
+.tnow-linesheet-link {
+    font-size: 1.25rem;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.tnow-linesheet-link:hover {
+    opacity: 1;
+}
+
+/* =================================================================
+   CATEGORY NAVIGATION
+   ================================================================= */
+.tnow-category-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.tnow-cat-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 70px;
+}
+
+.tnow-cat-btn:hover {
+    border-color: var(--tnow-orange);
+    color: var(--tnow-white);
+}
+
+.tnow-cat-btn.active {
+    background: var(--tnow-orange);
+    border-color: var(--tnow-orange);
+    color: var(--tnow-black);
+}
+
+.tnow-cat-icon {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.tnow-cat-label {
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+/* =================================================================
+   LOADING & STATES
+   ================================================================= */
+.tnow-admin-loading,
+.tnow-admin-error,
+.tnow-admin-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.tnow-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--card-border);
+    border-top-color: var(--tnow-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.tnow-error-icon,
+.tnow-empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.tnow-retry-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--tnow-orange);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--tnow-black);
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+/* =================================================================
+   MODAL
+   ================================================================= */
+.tnow-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.tnow-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.tnow-modal-content {
+    position: relative;
+    width: 100%;
+    max-height: 90vh;
+    background: var(--tnow-navy);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    overflow-y: auto;
+}
+
+.tnow-modal-form {
+    max-width: 600px;
+}
+
+.tnow-modal-confirm {
+    max-width: 400px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.tnow-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.tnow-modal-header h2 {
+    margin: 0;
+    font-family: var(--font-headline);
+    font-size: 1.25rem;
+}
+
+.tnow-modal-close {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    color: var(--tnow-white);
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tnow-modal-close:hover {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+    border-color: var(--tnow-orange);
+}
+
+/* =================================================================
+   FORM
+   ================================================================= */
+.tnow-form {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.tnow-form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tnow-form-group {
+    flex: 1;
+}
+
+.tnow-form-group.full {
+    flex: 1 1 100%;
+}
+
+.tnow-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.tnow-form-group input,
+.tnow-form-group select,
+.tnow-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--tnow-white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.tnow-form-group input:focus,
+.tnow-form-group select:focus,
+.tnow-form-group textarea:focus {
+    border-color: var(--tnow-orange);
+}
+
+.tnow-form-group select option {
+    background: var(--tnow-navy);
+}
+
+.tnow-form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.tnow-form-group.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.tnow-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.tnow-checkbox input {
+    width: auto;
+    margin-right: 0.5rem;
+}
+
+/* =================================================================
+   INPUT WITH BUTTON (Upload to GHL)
+   ================================================================= */
+.tnow-input-with-button {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tnow-input-with-button input {
+    flex: 1;
+}
+
+.tnow-upload-btn {
+    padding: 0.5rem 1rem;
+    background: var(--tnow-orange);
+    color: var(--tnow-white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tnow-upload-btn:hover {
+    background: var(--tnow-orange-dark);
+}
+
+.tnow-upload-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =================================================================
+   FILE UPLOAD ZONE
+   ================================================================= */
+.tnow-file-upload {
+    position: relative;
+    border: 2px dashed var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-file-upload:hover,
+.tnow-file-upload.dragover {
+    border-color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.05);
+}
+
+.tnow-file-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.tnow-file-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.tnow-upload-icon {
+    font-size: 2rem;
+}
+
+.tnow-upload-text {
+    font-weight: 600;
+    color: var(--tnow-white);
+}
+
+.tnow-file-upload small {
+    color: var(--text-muted);
+}
+
+.tnow-file-uploading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--tnow-orange);
+}
+
+.tnow-spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--card-border);
+    border-top-color: var(--tnow-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.tnow-image-preview {
+    position: relative;
+    display: inline-block;
+}
+
+.tnow-remove-image {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: var(--tnow-red);
+    border: none;
+    border-radius: 50%;
+    color: var(--tnow-white);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tnow-remove-image:hover {
+    background: #c53030;
+}
+
+.tnow-image-url {
+    display: block;
+    margin-top: 0.5rem;
+    word-break: break-all;
+    font-size: 0.7rem;
+}
+
+/* =================================================================
+   FORM TABS
+   ================================================================= */
+.tnow-form-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.tnow-tab {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-tab:hover {
+    color: var(--tnow-white);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tnow-tab.active {
+    color: var(--tnow-orange);
+    border-bottom-color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.1);
+}
+
+.tnow-tab-panel {
+    display: none;
+    padding: 1.5rem;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.tnow-tab-panel.active {
+    display: block;
+}
+
+/* Tab Panel Contrasting Backgrounds */
+#tabImages {
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 3px solid var(--tnow-orange);
+}
+
+#tabDetails {
+    background: rgba(0, 3, 33, 0.5);
+    border-left: 3px solid var(--tnow-gold);
+}
+
+#tabAdvanced {
+    background: rgba(56, 161, 105, 0.05);
+    border-left: 3px solid var(--tnow-green);
+}
+
+/* =================================================================
+   IMAGE SECTIONS (Tab 2)
+   ================================================================= */
+.tnow-image-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.tnow-image-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tnow-section-title {
+    font-family: var(--font-headline);
+    font-size: 1rem;
+    margin: 0 0 0.25rem 0;
+    color: var(--tnow-white);
+}
+
+.tnow-section-hint {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.tnow-section-title small {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Slim file upload for line sheet */
+.tnow-linesheet-section {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tnow-file-upload-slim {
+    padding: 0.75rem 1rem;
+    border-style: dashed;
+}
+
+.tnow-file-upload-slim .tnow-file-upload-content {
+    flex-direction: row;
+    gap: 0;
+}
+
+.tnow-file-upload-slim .tnow-upload-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.tnow-image-preview {
+    width: 100%;
+    max-width: 200px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+}
+
+.tnow-image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.tnow-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--card-border);
+}
+
+.tnow-btn-primary,
+.tnow-btn-secondary,
+.tnow-btn-danger {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-btn-primary {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+}
+
+.tnow-btn-primary:hover {
+    background: var(--tnow-gold);
+}
+
+.tnow-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tnow-btn-secondary {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--tnow-white);
+}
+
+.tnow-btn-secondary:hover {
+    border-color: var(--tnow-white);
+}
+
+.tnow-btn-danger {
+    background: var(--tnow-red);
+    color: var(--tnow-white);
+}
+
+.tnow-btn-danger:hover {
+    background: #c53030;
+}
+
+.tnow-warning {
+    color: var(--tnow-red);
+    font-size: 0.85rem;
+}
+
+/* =================================================================
+   TOAST NOTIFICATIONS
+   ================================================================= */
+.tnow-toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tnow-toast {
+    padding: 1rem 1.5rem;
+    background: var(--tnow-navy);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--tnow-white);
+    font-size: 0.9rem;
+    animation: slideIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tnow-toast.success {
+    border-color: var(--tnow-green);
+}
+
+.tnow-toast.error {
+    border-color: var(--tnow-red);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 768px) {
+    .tnow-form-row {
+        flex-direction: column;
+    }
+
+    .tnow-admin-table th,
+    .tnow-admin-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .col-category,
+    .col-size,
+    .col-price,
+    .col-bodypart {
+        display: none;
+    }
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+
+    // =================================================================
+    // CONFIGURATION
+    // =================================================================
+
+    // Helper to get and persist locationId across pages
+    function getLocationId() {
+        var storageKey = 'tnow_location_id';
+        var urlParam = new URLSearchParams(window.location.search).get('locationId');
+
+        // Priority: window override > URL param > localStorage > GHL merge field
+        if (window.TNOW_LOCATION_ID) {
+            try { localStorage.setItem(storageKey, window.TNOW_LOCATION_ID); } catch(e) {}
+            return window.TNOW_LOCATION_ID;
+        }
+
+        if (urlParam) {
+            try { localStorage.setItem(storageKey, urlParam); } catch(e) {}
+            return urlParam;
+        }
+
+        try {
+            var stored = localStorage.getItem(storageKey);
+            if (stored) return stored;
+        } catch(e) {}
+
+        // Fall back to GHL merge field (will be literal string if not in GHL context)
+        var ghlId = '{{location.id}}';
+        if (ghlId && !ghlId.match(/\{\{.*\}\}/)) {
+            try { localStorage.setItem(storageKey, ghlId); } catch(e) {}
+            return ghlId;
+        }
+
+        return null;
+    }
+
+    var CONFIG = {
+        apiEndpoint: 'https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        locationId: getLocationId()
+    };
+
+    // =================================================================
+    // STATE
+    // =================================================================
+    var state = {
+        designs: [],
+        categories: [],
+        totalCount: 0,
+        searchQuery: '',
+        categoryFilter: 'all',
+        sizeFilter: 'all',
+        statusFilter: 'all',
+        featuredFilter: 'all',
+        priceFilter: 'all',
+        isLoading: true,
+        editingDesign: null,
+        deleteDesign: null
+    };
+
+    // =================================================================
+    // DOM ELEMENTS
+    // =================================================================
+    var els = {};
+
+    function cacheDOMElements() {
+        els.loading = document.getElementById('adminLoading');
+        els.error = document.getElementById('adminError');
+        els.errorMessage = document.getElementById('errorMessage');
+        els.tableWrap = document.getElementById('adminTableWrap');
+        els.tableBody = document.getElementById('adminTableBody');
+        els.empty = document.getElementById('adminEmpty');
+        els.search = document.getElementById('adminSearch');
+        els.categoryNav = document.getElementById('categoryNav');
+        els.sizeFilter = document.getElementById('sizeFilter');
+        els.statusFilter = document.getElementById('statusFilter');
+        els.featuredFilter = document.getElementById('featuredFilter');
+        els.priceFilter = document.getElementById('priceFilter');
+        els.modal = document.getElementById('adminModal');
+        els.modalTitle = document.getElementById('modalTitle');
+        els.form = document.getElementById('designForm');
+        els.saveBtn = document.getElementById('saveBtn');
+        els.deleteModal = document.getElementById('deleteModal');
+        els.deleteName = document.getElementById('deleteName');
+        els.imageInput = document.getElementById('designImage');
+        els.imagePreview = document.getElementById('imagePreview');
+        els.imagePreviewRow = document.getElementById('imagePreviewRow');
+        els.toastContainer = document.getElementById('toastContainer');
+    }
+
+    // =================================================================
+    // API CALLS
+    // =================================================================
+    function fetchData() {
+        setLoading(true);
+
+        var categoriesUrl = CONFIG.apiEndpoint + '?action=categories';
+        // Admin fetches all records with large limit for full management view
+        var designsUrl = CONFIG.apiEndpoint + '?action=designs&locationId=' + encodeURIComponent(CONFIG.locationId) + '&limit=1000';
+
+        // Fetch categories first (not location-specific, shared across all locations)
+        fetch(categoriesUrl)
+            .then(function(r) { return r.json(); })
+            .then(function(categoriesRes) {
+                if (categoriesRes.success) {
+                    state.categories = categoriesRes.categories || [];
+                } else {
+                    console.warn('Categories fetch returned error, using empty array');
+                    state.categories = [];
+                }
+                // Always render category UI even if designs fail
+                renderCategoryNav();
+                renderCategoryDropdown();
+            })
+            .catch(function(err) {
+                console.error('Categories fetch error:', err);
+                state.categories = [];
+                renderCategoryNav();
+                renderCategoryDropdown();
+            });
+
+        // Fetch designs separately (location-specific)
+        fetch(designsUrl)
+            .then(function(r) { return r.json(); })
+            .then(function(designsRes) {
+                if (designsRes.success) {
+                    state.designs = designsRes.designs || [];
+                    state.totalCount = designsRes.pagination ? designsRes.pagination.total : state.designs.length;
+                } else {
+                    // No designs for this location is OK - just show empty state
+                    console.log('No designs found for location, showing empty state');
+                    state.designs = [];
+                    state.totalCount = 0;
+                }
+                renderTable();
+                setLoading(false);
+            })
+            .catch(function(err) {
+                console.error('Designs fetch error:', err);
+                state.designs = [];
+                state.totalCount = 0;
+                renderTable();
+                setLoading(false);
+            });
+    }
+
+    function saveDesignAPI(data) {
+        var isEdit = !!data.id;
+        var payload = Object.assign({}, data, {
+            action: isEdit ? 'updateDesign' : 'createDesign'
+        });
+
+        return fetch(CONFIG.apiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(function(r) {
+            if (!r.ok) {
+                throw new Error('Server error: ' + r.status);
+            }
+            return r.text().then(function(text) {
+                if (!text) {
+                    throw new Error('Empty response from server');
+                }
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                }
+            });
+        });
+    }
+
+    function deleteDesignAPI(id) {
+        return fetch(CONFIG.apiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deleteDesign', id: id })
+        })
+        .then(function(r) {
+            if (!r.ok) {
+                throw new Error('Server error: ' + r.status);
+            }
+            return r.text().then(function(text) {
+                if (!text) {
+                    throw new Error('Empty response from server');
+                }
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid JSON response');
+                }
+            });
+        });
+    }
+
+    // =================================================================
+    // RENDERING
+    // =================================================================
+    function renderCategoryNav() {
+        var html = '<button class="tnow-cat-btn' + (state.categoryFilter === 'all' ? ' active' : '') + '" data-category="all">' +
+                   '<span class="tnow-cat-icon">✨</span>' +
+                   '<span class="tnow-cat-label">All</span>' +
+                   '</button>';
+        state.categories.forEach(function(cat) {
+            var isActive = state.categoryFilter === cat.id;
+            html += '<button class="tnow-cat-btn' + (isActive ? ' active' : '') + '" data-category="' + cat.id + '">' +
+                    '<span class="tnow-cat-icon">' + (cat.icon || '🎨') + '</span>' +
+                    '<span class="tnow-cat-label">' + escapeHtml(cat.name) + '</span>' +
+                    '</button>';
+        });
+        els.categoryNav.innerHTML = html;
+        bindCategoryNav();
+    }
+
+    function bindCategoryNav() {
+        var buttons = els.categoryNav.querySelectorAll('.tnow-cat-btn');
+        buttons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                state.categoryFilter = this.getAttribute('data-category');
+                buttons.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                renderTable();
+            });
+        });
+    }
+
+    function renderCategoryDropdown() {
+        var select = document.getElementById('designCategory');
+        var html = '<option value="">Select category...</option>';
+        state.categories.forEach(function(cat) {
+            html += '<option value="' + cat.id + '">' + escapeHtml(cat.name) + '</option>';
+        });
+        select.innerHTML = html;
+    }
+
+    function renderTable() {
+        var filtered = filterDesigns();
+
+        if (filtered.length === 0) {
+            els.tableWrap.style.display = 'none';
+            els.empty.style.display = 'block';
+            return;
+        }
+
+        els.empty.style.display = 'none';
+        els.tableWrap.style.display = 'block';
+
+        var html = '';
+        filtered.forEach(function(d) {
+            html += '<tr data-id="' + d.id + '">' +
+                '<td class="col-image">' +
+                    '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
+                    (d.image ? '<img src="' + escapeHtml(d.thumbnail || d.image) + '" class="tnow-table-image" alt="">' : '<span class="tnow-table-image">🎨</span>') +
+                    '</a>' +
+                '</td>' +
+                '<td class="col-name">' +
+                    '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
+                    '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>' +
+                    '</a>' +
+                    (d.artist ? '<div class="tnow-table-artist">' + escapeHtml(d.artist) + '</div>' : '') +
+                '</td>' +
+                '<td class="col-category">' + escapeHtml(d.categoryName || 'Uncategorized') + '</td>' +
+                '<td class="col-size">' + escapeHtml(d.sizeEstimate || '-') + '</td>' +
+                '<td class="col-price">' + escapeHtml(d.priceRange || '-') + '</td>' +
+                '<td class="col-bodypart">' + escapeHtml(d.bodyPart || '-') + '</td>' +
+                '<td class="col-status">' +
+                    (d.featured ? '<span class="tnow-badge tnow-badge-featured">Featured</span> ' : '') +
+                    (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
+                    (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
+                    (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
+                '</td>' +
+                '<td class="col-linesheet">' +
+                    (d.lineSheet ? '<a href="' + escapeHtml(d.lineSheet) + '" target="_blank" class="tnow-linesheet-link" title="View Line Sheet">View</a>' : '-') +
+                '</td>' +
+                '<td class="col-actions">' +
+                    '<button class="tnow-action-btn" onclick="TattooAdmin.openEdit(\'' + d.id + '\')" title="Edit">✏️</button>' +
+                    '<button class="tnow-action-btn delete" onclick="TattooAdmin.openDelete(\'' + d.id + '\')" title="Delete">🗑️</button>' +
+                '</td>' +
+            '</tr>';
+        });
+
+        els.tableBody.innerHTML = html;
+    }
+
+    function filterDesigns() {
+        var filtered = state.designs;
+
+        // Category filter
+        if (state.categoryFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                return d.categoryId === state.categoryFilter;
+            });
+        }
+
+        // Size filter
+        if (state.sizeFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                return d.sizeEstimate === state.sizeFilter;
+            });
+        }
+
+        // Status filter (available/unavailable)
+        if (state.statusFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                if (state.statusFilter === 'available') {
+                    return d.available !== false;
+                } else {
+                    return d.available === false;
+                }
+            });
+        }
+
+        // Featured filter
+        if (state.featuredFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                if (state.featuredFilter === 'featured') {
+                    return d.featured === true;
+                } else {
+                    return d.featured !== true;
+                }
+            });
+        }
+
+        // Price filter
+        if (state.priceFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                var minPrice = extractMinPrice(d.priceRange);
+                if (minPrice === null) return false;
+                switch (state.priceFilter) {
+                    case 'under500': return minPrice < 500;
+                    case '500to1000': return minPrice >= 500 && minPrice < 1000;
+                    case '1000to2000': return minPrice >= 1000 && minPrice < 2000;
+                    case 'over2000': return minPrice >= 2000;
+                    default: return true;
+                }
+            });
+        }
+
+        // Search filter
+        if (state.searchQuery) {
+            var q = state.searchQuery.toLowerCase();
+            filtered = filtered.filter(function(d) {
+                return (d.name && d.name.toLowerCase().indexOf(q) > -1) ||
+                       (d.description && d.description.toLowerCase().indexOf(q) > -1) ||
+                       (d.artist && d.artist.toLowerCase().indexOf(q) > -1);
+            });
+        }
+
+        return filtered;
+    }
+
+    // =================================================================
+    // MODAL HANDLERS
+    // =================================================================
+    function openAdd() {
+        state.editingDesign = null;
+        els.modalTitle.textContent = 'Add Design';
+        els.saveBtn.textContent = 'Add Design';
+        els.form.reset();
+        document.getElementById('designId').value = '';
+        document.getElementById('designLineSheet').value = '';
+        document.getElementById('designBodyPart').value = '';
+        document.getElementById('designAvailable').checked = true;
+        document.getElementById('designOneTimeFlash').checked = false;
+        document.getElementById('designCommunity').checked = false;
+        els.imagePreviewRow.style.display = 'none';
+        // Reset design image upload zone
+        document.getElementById('fileUploadZone').style.display = 'block';
+        document.getElementById('uploadContent').style.display = 'flex';
+        document.getElementById('uploadingState').style.display = 'none';
+        document.getElementById('designImageFile').value = '';
+        // Reset line sheet upload zone
+        document.getElementById('lineSheetUploadZone').style.display = 'block';
+        document.getElementById('lineSheetUploadContent').style.display = 'flex';
+        document.getElementById('lineSheetUploadingState').style.display = 'none';
+        document.getElementById('lineSheetPreviewRow').style.display = 'none';
+        document.getElementById('lineSheetFile').value = '';
+        switchTab('images'); // Reset to first tab
+        els.modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openEdit(id) {
+        var design = state.designs.find(function(d) { return d.id === id; });
+        if (!design) return;
+
+        state.editingDesign = design;
+        els.modalTitle.textContent = 'Edit Design';
+        els.saveBtn.textContent = 'Save Changes';
+
+        document.getElementById('designId').value = design.id;
+        document.getElementById('designName').value = design.name || '';
+        document.getElementById('designCategory').value = design.categoryId || '';
+        document.getElementById('designArtist').value = design.artist || '';
+        document.getElementById('designImage').value = design.image || '';
+        document.getElementById('designDescription').value = design.description || '';
+        document.getElementById('designSize').value = design.sizeEstimate || '';
+        document.getElementById('designTime').value = design.timeEstimate || '';
+        document.getElementById('designPrice').value = design.priceRange || '';
+        document.getElementById('designSort').value = design.sortOrder || '';
+        document.getElementById('designLineSheet').value = design.lineSheet || '';
+        document.getElementById('designBodyPart').value = design.bodyPart || '';
+        document.getElementById('designFeatured').checked = design.featured || false;
+        document.getElementById('designAvailable').checked = design.available !== false;
+        document.getElementById('designOneTimeFlash').checked = design.oneTimeFlash || false;
+        document.getElementById('designCommunity').checked = design.inCommunityCatalog || false;
+
+        // Design image preview
+        if (design.image) {
+            els.imagePreview.src = design.image;
+            document.getElementById('imageUrlDisplay').textContent = design.image;
+            els.imagePreviewRow.style.display = 'block';
+            document.getElementById('fileUploadZone').style.display = 'none';
+        } else {
+            els.imagePreviewRow.style.display = 'none';
+            document.getElementById('fileUploadZone').style.display = 'block';
+        }
+        // Reset design image upload state
+        document.getElementById('uploadContent').style.display = 'flex';
+        document.getElementById('uploadingState').style.display = 'none';
+        document.getElementById('designImageFile').value = '';
+
+        // Line sheet preview
+        if (design.lineSheet) {
+            document.getElementById('lineSheetPreview').src = design.lineSheet;
+            document.getElementById('lineSheetUrlDisplay').textContent = design.lineSheet;
+            document.getElementById('lineSheetPreviewRow').style.display = 'block';
+            document.getElementById('lineSheetUploadZone').style.display = 'none';
+        } else {
+            document.getElementById('lineSheetPreviewRow').style.display = 'none';
+            document.getElementById('lineSheetUploadZone').style.display = 'block';
+        }
+        // Reset line sheet upload state
+        document.getElementById('lineSheetUploadContent').style.display = 'flex';
+        document.getElementById('lineSheetUploadingState').style.display = 'none';
+        document.getElementById('lineSheetFile').value = '';
+
+        switchTab('images'); // Reset to first tab
+        els.modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        els.modal.style.display = 'none';
+        document.body.style.overflow = '';
+        state.editingDesign = null;
+        // Reset to first tab when closing
+        switchTab('images');
+    }
+
+    function openDelete(id) {
+        var design = state.designs.find(function(d) { return d.id === id; });
+        if (!design) return;
+
+        state.deleteDesign = design;
+        els.deleteName.textContent = design.name;
+        els.deleteModal.style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        els.deleteModal.style.display = 'none';
+        state.deleteDesign = null;
+    }
+
+    // =================================================================
+    // FILE UPLOAD TO GHL
+    // =================================================================
+    function handleFileSelect(event, type) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        // Default to 'design' if type not specified
+        type = type || 'design';
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select an image file', 'error');
+            return;
+        }
+
+        // Validate file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('Image must be under 10MB', 'error');
+            return;
+        }
+
+        uploadFileToGHL(file, type);
+    }
+
+    function uploadFileToGHL(file, type) {
+        // Get elements based on upload type
+        var isLineSheet = type === 'linesheet';
+        var uploadContent = document.getElementById(isLineSheet ? 'lineSheetUploadContent' : 'uploadContent');
+        var uploadingState = document.getElementById(isLineSheet ? 'lineSheetUploadingState' : 'uploadingState');
+        var fileInput = document.getElementById(isLineSheet ? 'lineSheetFile' : 'designImageFile');
+
+        // Show uploading state
+        uploadContent.style.display = 'none';
+        uploadingState.style.display = 'flex';
+        fileInput.disabled = true;
+
+        // Convert file to base64 for API
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var base64Data = e.target.result;
+
+            // GHL API key is now stored in the n8n workflow - no need to pass from client
+            fetch(CONFIG.apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'uploadImage',
+                    fileData: base64Data,
+                    fileName: file.name,
+                    fileType: file.type,
+                    locationId: CONFIG.locationId
+                })
+            })
+            .then(function(r) {
+                // Check if response is ok before parsing JSON
+                if (!r.ok && r.status !== 200) {
+                    throw new Error('Server error: ' + r.status);
+                }
+                return r.json();
+            })
+            .then(function(result) {
+                if (result.success && result.url) {
+                    if (isLineSheet) {
+                        // Line sheet upload
+                        document.getElementById('designLineSheet').value = result.url;
+                        document.getElementById('lineSheetPreview').src = result.url;
+                        document.getElementById('lineSheetUrlDisplay').textContent = result.url;
+                        document.getElementById('lineSheetPreviewRow').style.display = 'block';
+                        document.getElementById('lineSheetUploadZone').style.display = 'none';
+                        showToast('Line sheet uploaded!', 'success');
+                    } else {
+                        // Design image upload
+                        document.getElementById('designImage').value = result.url;
+                        els.imagePreview.src = result.url;
+                        document.getElementById('imageUrlDisplay').textContent = result.url;
+                        els.imagePreviewRow.style.display = 'block';
+                        document.getElementById('fileUploadZone').style.display = 'none';
+                        showToast('Image uploaded!', 'success');
+                    }
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+            })
+            .catch(function(err) {
+                showToast('Error: ' + err.message, 'error');
+                // Reset upload zone
+                uploadContent.style.display = 'flex';
+                uploadingState.style.display = 'none';
+            })
+            .finally(function() {
+                fileInput.disabled = false;
+                fileInput.value = '';
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage(type) {
+        type = type || 'design';
+        var isLineSheet = type === 'linesheet';
+
+        if (isLineSheet) {
+            document.getElementById('designLineSheet').value = '';
+            document.getElementById('lineSheetPreview').src = '';
+            document.getElementById('lineSheetUrlDisplay').textContent = '';
+            document.getElementById('lineSheetPreviewRow').style.display = 'none';
+            document.getElementById('lineSheetUploadZone').style.display = 'block';
+            document.getElementById('lineSheetUploadContent').style.display = 'flex';
+            document.getElementById('lineSheetUploadingState').style.display = 'none';
+        } else {
+            document.getElementById('designImage').value = '';
+            els.imagePreview.src = '';
+            document.getElementById('imageUrlDisplay').textContent = '';
+            els.imagePreviewRow.style.display = 'none';
+            document.getElementById('fileUploadZone').style.display = 'block';
+            document.getElementById('uploadContent').style.display = 'flex';
+            document.getElementById('uploadingState').style.display = 'none';
+        }
+    }
+
+    // =================================================================
+    // FORM HANDLING
+    // =================================================================
+    function saveDesign(e) {
+        e.preventDefault();
+
+        // Validate required fields
+        var image = document.getElementById('designImage').value;
+        var name = document.getElementById('designName').value;
+        var categoryId = document.getElementById('designCategory').value;
+
+        if (!image) {
+            showToast('Please upload a design image', 'error');
+            switchTab('images');
+            return;
+        }
+
+        if (!name || !categoryId) {
+            showToast('Please fill in design name and category', 'error');
+            switchTab('details');
+            return;
+        }
+
+        var data = {
+            id: document.getElementById('designId').value || null,
+            name: name,
+            categoryId: categoryId,
+            artist: document.getElementById('designArtist').value,
+            image: image,
+            description: document.getElementById('designDescription').value,
+            sizeEstimate: document.getElementById('designSize').value,
+            timeEstimate: document.getElementById('designTime').value,
+            priceRange: document.getElementById('designPrice').value,
+            sortOrder: parseInt(document.getElementById('designSort').value) || 999,
+            lineSheet: document.getElementById('designLineSheet').value,
+            bodyPart: document.getElementById('designBodyPart').value,
+            featured: document.getElementById('designFeatured').checked,
+            available: document.getElementById('designAvailable').checked,
+            oneTimeFlash: document.getElementById('designOneTimeFlash').checked,
+            inCommunityCatalog: document.getElementById('designCommunity').checked,
+            locationId: CONFIG.locationId
+        };
+
+        els.saveBtn.disabled = true;
+        els.saveBtn.textContent = 'Saving...';
+
+        saveDesignAPI(data)
+            .then(function(result) {
+                if (result.success) {
+                    showToast(data.id ? 'Design updated!' : 'Design added!', 'success');
+                    closeModal();
+                    fetchData();
+                } else {
+                    throw new Error(result.error || 'Failed to save');
+                }
+            })
+            .catch(function(err) {
+                showToast('Error: ' + err.message, 'error');
+            })
+            .finally(function() {
+                els.saveBtn.disabled = false;
+                els.saveBtn.textContent = data.id ? 'Save Changes' : 'Add Design';
+            });
+    }
+
+    function confirmDelete() {
+        if (!state.deleteDesign) return;
+
+        deleteDesignAPI(state.deleteDesign.id)
+            .then(function(result) {
+                if (result.success) {
+                    showToast('Design deleted!', 'success');
+                    closeDeleteModal();
+                    fetchData();
+                } else {
+                    throw new Error(result.error || 'Failed to delete');
+                }
+            })
+            .catch(function(err) {
+                showToast('Error: ' + err.message, 'error');
+            });
+    }
+
+    // =================================================================
+    // STATE HELPERS
+    // =================================================================
+    function setLoading(isLoading) {
+        state.isLoading = isLoading;
+        els.loading.style.display = isLoading ? 'block' : 'none';
+        if (isLoading) {
+            els.tableWrap.style.display = 'none';
+            els.empty.style.display = 'none';
+            els.error.style.display = 'none';
+        }
+    }
+
+    function showError(message) {
+        els.loading.style.display = 'none';
+        els.tableWrap.style.display = 'none';
+        els.empty.style.display = 'none';
+        els.errorMessage.textContent = message || 'Unable to load designs.';
+        els.error.style.display = 'block';
+    }
+
+    function showToast(message, type) {
+        var toast = document.createElement('div');
+        toast.className = 'tnow-toast ' + (type || '');
+        toast.textContent = message;
+        els.toastContainer.appendChild(toast);
+
+        setTimeout(function() {
+            toast.remove();
+        }, 3000);
+    }
+
+    function extractMinPrice(priceRange) {
+        if (!priceRange) return null;
+        var match = priceRange.match(/\$?([\d,]+)/);
+        if (match) {
+            return parseInt(match[1].replace(/,/g, ''), 10);
+        }
+        return null;
+    }
+
+    // =================================================================
+    // EVENT BINDING
+    // =================================================================
+    function bindEvents() {
+        // Search
+        els.search.addEventListener('input', function(e) {
+            state.searchQuery = e.target.value.trim();
+            renderTable();
+        });
+
+        // Category navigation is bound in renderCategoryNav()
+
+        // Size filter
+        els.sizeFilter.addEventListener('change', function(e) {
+            state.sizeFilter = e.target.value;
+            renderTable();
+        });
+
+        // Status filter
+        els.statusFilter.addEventListener('change', function(e) {
+            state.statusFilter = e.target.value;
+            renderTable();
+        });
+
+        // Featured filter
+        els.featuredFilter.addEventListener('change', function(e) {
+            state.featuredFilter = e.target.value;
+            renderTable();
+        });
+
+        // Price filter
+        els.priceFilter.addEventListener('change', function(e) {
+            state.priceFilter = e.target.value;
+            renderTable();
+        });
+
+        // Image URL preview
+        els.imageInput.addEventListener('blur', function(e) {
+            var url = e.target.value.trim();
+            if (url) {
+                els.imagePreview.src = url;
+                els.imagePreviewRow.style.display = 'block';
+            } else {
+                els.imagePreviewRow.style.display = 'none';
+            }
+        });
+
+        // Escape key closes modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (els.modal.style.display !== 'none') closeModal();
+                if (els.deleteModal.style.display !== 'none') closeDeleteModal();
+            }
+        });
+    }
+
+    // =================================================================
+    // UTILITIES
+    // =================================================================
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // =================================================================
+    // PUBLIC API
+    // =================================================================
+    // =================================================================
+    // TAB SWITCHING
+    // =================================================================
+    var tabOrder = ['images', 'details', 'advanced'];
+    var currentTabIndex = 0;
+
+    function switchTab(tabName) {
+        // Map tab names to panel IDs
+        var tabPanelMap = {
+            'images': 'tabImages',
+            'details': 'tabDetails',
+            'advanced': 'tabAdvanced'
+        };
+
+        // Update current tab index
+        currentTabIndex = tabOrder.indexOf(tabName);
+        if (currentTabIndex === -1) currentTabIndex = 0;
+
+        // Update tab buttons
+        document.querySelectorAll('.tnow-tab').forEach(function(tab) {
+            tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+        });
+
+        // Update tab panels
+        document.querySelectorAll('.tnow-tab-panel').forEach(function(panel) {
+            panel.classList.toggle('active', panel.id === tabPanelMap[tabName]);
+        });
+
+        // Update button visibility (Next vs Save)
+        var nextBtn = document.getElementById('nextBtn');
+        var saveBtn = document.getElementById('saveBtn');
+        if (currentTabIndex < tabOrder.length - 1) {
+            nextBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+        }
+    }
+
+    function nextTab() {
+        if (currentTabIndex < tabOrder.length - 1) {
+            switchTab(tabOrder[currentTabIndex + 1]);
+        }
+    }
+
+    function resetTabs() {
+        switchTab('images');
+    }
+
+    window.TattooAdmin = {
+        refresh: fetchData,
+        openAdd: openAdd,
+        openEdit: openEdit,
+        closeModal: closeModal,
+        openDelete: openDelete,
+        closeDeleteModal: closeDeleteModal,
+        confirmDelete: confirmDelete,
+        saveDesign: saveDesign,
+        switchTab: switchTab,
+        nextTab: nextTab,
+        handleFileSelect: handleFileSelect,
+        removeImage: removeImage,
+        getState: function() { return state; }
+    };
+
+    // =================================================================
+    // INITIALIZE
+    // =================================================================
+    function init() {
+        cacheDOMElements();
+        bindEvents();
+        fetchData();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

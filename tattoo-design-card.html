@@ -1,0 +1,536 @@
+<!--
+=================================================================
+TATTOO DESIGN CARD - Thank You Page
+=================================================================
+Self-contained HTML/CSS/JS for GHL Custom Code element.
+Fetches a single tattoo design by ID and displays a confirmation card.
+Perfect for checkout thank you pages, booking confirmations, etc.
+
+Configuration:
+- Set window.TNOW_DESIGN_ID before this script, OR
+- Pass ?05._online_design_id=XXX in the URL (GHL form field), OR
+- Pass ?designId=XXX in the URL (backwards compatible)
+
+Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
+=================================================================
+-->
+
+<div class="tnow-design-card-wrap" id="designCardWrap">
+    <!-- Loading State -->
+    <div class="tnow-dc-loading" id="dcLoading">
+        <div class="tnow-dc-skeleton">
+            <div class="tnow-dc-skeleton-content">
+                <div class="tnow-dc-skeleton-line title"></div>
+                <div class="tnow-dc-skeleton-line"></div>
+                <div class="tnow-dc-skeleton-line short"></div>
+            </div>
+            <div class="tnow-dc-skeleton-image"></div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="tnow-dc-error" id="dcError" style="display:none;">
+        <span class="tnow-dc-error-icon">⚠️</span>
+        <p id="dcErrorMessage">Unable to load design details.</p>
+    </div>
+
+    <!-- Design Card -->
+    <div class="tnow-dc-card" id="dcCard" style="display:none;">
+        <div class="tnow-dc-info">
+            <p class="tnow-dc-label">Your Selected Design</p>
+            <h2 class="tnow-dc-title" id="dcTitle"></h2>
+            <p class="tnow-dc-description" id="dcDescription"></p>
+
+            <div class="tnow-dc-meta">
+                <div class="tnow-dc-meta-item" id="dcCategoryWrap">
+                    <span class="tnow-dc-meta-label">Style</span>
+                    <span class="tnow-dc-meta-value" id="dcCategory"></span>
+                </div>
+                <div class="tnow-dc-meta-item" id="dcSizeWrap">
+                    <span class="tnow-dc-meta-label">Size</span>
+                    <span class="tnow-dc-meta-value" id="dcSize"></span>
+                </div>
+                <div class="tnow-dc-meta-item" id="dcTimeWrap">
+                    <span class="tnow-dc-meta-label">Est. Time</span>
+                    <span class="tnow-dc-meta-value" id="dcTime"></span>
+                </div>
+                <div class="tnow-dc-meta-item tnow-dc-meta-price" id="dcPriceWrap">
+                    <span class="tnow-dc-meta-label">Price Range</span>
+                    <span class="tnow-dc-meta-value" id="dcPrice"></span>
+                </div>
+            </div>
+        </div>
+        <div class="tnow-dc-image-wrap">
+            <img id="dcImage" src="" alt="" class="tnow-dc-image">
+            <span class="tnow-dc-featured-badge" id="dcFeatured" style="display:none;">Featured</span>
+        </div>
+    </div>
+
+    <!-- No Design ID State -->
+    <div class="tnow-dc-empty" id="dcEmpty" style="display:none;">
+        <span class="tnow-dc-empty-icon">🎨</span>
+        <p>No design selected.</p>
+    </div>
+</div>
+
+<style>
+/* =================================================================
+   CSS VARIABLES (TattooNOW Brand)
+   ================================================================= */
+.tnow-design-card-wrap {
+    --tnow-orange: #fa9101;
+    --tnow-orange-dark: #cd7600;
+    --tnow-gold: #F8A507;
+    --tnow-black: #000000;
+    --tnow-navy: #000321;
+    --tnow-teal: #81e6d9;
+    --tnow-white: #ffffff;
+    --tnow-gray: #8893A8;
+    --tnow-gray-light: #C9D8E0;
+
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-muted: #a0a0a0;
+
+    --font-headline: 'Roboto Slab', 'Arial Black', sans-serif;
+    --font-body: 'Roboto', Arial, sans-serif;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    font-family: var(--font-body);
+    color: var(--tnow-white);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* =================================================================
+   LOADING STATE (Skeleton)
+   ================================================================= */
+.tnow-dc-skeleton {
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.tnow-dc-skeleton-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255,255,255,0.08) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: dc-shimmer 1.5s infinite;
+}
+
+.tnow-dc-skeleton-content {
+    padding: 1.5rem;
+}
+
+.tnow-dc-skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255,255,255,0.08) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: dc-shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.75rem;
+}
+
+.tnow-dc-skeleton-line.title {
+    height: 24px;
+    width: 70%;
+}
+
+.tnow-dc-skeleton-line.short {
+    width: 50%;
+}
+
+@keyframes dc-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* =================================================================
+   ERROR STATE
+   ================================================================= */
+.tnow-dc-error,
+.tnow-dc-empty {
+    text-align: center;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+}
+
+.tnow-dc-error-icon,
+.tnow-dc-empty-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.tnow-dc-error p,
+.tnow-dc-empty p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* =================================================================
+   DESIGN CARD
+   ================================================================= */
+.tnow-dc-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.tnow-dc-card:hover {
+    border-color: rgba(250, 145, 1, 0.3);
+    box-shadow: 0 4px 20px rgba(250, 145, 1, 0.1);
+}
+
+/* Image */
+.tnow-dc-image-wrap {
+    position: relative;
+    width: 100%;
+    background: var(--tnow-navy);
+    overflow: hidden;
+}
+
+.tnow-dc-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.tnow-dc-featured-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.4rem 0.75rem;
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.5px;
+}
+
+/* Info */
+.tnow-dc-info {
+    padding: 1.5rem;
+}
+
+.tnow-dc-label {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: rgba(250, 145, 1, 0.15);
+    border-radius: var(--radius-sm);
+    color: var(--tnow-orange);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 0.75rem 0;
+}
+
+.tnow-dc-title {
+    font-family: var(--font-headline);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--tnow-white);
+    line-height: 1.3;
+}
+
+.tnow-dc-description {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.25rem 0;
+}
+
+.tnow-dc-description:empty {
+    display: none;
+}
+
+/* Meta Grid */
+.tnow-dc-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.tnow-dc-meta-item {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--card-border);
+}
+
+.tnow-dc-meta-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.tnow-dc-meta-value {
+    display: block;
+    font-weight: 600;
+    color: var(--tnow-white);
+    font-size: 0.95rem;
+}
+
+.tnow-dc-meta-price .tnow-dc-meta-value {
+    color: var(--tnow-orange);
+    font-family: var(--font-headline);
+    font-size: 1.1rem;
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 380px) {
+    .tnow-dc-info {
+        padding: 1rem;
+    }
+
+    .tnow-dc-title {
+        font-size: 1.25rem;
+    }
+
+    .tnow-dc-meta {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+
+    // =================================================================
+    // CONFIGURATION
+    // =================================================================
+
+    // Helper to get and persist locationId across pages
+    function getLocationId() {
+        var storageKey = 'tnow_location_id';
+        var urlParam = new URLSearchParams(window.location.search).get('locationId');
+
+        // Priority: window override > URL param > localStorage > GHL merge field
+        if (window.TNOW_LOCATION_ID) {
+            try { localStorage.setItem(storageKey, window.TNOW_LOCATION_ID); } catch(e) {}
+            return window.TNOW_LOCATION_ID;
+        }
+
+        if (urlParam) {
+            try { localStorage.setItem(storageKey, urlParam); } catch(e) {}
+            return urlParam;
+        }
+
+        try {
+            var stored = localStorage.getItem(storageKey);
+            if (stored) return stored;
+        } catch(e) {}
+
+        // Fall back to GHL merge field (will be literal string if not in GHL context)
+        var ghlId = '{{location.id}}';
+        if (ghlId && !ghlId.match(/\{\{.*\}\}/)) {
+            try { localStorage.setItem(storageKey, ghlId); } catch(e) {}
+            return ghlId;
+        }
+
+        return null;
+    }
+
+    var CONFIG = {
+        // API endpoint - same as gallery
+        apiEndpoint: 'https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+
+        // Design ID - from window variable or URL param
+        // Checks '05._online_design_id' first (GHL form field), then 'designId' for backwards compatibility
+        designId: window.TNOW_DESIGN_ID ||
+                  new URLSearchParams(window.location.search).get('05._online_design_id') ||
+                  new URLSearchParams(window.location.search).get('designId') ||
+                  null,
+
+        // Location ID - persisted across pages via localStorage
+        locationId: getLocationId()
+    };
+
+    // =================================================================
+    // STATE
+    // =================================================================
+    var state = {
+        design: null,
+        isLoading: true,
+        error: null
+    };
+
+    // =================================================================
+    // DOM ELEMENTS
+    // =================================================================
+    var els = {};
+
+    function cacheDOMElements() {
+        els.wrap = document.getElementById('designCardWrap');
+        els.loading = document.getElementById('dcLoading');
+        els.error = document.getElementById('dcError');
+        els.errorMessage = document.getElementById('dcErrorMessage');
+        els.card = document.getElementById('dcCard');
+        els.empty = document.getElementById('dcEmpty');
+
+        // Card elements
+        els.image = document.getElementById('dcImage');
+        els.featured = document.getElementById('dcFeatured');
+        els.title = document.getElementById('dcTitle');
+        els.description = document.getElementById('dcDescription');
+        els.category = document.getElementById('dcCategory');
+        els.categoryWrap = document.getElementById('dcCategoryWrap');
+        els.size = document.getElementById('dcSize');
+        els.sizeWrap = document.getElementById('dcSizeWrap');
+        els.time = document.getElementById('dcTime');
+        els.timeWrap = document.getElementById('dcTimeWrap');
+        els.price = document.getElementById('dcPrice');
+        els.priceWrap = document.getElementById('dcPriceWrap');
+    }
+
+    // =================================================================
+    // API FETCHING
+    // =================================================================
+    function fetchDesign() {
+        if (!CONFIG.designId) {
+            showEmpty();
+            return;
+        }
+
+        setLoading(true);
+
+        var url = CONFIG.apiEndpoint + '?action=design&designId=' + encodeURIComponent(CONFIG.designId) + '&locationId=' + encodeURIComponent(CONFIG.locationId);
+
+        fetch(url)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.success || !data.design) {
+                    throw new Error('Design not found');
+                }
+                state.design = data.design;
+                renderCard();
+                setLoading(false);
+            })
+            .catch(function(err) {
+                console.error('Design fetch error:', err);
+                showError(err.message);
+            });
+    }
+
+    // =================================================================
+    // RENDERING
+    // =================================================================
+    function renderCard() {
+        var d = state.design;
+        if (!d) return;
+
+        // Image
+        if (d.image) {
+            els.image.src = d.image;
+            els.image.alt = d.name;
+        } else {
+            els.image.style.display = 'none';
+        }
+
+        // Featured badge
+        els.featured.style.display = d.featured ? 'block' : 'none';
+
+        // Title
+        els.title.textContent = d.name || 'Untitled Design';
+
+        // Description
+        els.description.textContent = d.description || '';
+
+        // Meta fields - show/hide based on content
+        setMetaField(els.category, els.categoryWrap, d.categoryName);
+        setMetaField(els.size, els.sizeWrap, d.sizeEstimate);
+        setMetaField(els.time, els.timeWrap, d.timeEstimate);
+        setMetaField(els.price, els.priceWrap, d.priceRange);
+
+        // Show card
+        els.card.style.display = 'block';
+    }
+
+    function setMetaField(valueEl, wrapEl, value) {
+        if (value) {
+            valueEl.textContent = value;
+            wrapEl.style.display = 'block';
+        } else {
+            wrapEl.style.display = 'none';
+        }
+    }
+
+    // =================================================================
+    // STATE MANAGEMENT
+    // =================================================================
+    function setLoading(isLoading) {
+        state.isLoading = isLoading;
+        els.loading.style.display = isLoading ? 'block' : 'none';
+        if (isLoading) {
+            els.card.style.display = 'none';
+            els.error.style.display = 'none';
+            els.empty.style.display = 'none';
+        }
+    }
+
+    function showError(message) {
+        state.error = message;
+        els.loading.style.display = 'none';
+        els.card.style.display = 'none';
+        els.empty.style.display = 'none';
+        els.errorMessage.textContent = message || 'Unable to load design details.';
+        els.error.style.display = 'block';
+    }
+
+    function showEmpty() {
+        els.loading.style.display = 'none';
+        els.card.style.display = 'none';
+        els.error.style.display = 'none';
+        els.empty.style.display = 'block';
+    }
+
+    // =================================================================
+    // PUBLIC API
+    // =================================================================
+    window.TattooDesignCard = {
+        load: fetchDesign,
+        refresh: fetchDesign,
+        setDesignId: function(id) {
+            CONFIG.designId = id;
+            fetchDesign();
+        },
+        getDesign: function() { return state.design; },
+        getConfig: function() { return CONFIG; }
+    };
+
+    // =================================================================
+    // INITIALIZE
+    // =================================================================
+    function init() {
+        cacheDOMElements();
+        fetchDesign();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

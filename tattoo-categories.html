@@ -1,0 +1,754 @@
+<!--
+=================================================================
+TATTOO DESIGN CATEGORIES
+=================================================================
+Self-contained HTML/CSS/JS for GHL Custom Code element.
+Full-page category menu for browsing tattoo design styles.
+Links to gallery page with category filter applied.
+
+Configuration:
+- Set window.TNOW_LOCATION_ID before this script, OR
+- Pass ?locationId=XXX in the URL
+- Set window.TNOW_GALLERY_URL to customize gallery link (default: {{custom_values.02__website_root}}/tattoo-flash-designs-page)
+
+Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
+=================================================================
+-->
+
+<div class="tnow-categories" id="tattooCategories">
+    <!-- Header -->
+    <div class="tnow-cat-header">
+        <h1 class="tnow-cat-title">Browse by Style</h1>
+        <p class="tnow-cat-subtitle">Select a tattoo style to explore our designs</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="tnow-cat-loading" id="catLoading">
+        <div class="tnow-cat-skeleton-grid">
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+            <div class="tnow-cat-skeleton"></div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="tnow-cat-error" id="catError" style="display:none;">
+        <div class="tnow-cat-error-content">
+            <span class="tnow-cat-error-icon">⚠️</span>
+            <p>Unable to load categories. Please try again.</p>
+            <button class="tnow-cat-retry-btn" onclick="TattooCategories.refresh()">Retry</button>
+        </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="tnow-cat-grid" id="catGrid" style="display:none;"></div>
+
+    <!-- Back Link -->
+    <div class="tnow-cat-footer">
+        <a href="#" class="tnow-cat-back-btn" id="backToGallery">
+            <span class="tnow-cat-back-arrow">←</span>
+            <span>View All Designs</span>
+        </a>
+    </div>
+</div>
+
+<style>
+/* =================================================================
+   CSS VARIABLES (TattooNOW Brand)
+   ================================================================= */
+.tnow-categories {
+    --tnow-orange: #fa9101;
+    --tnow-orange-dark: #cd7600;
+    --tnow-gold: #F8A507;
+    --tnow-black: #000000;
+    --tnow-navy: #000321;
+    --tnow-teal: #81e6d9;
+    --tnow-white: #ffffff;
+    --tnow-gray: #8893A8;
+    --tnow-gray-light: #C9D8E0;
+
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-hover-border: rgba(250, 145, 1, 0.5);
+    --text-muted: #a0a0a0;
+
+    --font-headline: 'Roboto Slab', 'Arial Black', sans-serif;
+    --font-body: 'Roboto', Arial, sans-serif;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    font-family: var(--font-body);
+    color: var(--tnow-white);
+    padding: 2rem 1rem;
+    min-height: 80vh;
+}
+
+/* =================================================================
+   HEADER
+   ================================================================= */
+.tnow-cat-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.tnow-cat-title {
+    font-family: var(--font-headline);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--tnow-white);
+}
+
+.tnow-cat-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* =================================================================
+   LOADING STATE (Skeleton)
+   ================================================================= */
+.tnow-cat-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.tnow-cat-skeleton {
+    aspect-ratio: 1;
+    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255,255,255,0.08) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: cat-skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-xl);
+}
+
+@keyframes cat-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* =================================================================
+   ERROR STATE
+   ================================================================= */
+.tnow-cat-error {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.tnow-cat-error-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.tnow-cat-error-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.tnow-cat-error-content p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.tnow-cat-retry-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--tnow-orange);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--tnow-black);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-cat-retry-btn:hover {
+    background: var(--tnow-gold);
+    transform: translateY(-1px);
+}
+
+/* =================================================================
+   CATEGORIES GRID
+   ================================================================= */
+.tnow-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* =================================================================
+   CATEGORY CARD
+   ================================================================= */
+.tnow-cat-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    aspect-ratio: 1;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.tnow-cat-card:hover {
+    border-color: var(--tnow-orange);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(250, 145, 1, 0.2);
+}
+
+/* Featured image background */
+.tnow-cat-card-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    transition: transform 0.3s ease;
+}
+
+.tnow-cat-card:hover .tnow-cat-card-image {
+    transform: scale(1.05);
+}
+
+/* Gradient overlay for text readability */
+.tnow-cat-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
+    border-radius: var(--radius-xl);
+}
+
+/* Content wrapper */
+.tnow-cat-card-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    width: 100%;
+}
+
+/* Fallback icon when no image */
+.tnow-cat-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1;
+}
+
+.tnow-cat-card-name {
+    font-family: var(--font-headline);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--tnow-white);
+    text-align: center;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.tnow-cat-card-count {
+    font-size: 0.8rem;
+    color: var(--tnow-gray-light);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.tnow-cat-card:hover .tnow-cat-card-name {
+    color: var(--tnow-orange);
+}
+
+/* =================================================================
+   FOOTER / BACK LINK
+   ================================================================= */
+.tnow-cat-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+}
+
+.tnow-cat-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    background: transparent;
+    border: 2px solid var(--tnow-orange);
+    border-radius: var(--radius-md);
+    color: var(--tnow-orange);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.tnow-cat-back-btn:hover {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+}
+
+.tnow-cat-back-arrow {
+    font-size: 1.2rem;
+    transition: transform 0.2s ease;
+}
+
+.tnow-cat-back-btn:hover .tnow-cat-back-arrow {
+    transform: translateX(-4px);
+}
+
+/* =================================================================
+   RESPONSIVE BREAKPOINTS
+   ================================================================= */
+@media (min-width: 480px) {
+    .tnow-cat-grid,
+    .tnow-cat-skeleton-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .tnow-cat-card {
+        padding: 1.25rem;
+    }
+
+    .tnow-cat-card-icon {
+        font-size: 3rem;
+    }
+
+    .tnow-cat-card-name {
+        font-size: 1.1rem;
+    }
+}
+
+@media (min-width: 640px) {
+    .tnow-categories {
+        padding: 3rem 2rem;
+    }
+
+    .tnow-cat-title {
+        font-size: 2.5rem;
+    }
+
+    .tnow-cat-grid,
+    .tnow-cat-skeleton-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .tnow-cat-grid,
+    .tnow-cat-skeleton-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+    }
+
+    .tnow-cat-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .tnow-cat-card-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .tnow-cat-card-name {
+        font-size: 1.2rem;
+    }
+}
+
+@media (min-width: 1100px) {
+    .tnow-cat-grid,
+    .tnow-cat-skeleton-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 380px) {
+    .tnow-cat-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .tnow-cat-title {
+        font-size: 1.5rem;
+    }
+
+    .tnow-cat-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .tnow-cat-card {
+        padding: 1rem 0.75rem;
+    }
+
+    .tnow-cat-card-icon {
+        font-size: 2rem;
+    }
+
+    .tnow-cat-card-name {
+        font-size: 0.85rem;
+    }
+
+    .tnow-cat-card-count {
+        font-size: 0.7rem;
+    }
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+
+    // =================================================================
+    // CONFIGURATION
+    // =================================================================
+
+    // Helper to get and persist locationId across pages
+    function getLocationId() {
+        var storageKey = 'tnow_location_id';
+        var urlParam = new URLSearchParams(window.location.search).get('locationId');
+
+        // Priority: window override > URL param > localStorage > GHL merge field
+        if (window.TNOW_LOCATION_ID) {
+            try { localStorage.setItem(storageKey, window.TNOW_LOCATION_ID); } catch(e) {}
+            return window.TNOW_LOCATION_ID;
+        }
+
+        if (urlParam) {
+            try { localStorage.setItem(storageKey, urlParam); } catch(e) {}
+            return urlParam;
+        }
+
+        try {
+            var stored = localStorage.getItem(storageKey);
+            if (stored) return stored;
+        } catch(e) {}
+
+        // Fall back to GHL merge field (will be literal string if not in GHL context)
+        var ghlId = '{{location.id}}';
+        if (ghlId && !ghlId.match(/\{\{.*\}\}/)) {
+            try { localStorage.setItem(storageKey, ghlId); } catch(e) {}
+            return ghlId;
+        }
+
+        return null;
+    }
+
+    var CONFIG = {
+        // API endpoint - same as gallery
+        apiEndpoint: 'https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+
+        // GHL Location ID - persisted across pages via localStorage
+        locationId: getLocationId(),
+
+        // Gallery page URL - where to link category cards
+        galleryUrl: window.TNOW_GALLERY_URL || '{{custom_values.02__website_root}}/tattoo-flash-designs-page',
+
+        // Cache settings
+        cacheKey: 'tnow_categories_cache',
+        cacheTTL: 30 * 60 * 1000 // 30 minutes (categories rarely change)
+    };
+
+    // =================================================================
+    // STATE
+    // =================================================================
+    var state = {
+        categories: [],
+        categoryImages: {}, // slug -> { image, count }
+        isLoading: true,
+        error: null
+    };
+
+    // =================================================================
+    // DOM ELEMENTS
+    // =================================================================
+    var els = {};
+
+    function cacheDOMElements() {
+        els.root = document.getElementById('tattooCategories');
+        els.loading = document.getElementById('catLoading');
+        els.error = document.getElementById('catError');
+        els.grid = document.getElementById('catGrid');
+        els.backBtn = document.getElementById('backToGallery');
+    }
+
+    // =================================================================
+    // API FETCHING
+    // =================================================================
+    function fetchData() {
+        setLoading(true);
+        hideError();
+
+        // Try cache first
+        var cached = loadFromCache();
+        if (cached && cached.categories && cached.categoryImages) {
+            state.categories = cached.categories;
+            state.categoryImages = cached.categoryImages;
+            renderCategories();
+            setLoading(false);
+            return;
+        }
+
+        // Fetch categories first, then designs for featured images
+        fetch(CONFIG.apiEndpoint + '?action=categories')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.success) {
+                    throw new Error('Failed to load categories');
+                }
+                state.categories = data.categories || [];
+
+                // Now fetch designs to get featured images per category
+                return fetch(CONFIG.apiEndpoint + '?action=designs&locationId=' + encodeURIComponent(CONFIG.locationId) + '&limit=100');
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success && data.designs) {
+                    buildCategoryImages(data.designs);
+                }
+                saveToCache();
+                renderCategories();
+                setLoading(false);
+            })
+            .catch(function(err) {
+                console.error('Categories fetch error:', err);
+                showError(err.message);
+            });
+    }
+
+    function buildCategoryImages(designs) {
+        // Group designs by category and find featured image for each
+        var categoryData = {};
+
+        designs.forEach(function(design) {
+            var catName = design.categoryName;
+            if (!catName) return;
+
+            // Find the category slug from our categories list
+            var category = state.categories.find(function(c) { return c.name === catName; });
+            if (!category) return;
+
+            var slug = category.slug;
+
+            if (!categoryData[slug]) {
+                categoryData[slug] = { designs: [], count: 0 };
+            }
+            categoryData[slug].count++;
+            categoryData[slug].designs.push(design);
+        });
+
+        // For each category, pick the best image (featured first, then first available)
+        state.categoryImages = {};
+        Object.keys(categoryData).forEach(function(slug) {
+            var data = categoryData[slug];
+            var featured = data.designs.find(function(d) { return d.featured && d.image; });
+            var anyWithImage = data.designs.find(function(d) { return d.image; });
+            var bestDesign = featured || anyWithImage;
+
+            state.categoryImages[slug] = {
+                image: bestDesign ? (bestDesign.thumbnail || bestDesign.image) : null,
+                count: data.count
+            };
+        });
+    }
+
+    // Legacy function name for compatibility
+    function fetchCategories() {
+        fetchData();
+    }
+
+    // =================================================================
+    // CACHING
+    // =================================================================
+    function loadFromCache() {
+        try {
+            // Categories are NOT location-specific, but categoryImages depend on location
+            // So we use locationId for the full cache (including images)
+            var key = CONFIG.cacheKey + '_' + (CONFIG.locationId || 'default');
+            var cached = localStorage.getItem(key);
+            if (cached) {
+                var data = JSON.parse(cached);
+                if (Date.now() - data.timestamp < CONFIG.cacheTTL) {
+                    return {
+                        categories: data.categories,
+                        categoryImages: data.categoryImages || {}
+                    };
+                }
+            }
+        } catch (e) {
+            console.warn('Cache read error:', e);
+        }
+        return null;
+    }
+
+    function saveToCache() {
+        try {
+            var key = CONFIG.cacheKey + '_' + (CONFIG.locationId || 'default');
+            localStorage.setItem(key, JSON.stringify({
+                timestamp: Date.now(),
+                categories: state.categories,
+                categoryImages: state.categoryImages
+            }));
+        } catch (e) {
+            console.warn('Cache write error:', e);
+        }
+    }
+
+    function clearCache() {
+        try {
+            var key = CONFIG.cacheKey + '_' + (CONFIG.locationId || 'default');
+            localStorage.removeItem(key);
+        } catch (e) {}
+    }
+
+    // =================================================================
+    // RENDERING
+    // =================================================================
+    function renderCategories() {
+        if (state.categories.length === 0) {
+            els.grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);grid-column:1/-1;">No categories available.</p>';
+            els.grid.style.display = 'grid';
+            return;
+        }
+
+        var html = '';
+
+        // Build gallery URL with locationId preserved
+        var baseUrl = CONFIG.galleryUrl;
+        var locationParam = CONFIG.locationId ? 'locationId=' + encodeURIComponent(CONFIG.locationId) : '';
+
+        state.categories.forEach(function(cat) {
+            // Get featured image and count for this category
+            var catData = state.categoryImages[cat.slug] || {};
+            var hasImage = catData.image;
+            var count = catData.count || 0;
+
+            // Only show category card if it has a featured design image
+            if (!hasImage) {
+                return; // Skip this category - no featured design to show
+            }
+
+            // Build URL with category filter - use slug, fallback to name or id
+            var categoryIdentifier = cat.slug || cat.name || cat.id;
+            var url = baseUrl;
+            var params = [];
+            if (locationParam) params.push(locationParam);
+            params.push('category=' + encodeURIComponent(categoryIdentifier));
+            url += (url.indexOf('?') > -1 ? '&' : '?') + params.join('&');
+
+            html += '<a href="' + escapeHtml(url) + '" class="tnow-cat-card" data-category="' + escapeHtml(cat.slug) + '">';
+            html += '<img src="' + escapeHtml(catData.image) + '" alt="' + escapeHtml(cat.name) + '" class="tnow-cat-card-image" loading="lazy">';
+            html += '<div class="tnow-cat-card-overlay"></div>';
+            html += '<div class="tnow-cat-card-content">';
+            html += '<span class="tnow-cat-card-name">' + escapeHtml(cat.name) + '</span>';
+            if (count > 0) {
+                html += '<span class="tnow-cat-card-count">' + count + ' design' + (count !== 1 ? 's' : '') + '</span>';
+            }
+            html += '</div>';
+            html += '</a>';
+        });
+
+        // Check if any categories were rendered (had featured designs)
+        if (!html) {
+            els.grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);grid-column:1/-1;">No featured designs available yet.</p>';
+            els.grid.style.display = 'grid';
+            return;
+        }
+
+        els.grid.innerHTML = html;
+        els.grid.style.display = 'grid';
+
+        // Update back button URL
+        var backUrl = baseUrl;
+        if (locationParam) {
+            backUrl += (backUrl.indexOf('?') > -1 ? '&' : '?') + locationParam;
+        }
+        els.backBtn.href = backUrl;
+    }
+
+    // =================================================================
+    // STATE MANAGEMENT
+    // =================================================================
+    function setLoading(isLoading) {
+        state.isLoading = isLoading;
+        els.loading.style.display = isLoading ? 'block' : 'none';
+        if (isLoading) {
+            els.grid.style.display = 'none';
+        }
+    }
+
+    function showError(message) {
+        state.error = message;
+        els.loading.style.display = 'none';
+        els.grid.style.display = 'none';
+        els.error.style.display = 'block';
+    }
+
+    function hideError() {
+        els.error.style.display = 'none';
+        state.error = null;
+    }
+
+    // =================================================================
+    // UTILITIES
+    // =================================================================
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // =================================================================
+    // PUBLIC API
+    // =================================================================
+    window.TattooCategories = {
+        load: fetchCategories,
+        refresh: function() {
+            clearCache();
+            fetchCategories();
+        },
+        getState: function() { return state; },
+        getConfig: function() { return CONFIG; }
+    };
+
+    // =================================================================
+    // INITIALIZE
+    // =================================================================
+    function init() {
+        cacheDOMElements();
+
+        // Set back button URL initially
+        var backUrl = CONFIG.galleryUrl;
+        if (CONFIG.locationId) {
+            backUrl += (backUrl.indexOf('?') > -1 ? '&' : '?') + 'locationId=' + encodeURIComponent(CONFIG.locationId);
+        }
+        els.backBtn.href = backUrl;
+
+        fetchData();
+    }
+
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

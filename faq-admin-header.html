@@ -1,0 +1,172 @@
+<!--
+=================================================================
+SAVED SECTION: "FAQ Admin"
+=================================================================
+Add as Custom Code element, then Save as Section.
+Links to individual FAQ category editing pages.
+9 Categories, 55 FAQs total.
+=================================================================
+-->
+
+<div class="tnow-header">
+    <div class="tnow-header-inner">
+        <!-- Category Buttons -->
+        <div class="tnow-faq-nav" id="faqNav">
+            <a href="https://tools.tattoonow.com/faq-page-1" class="tnow-faq-btn" data-faq="1">
+                <span class="tnow-faq-num">1</span>
+                <span class="tnow-faq-label">First</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-2" class="tnow-faq-btn" data-faq="2">
+                <span class="tnow-faq-num">2</span>
+                <span class="tnow-faq-label">Design</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-3" class="tnow-faq-btn" data-faq="3">
+                <span class="tnow-faq-num">3</span>
+                <span class="tnow-faq-label">Booking</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-4" class="tnow-faq-btn" data-faq="4">
+                <span class="tnow-faq-num">4</span>
+                <span class="tnow-faq-label">Pricing</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-5" class="tnow-faq-btn" data-faq="5">
+                <span class="tnow-faq-num">5</span>
+                <span class="tnow-faq-label">Prep</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-6" class="tnow-faq-btn" data-faq="6">
+                <span class="tnow-faq-num">6</span>
+                <span class="tnow-faq-label">Pain</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-7" class="tnow-faq-btn" data-faq="7">
+                <span class="tnow-faq-num">7</span>
+                <span class="tnow-faq-label">Aftercare</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-8" class="tnow-faq-btn" data-faq="8">
+                <span class="tnow-faq-num">8</span>
+                <span class="tnow-faq-label">Touch-Ups</span>
+            </a>
+            <a href="https://tools.tattoonow.com/faq-page-9" class="tnow-faq-btn" data-faq="9">
+                <span class="tnow-faq-num">9</span>
+                <span class="tnow-faq-label">Safety</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.tnow-faq-nav {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    justify-content: flex-end;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tnow-faq-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.6rem 1rem;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tnow-faq-btn:hover {
+    border-color: #444;
+    background: rgba(255,255,255,0.03);
+}
+
+.tnow-faq-btn[data-active="true"] {
+    border-color: var(--tnow-orange);
+    background: rgba(234, 147, 32, 0.15);
+}
+
+.tnow-faq-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--card-border);
+    color: var(--text-muted);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-family: 'Roboto Slab', serif;
+    flex-shrink: 0;
+}
+
+.tnow-faq-btn[data-active="true"] .tnow-faq-num {
+    background: var(--tnow-orange);
+    color: #000;
+}
+
+.tnow-faq-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.tnow-faq-btn[data-active="true"] .tnow-faq-label {
+    color: var(--tnow-orange);
+}
+
+@media (max-width: 1000px) {
+    .tnow-header-inner {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .tnow-header-left {
+        order: 1;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+    }
+    .tnow-faq-nav {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 600px) {
+    .tnow-faq-nav { gap: 6px; }
+    .tnow-faq-btn { padding: 0.5rem 0.75rem; }
+    .tnow-faq-num { width: 24px; height: 24px; font-size: 0.75rem; }
+    .tnow-faq-label { font-size: 0.75rem; }
+}
+</style>
+
+<script>
+(function() {
+    // Get current FAQ page from URL
+    var path = window.location.pathname;
+    var currentFaq = 0;
+    var match = path.match(/faq-page-(\d)/);
+    if (match) currentFaq = parseInt(match[1]);
+
+    // Mark current FAQ as active
+    if (currentFaq > 0) {
+        var activeBtn = document.querySelector('.tnow-faq-btn[data-faq="' + currentFaq + '"]');
+        if (activeBtn) activeBtn.setAttribute('data-active', 'true');
+    }
+
+    // Append locationId to FAQ links
+    var locationId = window.TNOW_LOCATION_ID || new URLSearchParams(window.location.search).get('locationId') || '';
+    if (locationId) {
+        document.querySelectorAll('.tnow-faq-btn').forEach(function(link) {
+            var href = link.getAttribute('href');
+            if (href && !href.includes('locationId')) {
+                link.setAttribute('href', href + '?locationId=' + locationId);
+            }
+        });
+    }
+})();
+</script>
