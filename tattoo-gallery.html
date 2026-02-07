@@ -1212,8 +1212,10 @@ a.tnow-design-card {
             limit: state.pageSize
         });
 
-        // Note: Category filtering is done CLIENT-SIDE in renderDesigns() like admin does
-        // Server-side filters for size, featured, search only
+        // Server-side filters
+        if (state.activeCategory !== 'all') {
+            params.append('category', state.activeCategory);
+        }
         if (state.sizeFilter !== 'all') {
             params.append('size', state.sizeFilter);
         }
@@ -1498,15 +1500,21 @@ a.tnow-design-card {
 
         // Update load more section based on server pagination
         var showingCount = filtered.length;
-        var totalAvailable = state.total;
+        var totalFromServer = state.total;
 
         if (state.hasMore) {
-            els.showingCount.textContent = 'Showing ' + showingCount + ' of ' + totalAvailable + ' designs';
+            els.showingCount.textContent = 'Showing ' + showingCount + ' of ' + totalFromServer + ' designs';
             els.loadMoreWrap.style.display = 'block';
-        } else if (showingCount < totalAvailable) {
-            // All loaded but some filtered out by search/price
-            els.showingCount.textContent = 'Showing ' + showingCount + ' designs (filtered from ' + state.designs.length + ' loaded)';
-            els.loadMoreWrap.style.display = 'none';
+            els.loadMoreBtn.style.display = 'inline-block';
+        } else if (showingCount < state.designs.length) {
+            // All pages loaded but client-side price filter reduced the count
+            els.showingCount.textContent = 'Showing ' + showingCount + ' of ' + state.designs.length + ' designs';
+            els.loadMoreWrap.style.display = 'block';
+            els.loadMoreBtn.style.display = 'none';
+        } else if (showingCount > 0) {
+            els.showingCount.textContent = showingCount + ' designs';
+            els.loadMoreWrap.style.display = 'block';
+            els.loadMoreBtn.style.display = 'none';
         } else {
             els.loadMoreWrap.style.display = 'none';
         }
