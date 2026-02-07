@@ -505,6 +505,13 @@ Configuration:
     color: var(--text-muted);
 }
 
+.tnow-name-tags {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+}
+
 .tnow-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
@@ -1482,6 +1489,10 @@ Configuration:
                     '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
                     '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>' +
                     '</a>' +
+                    '<div class="tnow-name-tags">' +
+                        (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
+                        (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
+                    '</div>' +
                     (d.artist ? '<div class="tnow-table-artist">' + escapeHtml(d.artist) + '</div>' : '') +
                 '</td>' +
                 '<td class="col-category">' + escapeHtml(d.categoryName || 'Uncategorized') + '</td>' +
@@ -1490,8 +1501,6 @@ Configuration:
                 '<td class="col-bodypart">' + escapeHtml(d.bodyPart || '-') + '</td>' +
                 '<td class="col-status">' +
                     (d.featured ? '<span class="tnow-badge tnow-badge-featured">Featured</span> ' : '') +
-                    (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
-                    (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
                 '</td>' +
                 '<td class="col-actions">' +
