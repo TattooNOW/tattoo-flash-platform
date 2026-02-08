@@ -1113,7 +1113,7 @@ a.tnow-design-card {
         defaultCalendarUrl: '/consultation', // Fallback if custom value not set
 
         // Categories page URL - for "More" link
-        categoriesPageUrl: window.TNOW_CATEGORIES_URL || '{{custom_values.02__website_root}}/tattoo-design-categories',
+        categoriesPageUrl: window.TNOW_CATEGORIES_URL || window.location.origin + '/tattoo-design-categories',
 
         // Design form page URL - for individual design links
         designFormUrl: window.TNOW_DESIGN_FORM_URL || '/tattoo-design-form',

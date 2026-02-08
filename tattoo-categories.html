@@ -9,7 +9,7 @@ Links to gallery page with category filter applied.
 Configuration:
 - Set window.TNOW_LOCATION_ID before this script, OR
 - Pass ?locationId=XXX in the URL
-- Set window.TNOW_GALLERY_URL to customize gallery link (default: {{custom_values.02__website_root}}/tattoo-flash-designs-page)
+- Set window.TNOW_GALLERY_URL to customize gallery link (default: auto-detects from current domain)
 
 Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
 =================================================================
@@ -458,7 +458,7 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
         locationId: getLocationId(),
 
         // Gallery page URL - where to link category cards
-        galleryUrl: window.TNOW_GALLERY_URL || '{{custom_values.02__website_root}}/tattoo-flash-designs-page',
+        galleryUrl: window.TNOW_GALLERY_URL || window.location.origin + '/tattoo-flash-designs-page',
 
         // Cache settings
         cacheKey: 'tnow_categories_cache',
