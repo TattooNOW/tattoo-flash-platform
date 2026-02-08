@@ -1126,6 +1126,8 @@ a.tnow-design-card {
     // =================================================================
     // STATE
     // =================================================================
+    var fetchId = 0;  // Tracks latest fetch to ignore stale responses
+
     var state = {
         designs: [],          // Loaded designs (accumulates on Load More)
         categories: [],
@@ -1238,9 +1240,14 @@ a.tnow-design-card {
             params.append('search', state.searchQuery);
         }
 
+        var thisFetchId = ++fetchId;
+
         return fetch(CONFIG.apiEndpoint + '?' + params.toString())
             .then(function(r) { return r.json(); })
             .then(function(res) {
+                // Ignore stale responses from previous fetches
+                if (thisFetchId !== fetchId) return res;
+
                 // Handle both success with empty results and error responses gracefully
                 if (!res.success && res.error) {
                     console.warn('Designs API returned error:', res.error);
@@ -1296,15 +1303,20 @@ a.tnow-design-card {
         // Called when filters change - reset and fetch fresh
         state.offset = 0;
         state.designs = [];
+        hideError();
         setLoading(true);
+
+        var thisFetchId = fetchId + 1; // Will be incremented by fetchDesignsPage
 
         fetchDesignsPage(0)
             .then(function() {
-                setLoading(false);
+                if (thisFetchId === fetchId) setLoading(false);
             })
             .catch(function(err) {
-                console.error('Refetch error:', err);
-                showError(err.message);
+                if (thisFetchId === fetchId) {
+                    console.error('Refetch error:', err);
+                    showError(err.message);
+                }
             });
     }
 
