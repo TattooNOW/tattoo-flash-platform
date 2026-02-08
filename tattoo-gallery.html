@@ -108,11 +108,12 @@ with Airtable credentials configured.
                     <span class="tnow-watermark-logo">TattooNOW</span>
                     <span class="tnow-featured-badge" id="modalFeatured" style="display:none;">Featured</span>
                     <span class="tnow-taken-badge" id="modalTaken" style="display:none;">Taken</span>
-                    <span class="tnow-onetime-badge" id="modalOneTime" style="display:none;">1x Flash</span>
+                    <span class="tnow-onetime-badge" id="modalOneTime" style="display:none;">1x Design</span>
                 </div>
                 <div class="tnow-modal-info">
                     <h2 class="tnow-modal-title" id="modalTitle"></h2>
                     <div class="tnow-taken-notice" id="modalTakenNotice" style="display:none;">This design has been claimed and is no longer available.</div>
+                    <div class="tnow-onetime-notice" id="modalOneTimeNotice" style="display:none;">This is a one-of-a-kind design meant to be tattooed only once.</div>
                     <p class="tnow-modal-desc" id="modalDescription"></p>
                     <div class="tnow-modal-meta">
                         <div class="tnow-meta-item" id="modalSizeWrap">
@@ -722,6 +723,17 @@ a.tnow-design-card {
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
     color: #ff6b6b;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.tnow-onetime-notice {
+    background: rgba(250, 145, 1, 0.15);
+    border: 1px solid rgba(250, 145, 1, 0.4);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: var(--tnow-orange);
     font-size: 0.9rem;
     text-align: center;
 }
@@ -1486,7 +1498,7 @@ a.tnow-design-card {
                     '<span class="tnow-watermark-logo">TattooNOW</span>' +
                     (design.featured ? '<span class="tnow-featured-badge">Featured</span>' : '') +
                     (isTaken ? '<span class="tnow-taken-badge">Taken</span>' : '') +
-                    (design.oneTimeFlash && !isTaken ? '<span class="tnow-onetime-badge">1x Flash</span>' : '') +
+                    (design.oneTimeFlash && !isTaken ? '<span class="tnow-onetime-badge">1x Design</span>' : '') +
                     '<div class="tnow-design-overlay"><button class="tnow-view-btn">View Details</button></div>' +
                     '</div>' +
                     '<div class="tnow-design-info">' +
@@ -1547,9 +1559,10 @@ a.tnow-design-card {
         document.getElementById('modalTaken').style.display = isTaken ? 'block' : 'none';
         document.getElementById('modalTakenNotice').style.display = isTaken ? 'block' : 'none';
 
-        // One-time flash badge (shows when available, not taken)
+        // One-time flash badge and notice (shows when available, not taken)
         var isOneTimeAvailable = design.oneTimeFlash && !isTaken;
         document.getElementById('modalOneTime').style.display = isOneTimeAvailable ? 'block' : 'none';
+        document.getElementById('modalOneTimeNotice').style.display = isOneTimeAvailable ? 'block' : 'none';
 
         // Add/remove is-taken class on modal image for stronger protection
         var modalImage = document.querySelector('.tnow-modal-image');

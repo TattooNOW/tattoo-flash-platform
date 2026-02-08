@@ -122,10 +122,10 @@ Configuration:
                     <span class="tnow-toggle-label">Featured</span>
                     <span class="tnow-toggle-tip">Highlight in gallery</span>
                 </label>
-                <label class="tnow-toggle" title="Design can only be tattooed once. Mark as Taken after booking.">
+                <label class="tnow-toggle" title="This design can only be tattooed once. After it's booked, it will be marked as Taken.">
                     <input type="checkbox" id="designOneTimeFlash">
-                    <span class="tnow-toggle-label">1x Flash</span>
-                    <span class="tnow-toggle-tip">One-time only design</span>
+                    <span class="tnow-toggle-label">1x Design</span>
+                    <span class="tnow-toggle-tip">This design can only be tattooed once</span>
                 </label>
                 <label class="tnow-toggle" title="Share with TattooNOW Design Catalog">
                     <input type="checkbox" id="designCommunity">
@@ -1652,7 +1652,7 @@ Configuration:
                     '</a>' +
                     '<div class="tnow-name-sub">' +
                         (d.artist ? '<span class="tnow-table-artist">' + escapeHtml(d.artist) + '</span>' : '') +
-                        (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Flash</span> ' : '') +
+                        (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Design</span> ' : '') +
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
                 '</td>' +
