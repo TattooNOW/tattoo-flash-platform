@@ -50,8 +50,8 @@ Configuration:
             <option value="unavailable">Unavailable</option>
         </select>
         <div class="tnow-thumb-toggle">
-            <button class="tnow-thumb-btn active" data-size="small" onclick="TattooAdmin.setThumbSize('small')" title="Small thumbnails">▪</button>
-            <button class="tnow-thumb-btn" data-size="large" onclick="TattooAdmin.setThumbSize('large')" title="Large thumbnails">▪▪</button>
+            <button class="tnow-thumb-btn active" data-size="small" onclick="TattooAdmin.setThumbSize('small')" title="Small thumbnails">⊞</button>
+            <button class="tnow-thumb-btn" data-size="large" onclick="TattooAdmin.setThumbSize('large')" title="Large thumbnails">⊡</button>
         </div>
     </div>
 
@@ -541,10 +541,10 @@ Configuration:
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    letter-spacing: -2px;
+    line-height: 1;
 }
 
 .tnow-thumb-btn:first-child {
@@ -579,8 +579,8 @@ Configuration:
 
 /* Large thumbnail mode */
 .tnow-admin-table.thumb-large .tnow-table-image {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
 }
 
 .tnow-admin-table.thumb-large .col-image {
