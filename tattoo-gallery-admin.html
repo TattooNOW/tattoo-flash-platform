@@ -25,6 +25,11 @@ Configuration:
             <input type="text" class="tnow-search-input" id="adminSearch" placeholder="Search designs..." autocomplete="off">
             <span class="tnow-search-icon">🔍</span>
         </div>
+        <label class="tnow-filter-check" id="featuredFilter">
+            <input type="checkbox" id="featuredCheckbox">
+            <span class="tnow-check-mark"></span>
+            <span>Featured</span>
+        </label>
         <select class="tnow-filter-select" id="sizeFilter">
             <option value="all">All Sizes</option>
             <option value="Small">Small</option>
@@ -39,11 +44,6 @@ Configuration:
             <option value="1000to2000">$1,000 - $2,000</option>
             <option value="over2000">Over $2,000</option>
         </select>
-        <label class="tnow-filter-check" id="featuredFilter">
-            <input type="checkbox" id="featuredCheckbox">
-            <span class="tnow-check-mark"></span>
-            <span>Featured</span>
-        </label>
         <select class="tnow-filter-select" id="statusFilter">
             <option value="all">All Status</option>
             <option value="available">Available</option>

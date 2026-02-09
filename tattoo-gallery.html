@@ -24,6 +24,11 @@ with Airtable credentials configured.
             <button class="tnow-search-clear" id="searchClear" style="display:none;">&times;</button>
         </div>
         <div class="tnow-filter-row">
+            <label class="tnow-filter-check" id="featuredFilter">
+                <input type="checkbox" id="featuredCheckbox">
+                <span class="tnow-check-mark"></span>
+                <span>Featured</span>
+            </label>
             <select class="tnow-filter-select" id="sizeFilter">
                 <option value="all">All Sizes</option>
                 <option value="Small">Small</option>
@@ -38,11 +43,6 @@ with Airtable credentials configured.
                 <option value="1000to2000">$1,000 - $2,000</option>
                 <option value="over2000">Over $2,000</option>
             </select>
-            <label class="tnow-filter-check" id="featuredFilter">
-                <input type="checkbox" id="featuredCheckbox">
-                <span class="tnow-check-mark"></span>
-                <span>Featured</span>
-            </label>
         </div>
     </div>
 
