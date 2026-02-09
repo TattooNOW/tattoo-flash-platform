@@ -39,11 +39,11 @@ Configuration:
             <option value="1000to2000">$1,000 - $2,000</option>
             <option value="over2000">Over $2,000</option>
         </select>
-        <select class="tnow-filter-select" id="featuredFilter">
-            <option value="all">All Designs</option>
-            <option value="featured">Featured Only</option>
-            <option value="notfeatured">Not Featured</option>
-        </select>
+        <label class="tnow-filter-check" id="featuredFilter">
+            <input type="checkbox" id="featuredCheckbox">
+            <span class="tnow-check-mark"></span>
+            <span>Featured</span>
+        </label>
         <select class="tnow-filter-select" id="statusFilter">
             <option value="all">All Status</option>
             <option value="available">Available</option>
@@ -430,6 +430,54 @@ Configuration:
 
 .tnow-filter-select option {
     background: var(--tnow-navy);
+}
+
+.tnow-filter-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--tnow-white);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.tnow-filter-check:hover {
+    border-color: var(--tnow-orange);
+}
+
+.tnow-filter-check input {
+    display: none;
+}
+
+.tnow-check-mark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--card-border);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tnow-filter-check input:checked ~ .tnow-check-mark {
+    background: var(--tnow-orange);
+    border-color: var(--tnow-orange);
+}
+
+.tnow-filter-check input:checked ~ .tnow-check-mark::after {
+    content: '✓';
+    color: #000;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 /* =================================================================
@@ -1462,7 +1510,7 @@ Configuration:
         els.categoryNav = document.getElementById('categoryNav');
         els.sizeFilter = document.getElementById('sizeFilter');
         els.statusFilter = document.getElementById('statusFilter');
-        els.featuredFilter = document.getElementById('featuredFilter');
+        els.featuredCheckbox = document.getElementById('featuredCheckbox');
         els.priceFilter = document.getElementById('priceFilter');
         els.modal = document.getElementById('adminModal');
         els.modalTitle = document.getElementById('modalTitle');
@@ -2122,9 +2170,9 @@ Configuration:
             renderTable();
         });
 
-        // Featured filter
-        els.featuredFilter.addEventListener('change', function(e) {
-            state.featuredFilter = e.target.value;
+        // Featured filter checkbox
+        els.featuredCheckbox.addEventListener('change', function(e) {
+            state.featuredFilter = e.target.checked ? 'featured' : 'all';
             renderTable();
         });
 
