@@ -747,8 +747,8 @@ Configuration:
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-shrink: 0;
-    padding: 0.75rem 1rem;
+    flex: 1 1 0;
+    padding: 0.75rem 0.5rem;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-md);
@@ -1655,6 +1655,15 @@ Configuration:
     // =================================================================
     // RENDERING
     // =================================================================
+    var SHORT_NAMES = {
+        'Traditional': 'Trad',
+        'Japanese': 'Jap',
+        'Blackwork': 'Black',
+        'Realism': 'Real',
+        'Neo-Traditional': 'Neo-Trad',
+        'Geometric': 'Geo'
+    };
+
     function renderCategoryNav() {
         var html = '<button class="tnow-cat-btn' + (state.categoryFilter === 'all' ? ' active' : '') + '" data-category="all">' +
                    '<span class="tnow-cat-icon">✨</span>' +
@@ -1662,9 +1671,10 @@ Configuration:
                    '</button>';
         state.categories.forEach(function(cat) {
             var isActive = state.categoryFilter === cat.id;
-            html += '<button class="tnow-cat-btn' + (isActive ? ' active' : '') + '" data-category="' + cat.id + '">' +
+            var label = SHORT_NAMES[cat.name] || cat.name;
+            html += '<button class="tnow-cat-btn' + (isActive ? ' active' : '') + '" data-category="' + cat.id + '" title="' + escapeHtml(cat.name) + '">' +
                     '<span class="tnow-cat-icon">' + (cat.icon || '🎨') + '</span>' +
-                    '<span class="tnow-cat-label">' + escapeHtml(cat.name) + '</span>' +
+                    '<span class="tnow-cat-label">' + escapeHtml(label) + '</span>' +
                     '</button>';
         });
         els.categoryNav.innerHTML = html;
