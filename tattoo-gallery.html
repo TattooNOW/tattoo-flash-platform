@@ -180,7 +180,19 @@ with Airtable credentials configured.
    FILTERS WRAP
    ================================================================= */
 .tnow-filters-wrap {
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+    background: rgba(0, 3, 33, 0.6);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: none;
+}
+
+.tnow-filters-wrap .tnow-filter-select,
+.tnow-filters-wrap .tnow-filter-check,
+.tnow-filters-wrap .tnow-search-input {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 .tnow-filter-row {
@@ -327,11 +339,16 @@ with Airtable credentials configured.
 .tnow-gallery-nav {
     display: flex;
     gap: 10px;
-    padding: 1rem 0;
+    padding: 0.75rem 1.25rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: var(--tnow-orange) transparent;
+    background: rgba(0, 3, 33, 0.6);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 1.5rem;
 }
 
 .tnow-gallery-nav::-webkit-scrollbar {
