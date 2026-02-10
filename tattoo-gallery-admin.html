@@ -283,12 +283,12 @@ Configuration:
     <div class="tnow-modal" id="deleteModal" style="display:none;">
         <div class="tnow-modal-backdrop" onclick="TattooAdmin.closeDeleteModal()"></div>
         <div class="tnow-modal-content tnow-modal-confirm">
-            <h3>Delete Design?</h3>
-            <p>Are you sure you want to delete "<span id="deleteName"></span>"?</p>
-            <p class="tnow-warning">This action cannot be undone.</p>
+            <h3 id="deleteTitle">Delete Design?</h3>
+            <p id="deleteMessage">Are you sure you want to delete "<span id="deleteName"></span>"?</p>
+            <p class="tnow-warning" id="deleteWarning">This action cannot be undone.</p>
             <div class="tnow-form-actions">
                 <button type="button" class="tnow-btn-secondary" onclick="TattooAdmin.closeDeleteModal()">Cancel</button>
-                <button type="button" class="tnow-btn-danger" onclick="TattooAdmin.confirmDelete()">Delete</button>
+                <button type="button" class="tnow-btn-danger" id="deleteConfirmBtn" onclick="TattooAdmin.confirmDelete()">Delete</button>
             </div>
         </div>
     </div>
@@ -681,6 +681,15 @@ Configuration:
 .tnow-badge-flash {
     background: rgba(138, 43, 226, 0.2);
     color: #b19cd9;
+}
+
+.tnow-badge-shared {
+    background: rgba(59, 130, 246, 0.2);
+    color: #7cb3f4;
+}
+
+.tnow-shared-row {
+    opacity: 0.75;
 }
 
 .tnow-action-btn {
@@ -1716,21 +1725,25 @@ Configuration:
 
         var html = '';
         filtered.forEach(function(d) {
-            html += '<tr data-id="' + d.id + '">' +
+            var isShared = d.locationId && d.locationId !== CONFIG.locationId;
+            html += '<tr data-id="' + d.id + '"' + (isShared ? ' class="tnow-shared-row"' : '') + '>' +
                 '<td class="col-image">' +
                     '<div class="tnow-image-wrap">' +
-                    '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
-                    (d.image ? '<img src="' + escapeHtml(d.thumbnail || d.image) + '" class="tnow-table-image" alt="">' : '<span class="tnow-table-image">🎨</span>') +
-                    '</a>' +
+                    (isShared
+                        ? '<span class="tnow-edit-link">' + (d.image ? '<img src="' + escapeHtml(d.thumbnail || d.image) + '" class="tnow-table-image" alt="">' : '<span class="tnow-table-image">🎨</span>') + '</span>'
+                        : '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' + (d.image ? '<img src="' + escapeHtml(d.thumbnail || d.image) + '" class="tnow-table-image" alt="">' : '<span class="tnow-table-image">🎨</span>') + '</a>'
+                    ) +
                     '<button class="tnow-featured-ribbon' + (d.featured ? ' is-featured' : '') + '" onclick="TattooAdmin.toggleFeatured(\'' + d.id + '\')" title="' + (d.featured ? 'Remove from featured' : 'Mark as featured') + '">★</button>' +
                     '</div>' +
                 '</td>' +
                 '<td class="col-name">' +
-                    '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' +
-                    '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>' +
-                    '</a>' +
+                    (isShared
+                        ? '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>'
+                        : '<a href="javascript:void(0)" class="tnow-edit-link" onclick="TattooAdmin.openEdit(\'' + d.id + '\')">' + '<div class="tnow-table-name">' + escapeHtml(d.name) + '</div>' + '</a>'
+                    ) +
                     '<div class="tnow-name-sub">' +
                         (d.artist ? '<span class="tnow-table-artist">' + escapeHtml(d.artist) + '</span>' : '') +
+                        (isShared ? '<span class="tnow-badge tnow-badge-shared">Shared</span> ' : '') +
                         (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Design</span> ' : '') +
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
@@ -1743,8 +1756,11 @@ Configuration:
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
                 '</td>' +
                 '<td class="col-actions">' +
-                    '<button class="tnow-action-btn" onclick="TattooAdmin.openEdit(\'' + d.id + '\')" title="Edit">✏️</button>' +
-                    '<button class="tnow-action-btn delete" onclick="TattooAdmin.openDelete(\'' + d.id + '\')" title="Delete">🗑️</button>' +
+                    (isShared
+                        ? '<button class="tnow-action-btn delete" onclick="TattooAdmin.openDelete(\'' + d.id + '\')" title="Remove from catalog">✖</button>'
+                        : '<button class="tnow-action-btn" onclick="TattooAdmin.openEdit(\'' + d.id + '\')" title="Edit">✏️</button>' +
+                          '<button class="tnow-action-btn delete" onclick="TattooAdmin.openDelete(\'' + d.id + '\')" title="Delete">🗑️</button>'
+                    ) +
                 '</td>' +
             '</tr>';
         });
@@ -1923,7 +1939,21 @@ Configuration:
         if (!design) return;
 
         state.deleteDesign = design;
+        var isShared = design.locationId && design.locationId !== CONFIG.locationId;
         els.deleteName.textContent = design.name;
+
+        if (isShared) {
+            document.getElementById('deleteTitle').textContent = 'Remove Shared Design?';
+            document.getElementById('deleteMessage').innerHTML = 'Remove "<span id="deleteName">' + escapeHtml(design.name) + '</span>" from the community catalog?';
+            document.getElementById('deleteWarning').textContent = 'This will unshare the design. The original owner will keep it.';
+            document.getElementById('deleteConfirmBtn').textContent = 'Remove';
+        } else {
+            document.getElementById('deleteTitle').textContent = 'Delete Design?';
+            document.getElementById('deleteMessage').innerHTML = 'Are you sure you want to delete "<span id="deleteName">' + escapeHtml(design.name) + '</span>"?';
+            document.getElementById('deleteWarning').textContent = 'This action cannot be undone.';
+            document.getElementById('deleteConfirmBtn').textContent = 'Delete';
+        }
+
         els.deleteModal.style.display = 'flex';
     }
 
@@ -2121,19 +2151,39 @@ Configuration:
     function confirmDelete() {
         if (!state.deleteDesign) return;
 
-        deleteDesignAPI(state.deleteDesign.id)
-            .then(function(result) {
-                if (result.success) {
-                    showToast('Design deleted!', 'success');
-                    closeDeleteModal();
-                    fetchData();
-                } else {
-                    throw new Error(result.error || 'Failed to delete');
-                }
-            })
-            .catch(function(err) {
-                showToast('Error: ' + err.message, 'error');
-            });
+        var design = state.deleteDesign;
+        var isShared = design.locationId && design.locationId !== CONFIG.locationId;
+
+        if (isShared) {
+            // Unshare: set inCommunityCatalog to false
+            saveDesignAPI({ id: design.id, inCommunityCatalog: false })
+                .then(function(result) {
+                    if (result.success) {
+                        showToast('Design removed from catalog', 'success');
+                        closeDeleteModal();
+                        fetchData();
+                    } else {
+                        throw new Error(result.error || 'Failed to unshare');
+                    }
+                })
+                .catch(function(err) {
+                    showToast('Error: ' + err.message, 'error');
+                });
+        } else {
+            deleteDesignAPI(design.id)
+                .then(function(result) {
+                    if (result.success) {
+                        showToast('Design deleted!', 'success');
+                        closeDeleteModal();
+                        fetchData();
+                    } else {
+                        throw new Error(result.error || 'Failed to delete');
+                    }
+                })
+                .catch(function(err) {
+                    showToast('Error: ' + err.message, 'error');
+                });
+        }
     }
 
     // =================================================================
