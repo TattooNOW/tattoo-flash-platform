@@ -618,9 +618,9 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
             var hasImage = catData.image;
             var count = catData.count || 0;
 
-            // Only show category card if it has a featured design image
-            if (!hasImage) {
-                return; // Skip this category - no featured design to show
+            // Only show category card if it has designs for this location
+            if (!hasImage || count === 0) {
+                return; // Skip - no designs in this category for this location
             }
 
             // Build URL with category filter - use slug, fallback to name or id
