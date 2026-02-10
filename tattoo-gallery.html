@@ -99,6 +99,8 @@ with Airtable credentials configured.
     <!-- Design Detail Modal -->
     <div class="tnow-modal" id="galleryModal" style="display:none;">
         <div class="tnow-modal-backdrop" onclick="TattooGallery.closeModal()"></div>
+        <button class="tnow-modal-nav tnow-modal-prev" id="modalPrev" onclick="TattooGallery.navPrev()" aria-label="Previous design">&#8249;</button>
+        <button class="tnow-modal-nav tnow-modal-next" id="modalNext" onclick="TattooGallery.navNext()" aria-label="Next design">&#8250;</button>
         <div class="tnow-modal-content">
             <button class="tnow-modal-close" onclick="TattooGallery.closeModal()" aria-label="Close">&times;</button>
             <div class="tnow-modal-body">
@@ -946,6 +948,51 @@ a.tnow-design-card {
     border-color: var(--tnow-orange);
 }
 
+.tnow-modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: var(--tnow-white);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tnow-modal-nav:hover {
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+    border-color: var(--tnow-orange);
+}
+
+.tnow-modal-nav:disabled {
+    opacity: 0.25;
+    cursor: default;
+    pointer-events: none;
+}
+
+.tnow-modal-prev { left: 0.75rem; }
+.tnow-modal-next { right: 0.75rem; }
+
+@media (max-width: 639px) {
+    .tnow-modal-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 1.5rem;
+    }
+    .tnow-modal-prev { left: 0.35rem; }
+    .tnow-modal-next { right: 0.35rem; }
+}
+
 .tnow-modal-body {
     display: flex;
     flex-direction: column;
@@ -1668,8 +1715,66 @@ a.tnow-design-card {
             bookBtn.classList.remove('disabled');
         }
 
+        updateNavButtons(design.id);
         els.modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+    }
+
+    function getFilteredDesigns() {
+        var filtered = state.designs;
+        if (state.activeCategory !== 'all') {
+            filtered = filtered.filter(function(d) {
+                var cat = state.categories.find(function(c) {
+                    return c.slug === state.activeCategory || c.id === state.activeCategory || c.name === state.activeCategory;
+                });
+                if (cat) return d.categoryId === cat.id || d.categoryName === cat.name;
+                return d.categoryName === state.activeCategory;
+            });
+        }
+        if (state.priceFilter !== 'all') {
+            filtered = filtered.filter(function(d) {
+                var minPrice = extractMinPrice(d.priceRange);
+                if (minPrice === null) return false;
+                switch (state.priceFilter) {
+                    case 'under500': return minPrice < 500;
+                    case '500to1000': return minPrice >= 500 && minPrice < 1000;
+                    case '1000to2000': return minPrice >= 1000 && minPrice < 2000;
+                    case 'over2000': return minPrice >= 2000;
+                    default: return true;
+                }
+            });
+        }
+        return filtered;
+    }
+
+    function updateNavButtons(designId) {
+        var filtered = getFilteredDesigns();
+        var idx = -1;
+        for (var i = 0; i < filtered.length; i++) {
+            if (filtered[i].id === designId) { idx = i; break; }
+        }
+        document.getElementById('modalPrev').disabled = (idx <= 0);
+        document.getElementById('modalNext').disabled = (idx < 0 || idx >= filtered.length - 1);
+    }
+
+    function navPrev() {
+        if (!state.selectedDesign) return;
+        var filtered = getFilteredDesigns();
+        var idx = -1;
+        for (var i = 0; i < filtered.length; i++) {
+            if (filtered[i].id === state.selectedDesign.id) { idx = i; break; }
+        }
+        if (idx > 0) openModal(filtered[idx - 1].id);
+    }
+
+    function navNext() {
+        if (!state.selectedDesign) return;
+        var filtered = getFilteredDesigns();
+        var idx = -1;
+        for (var i = 0; i < filtered.length; i++) {
+            if (filtered[i].id === state.selectedDesign.id) { idx = i; break; }
+        }
+        if (idx >= 0 && idx < filtered.length - 1) openModal(filtered[idx + 1].id);
     }
 
     function setMetaField(valueId, wrapId, value) {
@@ -1742,11 +1847,12 @@ a.tnow-design-card {
     }
 
     function bindGlobalEvents() {
-        // Escape key closes modal
+        // Keyboard navigation for modal
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && els.modal.style.display !== 'none') {
-                closeModal();
-            }
+            if (els.modal.style.display === 'none') return;
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft') navPrev();
+            if (e.key === 'ArrowRight') navNext();
         });
 
         // Search input - server-side search with debounce
@@ -1896,6 +2002,8 @@ a.tnow-design-card {
         },
         openModal: openModal,
         closeModal: closeModal,
+        navPrev: navPrev,
+        navNext: navNext,
         filterCategory: filterCategory,
         search: function(query) {
             state.searchQuery = query || '';
