@@ -2155,8 +2155,26 @@ Configuration:
         var isShared = design.locationId && design.locationId !== CONFIG.locationId;
 
         if (isShared) {
-            // Unshare: set inCommunityCatalog to false
-            saveDesignAPI({ id: design.id, inCommunityCatalog: false })
+            // Unshare: send all existing fields with inCommunityCatalog set to false
+            saveDesignAPI({
+                id: design.id,
+                name: design.name || '',
+                categoryId: design.categoryId || '',
+                description: design.description || '',
+                artist: design.artist || '',
+                image: design.image || '',
+                sizeEstimate: design.sizeEstimate || '',
+                timeEstimate: design.timeEstimate || '',
+                priceRange: design.priceRange || '',
+                locationId: design.locationId || '',
+                featured: design.featured || false,
+                available: design.available !== false,
+                sortOrder: design.sortOrder || 999,
+                oneTimeFlash: design.oneTimeFlash || false,
+                inCommunityCatalog: false,
+                lineSheet: design.lineSheet || '',
+                bodyPart: design.bodyPart || ''
+            })
                 .then(function(result) {
                     if (result.success) {
                         showToast('Design removed from catalog', 'success');
