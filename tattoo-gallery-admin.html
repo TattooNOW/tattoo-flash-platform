@@ -68,7 +68,8 @@ Configuration:
     <div class="tnow-modal" id="addCategoryModal" style="display:none;">
         <div class="tnow-modal-backdrop" onclick="TattooAdmin.closeAddCategory()"></div>
         <div class="tnow-modal-content tnow-modal-confirm">
-            <h3>Add Category</h3>
+            <h3>Request New Category</h3>
+            <p class="tnow-approval-note">New categories require TattooNOW approval before going live.</p>
             <div style="text-align:left;">
                 <div class="tnow-form-group" style="margin-bottom:1rem;">
                     <label for="newCatName">Category Name *</label>
@@ -81,7 +82,7 @@ Configuration:
             </div>
             <div class="tnow-form-actions">
                 <button type="button" class="tnow-btn-secondary" onclick="TattooAdmin.closeAddCategory()">Cancel</button>
-                <button type="button" class="tnow-btn-primary" id="saveCatBtn" onclick="TattooAdmin.saveCategory()">Add Category</button>
+                <button type="button" class="tnow-btn-primary" id="saveCatBtn" onclick="TattooAdmin.saveCategory()">Submit Request</button>
             </div>
         </div>
     </div>
@@ -133,28 +134,6 @@ Configuration:
                 <h2 id="modalTitle">Add Design</h2>
                 <button class="tnow-modal-close" onclick="TattooAdmin.closeModal()">&times;</button>
             </div>
-            <div class="tnow-header-options">
-                <label class="tnow-toggle" title="Uncheck to hide from public gallery">
-                    <input type="checkbox" id="designAvailable" checked>
-                    <span class="tnow-toggle-label">Available</span>
-                    <span class="tnow-toggle-tip">Visible to customers</span>
-                </label>
-                <label class="tnow-toggle" title="Shows in featured sections and category thumbnails">
-                    <input type="checkbox" id="designFeatured">
-                    <span class="tnow-toggle-label">Featured</span>
-                    <span class="tnow-toggle-tip">Highlight in gallery</span>
-                </label>
-                <label class="tnow-toggle" title="This design can only be tattooed once. After it's booked, it will be marked as Taken.">
-                    <input type="checkbox" id="designOneTimeFlash">
-                    <span class="tnow-toggle-label">1x Design</span>
-                    <span class="tnow-toggle-tip">This design can only be tattooed once</span>
-                </label>
-                <label class="tnow-toggle" title="Share with TattooNOW Design Catalog">
-                    <input type="checkbox" id="designCommunity">
-                    <span class="tnow-toggle-label">Share</span>
-                    <span class="tnow-toggle-tip">Share with TattooNOW Design Catalog</span>
-                </label>
-            </div>
             <form id="designForm" class="tnow-form" onsubmit="TattooAdmin.saveDesign(event)">
                 <input type="hidden" id="designId" value="">
 
@@ -162,7 +141,7 @@ Configuration:
                 <div class="tnow-form-tabs">
                     <button type="button" class="tnow-tab active" data-tab="images" onclick="TattooAdmin.switchTab('images')">Design</button>
                     <button type="button" class="tnow-tab" data-tab="details" onclick="TattooAdmin.switchTab('details')">Details</button>
-                    <button type="button" class="tnow-tab" data-tab="advanced" onclick="TattooAdmin.switchTab('advanced')">Advanced</button>
+                    <button type="button" class="tnow-tab" data-tab="advanced" onclick="TattooAdmin.switchTab('advanced')">Submit</button>
                 </div>
 
                 <!-- Tab 1: Images (Design Image + Line Drawing) -->
@@ -274,8 +253,31 @@ Configuration:
                     </div>
                 </div>
 
-                <!-- Tab 3: Advanced (Admin Options) -->
+                <!-- Tab 3: Submit (Options & Save) -->
                 <div class="tnow-tab-panel" id="tabAdvanced">
+                    <div class="tnow-submit-options">
+                        <label class="tnow-toggle" title="Uncheck to hide from public gallery">
+                            <input type="checkbox" id="designAvailable" checked>
+                            <span class="tnow-toggle-label">Available</span>
+                            <span class="tnow-toggle-tip">Visible to customers</span>
+                        </label>
+                        <label class="tnow-toggle" title="Shows in featured sections and category thumbnails">
+                            <input type="checkbox" id="designFeatured">
+                            <span class="tnow-toggle-label">Featured</span>
+                            <span class="tnow-toggle-tip">Highlight in gallery</span>
+                        </label>
+                        <label class="tnow-toggle" title="This design can only be tattooed once. After it's booked, it will be marked as Taken.">
+                            <input type="checkbox" id="designOneTimeFlash">
+                            <span class="tnow-toggle-label">1x Design</span>
+                            <span class="tnow-toggle-tip">This design can only be tattooed once</span>
+                        </label>
+                        <label class="tnow-toggle" title="Share with TattooNOW Design Catalog (requires approval)">
+                            <input type="checkbox" id="designCommunity">
+                            <span class="tnow-toggle-label">Share</span>
+                            <span class="tnow-toggle-tip">Submit to TattooNOW Community Catalog</span>
+                        </label>
+                    </div>
+
                     <div class="tnow-form-row">
                         <div class="tnow-form-group">
                             <label for="designArtist">Original Artist</label>
@@ -287,9 +289,6 @@ Configuration:
                             <small>Lower numbers appear first</small>
                         </div>
                     </div>
-
-
-
                 </div>
 
                 <div class="tnow-form-actions">
@@ -710,6 +709,22 @@ Configuration:
     color: #7cb3f4;
 }
 
+.tnow-badge-pending {
+    background: rgba(248, 165, 7, 0.2);
+    color: var(--tnow-gold);
+}
+
+.tnow-action-btn.approve {
+    color: var(--tnow-green);
+    border-color: var(--tnow-green);
+    font-weight: 700;
+}
+
+.tnow-action-btn.approve:hover {
+    background: var(--tnow-green);
+    color: var(--tnow-black);
+}
+
 .tnow-shared-row {
     opacity: 0.75;
 }
@@ -845,6 +860,16 @@ Configuration:
     background: rgba(250, 145, 1, 0.05);
 }
 
+.tnow-approval-note {
+    font-size: 0.8rem;
+    color: var(--tnow-gold);
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(248, 165, 7, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(248, 165, 7, 0.2);
+}
+
 /* =================================================================
    LOADING & STATES
    ================================================================= */
@@ -943,13 +968,13 @@ Configuration:
 /* =================================================================
    HEADER OPTIONS (inline toggles next to title)
    ================================================================= */
-.tnow-header-options {
+.tnow-submit-options {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    padding: 0.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--card-border);
-    background: rgba(0, 0, 0, 0.2);
 }
 
 .tnow-toggle {
@@ -1790,6 +1815,8 @@ Configuration:
         select.innerHTML = html;
     }
 
+    var isTattooNOW = CONFIG.locationId === 'dWlb0GcHLhNYv9zAChVt';
+
     function renderTable() {
         var filtered = filterDesigns();
 
@@ -1823,6 +1850,8 @@ Configuration:
                     '<div class="tnow-name-sub">' +
                         (d.artist ? '<span class="tnow-table-artist">' + escapeHtml(d.artist) + '</span>' : '') +
                         (isShared ? '<span class="tnow-badge tnow-badge-shared">Shared</span> ' : '') +
+                        (d.sharePending ? '<span class="tnow-badge tnow-badge-pending">Pending Share</span> ' : '') +
+                        (d.inCommunityCatalog && !isShared ? '<span class="tnow-badge tnow-badge-shared">Shared</span> ' : '') +
                         (d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-flash">1x Design</span> ' : '') +
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
@@ -1835,6 +1864,7 @@ Configuration:
                     (d.available !== false ? '<span class="tnow-badge tnow-badge-available">Active</span>' : '<span class="tnow-badge tnow-badge-unavailable">Inactive</span>') +
                 '</td>' +
                 '<td class="col-actions">' +
+                    (d.sharePending && isTattooNOW ? '<button class="tnow-action-btn approve" onclick="TattooAdmin.approveShare(\'' + d.id + '\')" title="Approve share">✓</button>' : '') +
                     (isShared
                         ? '<button class="tnow-action-btn delete" onclick="TattooAdmin.openDelete(\'' + d.id + '\')" title="Remove from catalog">✖</button>'
                         : '<button class="tnow-action-btn" onclick="TattooAdmin.openEdit(\'' + d.id + '\')" title="Edit">✏️</button>' +
@@ -1968,7 +1998,7 @@ Configuration:
         document.getElementById('designFeatured').checked = design.featured || false;
         document.getElementById('designAvailable').checked = design.available !== false;
         document.getElementById('designOneTimeFlash').checked = design.oneTimeFlash || false;
-        document.getElementById('designCommunity').checked = design.inCommunityCatalog || false;
+        document.getElementById('designCommunity').checked = design.inCommunityCatalog || design.sharePending || false;
 
         // Design image preview
         if (design.image) {
@@ -2185,6 +2215,8 @@ Configuration:
             return;
         }
 
+        var wantsShare = document.getElementById('designCommunity').checked;
+
         var data = {
             id: document.getElementById('designId').value || null,
             name: name,
@@ -2201,7 +2233,8 @@ Configuration:
             featured: document.getElementById('designFeatured').checked,
             available: document.getElementById('designAvailable').checked,
             oneTimeFlash: document.getElementById('designOneTimeFlash').checked,
-            inCommunityCatalog: document.getElementById('designCommunity').checked,
+            inCommunityCatalog: isTattooNOW ? wantsShare : (state.editingDesign ? state.editingDesign.inCommunityCatalog || false : false),
+            sharePending: isTattooNOW ? false : wantsShare,
             locationId: CONFIG.locationId
         };
 
@@ -2494,6 +2527,46 @@ Configuration:
     }
 
     // =================================================================
+    // APPROVE SHARE
+    // =================================================================
+    function approveShare(id) {
+        var design = state.designs.find(function(d) { return d.id === id; });
+        if (!design) return;
+
+        saveDesignAPI({
+            id: design.id,
+            name: design.name || '',
+            categoryId: design.categoryId || '',
+            description: design.description || '',
+            artist: design.artist || '',
+            image: design.image || '',
+            sizeEstimate: design.sizeEstimate || '',
+            timeEstimate: design.timeEstimate || '',
+            priceRange: design.priceRange || '',
+            locationId: design.locationId || '',
+            featured: design.featured || false,
+            available: design.available !== false,
+            sortOrder: design.sortOrder || 999,
+            oneTimeFlash: design.oneTimeFlash || false,
+            inCommunityCatalog: true,
+            sharePending: false,
+            lineSheet: design.lineSheet || '',
+            bodyPart: design.bodyPart || ''
+        })
+        .then(function(result) {
+            if (result.success) {
+                showToast('Share approved for "' + design.name + '"', 'success');
+                fetchData();
+            } else {
+                throw new Error(result.error || 'Failed to approve');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        });
+    }
+
+    // =================================================================
     // ADD CATEGORY
     // =================================================================
     function openAddCategory() {
@@ -2538,11 +2611,10 @@ Configuration:
         .then(function(r) { return r.json(); })
         .then(function(result) {
             if (result.success) {
-                showToast('Category "' + name + '" added!', 'success');
+                showToast('Category "' + name + '" submitted for approval!', 'success');
                 closeAddCategory();
-                fetchData(); // Refresh all data to pick up new category
             } else {
-                throw new Error(result.error || 'Failed to create category');
+                throw new Error(result.error || 'Failed to submit category');
             }
         })
         .catch(function(err) {
@@ -2569,6 +2641,7 @@ Configuration:
         removeImage: removeImage,
         toggleFeatured: toggleFeatured,
         setThumbSize: setThumbSize,
+        approveShare: approveShare,
         openAddCategory: openAddCategory,
         closeAddCategory: closeAddCategory,
         saveCategory: saveCategory,

@@ -1322,6 +1322,9 @@ a.tnow-design-card {
                 return fetchDesignsPage(0);
             })
             .then(function() {
+                // Re-sort categories by design count (most designs first)
+                sortCategoriesByDesignCount();
+                renderCategories();
                 setLoading(false);
             })
             .catch(function(err) {
@@ -1477,6 +1480,20 @@ a.tnow-design-card {
     // =================================================================
     // RENDERING
     // =================================================================
+    function sortCategoriesByDesignCount() {
+        var counts = {};
+        state.designs.forEach(function(d) {
+            if (d.categoryId) {
+                counts[d.categoryId] = (counts[d.categoryId] || 0) + 1;
+            }
+        });
+        state.categories.sort(function(a, b) {
+            var countA = counts[a.id] || 0;
+            var countB = counts[b.id] || 0;
+            return countB - countA; // Most designs first
+        });
+    }
+
     function renderCategories() {
         // Show first N categories as main buttons, rest hidden (accessible via "More" link)
         // Mobile: 2 categories + All + More = 4 buttons
