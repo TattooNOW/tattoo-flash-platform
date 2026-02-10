@@ -11,7 +11,7 @@ import os
 import time
 import urllib.request
 
-WEBHOOK = "https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4"
+WEBHOOK = "https://reinventing.app.n8n.cloud/webhook/tattoo-admin-api"
 
 # Category IDs
 CAT_TRADITIONAL = "recWOz2ExdkMB4AHZ"

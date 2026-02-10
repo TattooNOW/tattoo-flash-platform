@@ -37,19 +37,28 @@ tattoo-flash-platform/
 
 ## API & Backend
 
-**n8n Webhook Endpoint:**
-`https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4`
+**n8n Webhook Endpoints:**
 
-**Supported Actions:**
+| Workflow | ID | URL | Method |
+|----------|----|-----|--------|
+| Tattoo Gallery API (read) | `wYArwQruOnaoVGlR` | `https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4` | GET |
+| Tattoo Admin API (write) | `3ildRV1EjmaoZqhp` | `https://reinventing.app.n8n.cloud/webhook/tattoo-admin-api` | POST |
+
+**Gallery API Actions (GET):**
 | Action | Purpose |
 |--------|---------|
 | `?action=categories` | Fetch all tattoo categories |
 | `?action=designs&locationId=XXX&limit=100` | Fetch designs by location |
 | `?action=design&designId=XXX` | Fetch single design |
+
+**Admin API Actions (POST):**
+| Action | Purpose |
+|--------|---------|
 | `action=uploadImage` | Upload image to GHL Media Gallery |
 | `action=createDesign` | Create design record in Airtable |
 | `action=updateDesign` | Update existing design |
 | `action=deleteDesign` | Delete design record |
+| `action=markTaken` | Mark design as taken |
 
 **Data Storage:** Airtable (via n8n webhook proxy)
 **Image Hosting:** GHL Media Gallery (via webhook)

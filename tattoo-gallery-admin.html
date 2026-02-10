@@ -1473,6 +1473,7 @@ Configuration:
 
     var CONFIG = {
         apiEndpoint: 'https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        adminEndpoint: 'https://reinventing.app.n8n.cloud/webhook/tattoo-admin-api',
         locationId: getLocationId()
     };
 
@@ -1586,7 +1587,7 @@ Configuration:
             action: isEdit ? 'updateDesign' : 'createDesign'
         });
 
-        return fetch(CONFIG.apiEndpoint, {
+        return fetch(CONFIG.adminEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1609,7 +1610,7 @@ Configuration:
     }
 
     function deleteDesignAPI(id) {
-        return fetch(CONFIG.apiEndpoint, {
+        return fetch(CONFIG.adminEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deleteDesign', id: id })
@@ -1944,7 +1945,7 @@ Configuration:
             var base64Data = e.target.result;
 
             // GHL API key is now stored in the n8n workflow - no need to pass from client
-            fetch(CONFIG.apiEndpoint, {
+            fetch(CONFIG.adminEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2279,7 +2280,7 @@ Configuration:
             action: 'updateDesign'
         };
 
-        fetch(CONFIG.apiEndpoint, {
+        fetch(CONFIG.adminEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
