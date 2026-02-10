@@ -64,6 +64,28 @@ Configuration:
         <!-- Dynamic category buttons inserted here -->
     </div>
 
+    <!-- Add Category Modal -->
+    <div class="tnow-modal" id="addCategoryModal" style="display:none;">
+        <div class="tnow-modal-backdrop" onclick="TattooAdmin.closeAddCategory()"></div>
+        <div class="tnow-modal-content tnow-modal-confirm">
+            <h3>Add Category</h3>
+            <div style="text-align:left;">
+                <div class="tnow-form-group" style="margin-bottom:1rem;">
+                    <label for="newCatName">Category Name *</label>
+                    <input type="text" id="newCatName" placeholder="e.g., Tribal">
+                </div>
+                <div class="tnow-form-group" style="margin-bottom:1rem;">
+                    <label for="newCatIcon">Icon (emoji)</label>
+                    <input type="text" id="newCatIcon" placeholder="🎨" maxlength="4">
+                </div>
+            </div>
+            <div class="tnow-form-actions">
+                <button type="button" class="tnow-btn-secondary" onclick="TattooAdmin.closeAddCategory()">Cancel</button>
+                <button type="button" class="tnow-btn-primary" id="saveCatBtn" onclick="TattooAdmin.saveCategory()">Add Category</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading State -->
     <div class="tnow-admin-loading" id="adminLoading">
         <div class="tnow-spinner"></div>
@@ -788,6 +810,39 @@ Configuration:
 .tnow-cat-label {
     white-space: nowrap;
     font-weight: 600;
+}
+
+.tnow-cat-count {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-top: 0.1rem;
+}
+
+.tnow-cat-btn.active .tnow-cat-count {
+    opacity: 0.9;
+}
+
+.tnow-cat-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 0.75rem 0.75rem;
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 50px;
+}
+
+.tnow-cat-add:hover {
+    border-color: var(--tnow-orange);
+    color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.05);
 }
 
 /* =================================================================
@@ -1598,6 +1653,7 @@ Configuration:
                     state.designs = [];
                     state.totalCount = 0;
                 }
+                renderCategoryNav(); // Re-render with counts after designs load
                 renderTable();
                 setLoading(false);
             })
@@ -1670,22 +1726,45 @@ Configuration:
         'Blackwork': 'Black',
         'Realism': 'Real',
         'Neo-Traditional': 'Neo-Trad',
-        'Geometric': 'Geo'
+        'Geometric': 'Geo',
+        'Biomechanical': 'Bio',
+        'Illustrative': 'Illust',
+        'Black & Grey': 'B&G',
+        'Minimalist': 'Minimal',
+        'Cyber Sigilism': 'Cyber',
+        'Trash Polka': 'Trash P'
     };
 
+    function getCategoryCounts() {
+        var counts = {};
+        state.designs.forEach(function(d) {
+            if (d.categoryId) {
+                counts[d.categoryId] = (counts[d.categoryId] || 0) + 1;
+            }
+        });
+        return counts;
+    }
+
     function renderCategoryNav() {
+        var counts = getCategoryCounts();
+        var totalCount = state.designs.length;
         var html = '<button class="tnow-cat-btn' + (state.categoryFilter === 'all' ? ' active' : '') + '" data-category="all">' +
                    '<span class="tnow-cat-icon">✨</span>' +
                    '<span class="tnow-cat-label">All</span>' +
+                   '<span class="tnow-cat-count">' + totalCount + '</span>' +
                    '</button>';
         state.categories.forEach(function(cat) {
+            var count = counts[cat.id] || 0;
+            if (count === 0) return; // Hide empty categories
             var isActive = state.categoryFilter === cat.id;
             var label = SHORT_NAMES[cat.name] || cat.name;
-            html += '<button class="tnow-cat-btn' + (isActive ? ' active' : '') + '" data-category="' + cat.id + '" title="' + escapeHtml(cat.name) + '">' +
+            html += '<button class="tnow-cat-btn' + (isActive ? ' active' : '') + '" data-category="' + cat.id + '" title="' + escapeHtml(cat.name) + ' (' + count + ')">' +
                     '<span class="tnow-cat-icon">' + (cat.icon || '🎨') + '</span>' +
                     '<span class="tnow-cat-label">' + escapeHtml(label) + '</span>' +
+                    '<span class="tnow-cat-count">' + count + '</span>' +
                     '</button>';
         });
+        html += '<button class="tnow-cat-add" onclick="TattooAdmin.openAddCategory()" title="Add category">+</button>';
         els.categoryNav.innerHTML = html;
         bindCategoryNav();
     }
@@ -2414,6 +2493,67 @@ Configuration:
         });
     }
 
+    // =================================================================
+    // ADD CATEGORY
+    // =================================================================
+    function openAddCategory() {
+        document.getElementById('newCatName').value = '';
+        document.getElementById('newCatIcon').value = '';
+        document.getElementById('addCategoryModal').style.display = 'flex';
+    }
+
+    function closeAddCategory() {
+        document.getElementById('addCategoryModal').style.display = 'none';
+    }
+
+    function saveCategory() {
+        var name = document.getElementById('newCatName').value.trim();
+        if (!name) {
+            showToast('Please enter a category name', 'error');
+            return;
+        }
+
+        var icon = document.getElementById('newCatIcon').value.trim() || '🎨';
+        var slug = name.toLowerCase().replace(/[&]/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        var maxSort = 0;
+        state.categories.forEach(function(c) {
+            if (c.sortOrder > maxSort) maxSort = c.sortOrder;
+        });
+
+        var btn = document.getElementById('saveCatBtn');
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+
+        fetch(CONFIG.adminEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'createCategory',
+                name: name,
+                slug: slug,
+                icon: icon,
+                sortOrder: maxSort + 1
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                showToast('Category "' + name + '" added!', 'success');
+                closeAddCategory();
+                fetchData(); // Refresh all data to pick up new category
+            } else {
+                throw new Error(result.error || 'Failed to create category');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Add Category';
+        });
+    }
+
     window.TattooAdmin = {
         refresh: fetchData,
         openAdd: openAdd,
@@ -2429,6 +2569,9 @@ Configuration:
         removeImage: removeImage,
         toggleFeatured: toggleFeatured,
         setThumbSize: setThumbSize,
+        openAddCategory: openAddCategory,
+        closeAddCategory: closeAddCategory,
+        saveCategory: saveCategory,
         getState: function() { return state; }
     };
 
