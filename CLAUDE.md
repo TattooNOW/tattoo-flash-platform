@@ -114,6 +114,30 @@ Categories come from Airtable via the n8n webhook. Add a new category record in 
 ### Customize for a new location
 Set the `locationId` parameter. All data is filtered by location automatically.
 
+## Testing & Browser Automation
+
+Two tools are available for testing pages live in a browser:
+
+### Playwright MCP Server (Microsoft)
+- **MCP server** configured in `.mcp.json` — provides browser automation tools directly
+- Navigate to URLs, click elements, fill forms, take screenshots, read page content
+- Uses accessibility snapshots (no vision model needed)
+- Tools: `browser_navigate`, `browser_click`, `browser_type`, `browser_screenshot`, etc.
+
+### Playwright Skill
+- **Claude Code Skill** at `~/.claude/skills/playwright-skill/`
+- Claude writes and executes custom Playwright scripts for specific test scenarios
+- Runs browser visibly (headless=false) so you can watch automation
+- Scripts saved to `/tmp/` for reuse
+- Invoke with: "test this page" or describe the browser task
+
+### Key Test URLs
+| Page | URL |
+|------|-----|
+| Categories | `https://foundations.tattoonow.com/tattoo-flash-categories` |
+| Gallery | `https://foundations.tattoonow.com/tattoo-flash-designs-page` |
+| Admin | `https://foundations.tattoonow.com/tattoo-admin` |
+
 ## Important Notes
 
 - Each HTML file is **fully self-contained** (HTML + CSS + JS in one file)

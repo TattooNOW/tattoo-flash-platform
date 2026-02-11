@@ -12,7 +12,7 @@ Configuration:
 =================================================================
 -->
 
-<div class="tnow-admin" id="tattooAdmin">
+<div class="tnow-admin slim-mode" id="tattooAdmin">
     <!-- Header -->
     <div class="tnow-admin-header">
         <h1 class="tnow-admin-title">Tattoo Designs</h1>
@@ -247,7 +247,7 @@ Configuration:
                 <!-- Tab 2: Style (Multi-select) -->
                 <div class="tnow-tab-panel" id="tabCategories">
                     <label class="tnow-picker-label">Select Styles *</label>
-                    <p class="tnow-picker-hint"><strong>Style</strong> is the artistic technique or tradition — how the tattoo is drawn. Examples: Traditional, Japanese, Realism.</p>
+                    <p class="tnow-picker-hint"><strong>Style</strong> is the artistic technique or tradition — how the tattoo is drawn. Examples: Traditional, Realism, Watercolor.</p>
                     <div class="tnow-category-picker" id="categoryPicker">
                         <!-- Dynamically rendered style pills -->
                     </div>
@@ -931,6 +931,37 @@ Configuration:
     opacity: 0.9;
 }
 
+/* Slim mode: compact nav buttons — one line, no icons */
+.tnow-admin.slim-mode .tnow-category-nav {
+    gap: 0.3rem;
+    padding: 0.4rem 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.tnow-admin.slim-mode .tnow-cat-btn {
+    flex-direction: row;
+    gap: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    min-width: auto;
+    flex: 0 0 auto;
+}
+.tnow-admin.slim-mode .tnow-cat-icon {
+    display: none;
+}
+.tnow-admin.slim-mode .tnow-cat-count {
+    margin-top: 0;
+    opacity: 0.6;
+}
+.tnow-admin.slim-mode .tnow-cat-count::before {
+    content: '(';
+}
+.tnow-admin.slim-mode .tnow-cat-count::after {
+    content: ')';
+}
+.tnow-admin.slim-mode .tnow-cat-add {
+    flex-direction: row;
+    padding: 0.3rem 0.5rem;
+}
+
 .tnow-cat-add {
     display: flex;
     flex-direction: column;
@@ -1038,6 +1069,7 @@ Configuration:
 
 .tnow-modal-form {
     max-width: 680px;
+    min-height: 520px;
 }
 
 .tnow-modal-confirm {
@@ -3003,10 +3035,13 @@ Configuration:
     // =================================================================
     function setThumbSize(size) {
         var table = document.getElementById('adminTable');
+        var admin = document.getElementById('tattooAdmin');
         if (size === 'large') {
             table.classList.add('thumb-large');
+            admin.classList.remove('slim-mode');
         } else {
             table.classList.remove('thumb-large');
+            admin.classList.add('slim-mode');
         }
         // Update toggle buttons
         document.querySelectorAll('.tnow-thumb-btn').forEach(function(btn) {
