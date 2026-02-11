@@ -16,7 +16,7 @@ Configuration:
     <!-- Header -->
     <div class="tnow-admin-header">
         <h1 class="tnow-admin-title">Tattoo Designs</h1>
-        <button class="tnow-add-btn" onclick="TattooAdmin.openAdd()">+ Add Design</button>
+        <button class="tnow-add-btn" id="headerActionBtn" onclick="TattooAdmin.openAdd()">+ Add Design</button>
     </div>
 
     <!-- Page-Level Tabs (TattooNOW only) -->
@@ -39,9 +39,10 @@ Configuration:
             <table class="tnow-admin-table">
                 <thead>
                     <tr>
-                        <th>Icon</th>
+                        <th style="width:60px;">Icon</th>
                         <th>Name</th>
                         <th>Slug</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -267,17 +268,6 @@ Configuration:
                             </select>
                         </div>
                         <div class="tnow-form-group">
-                            <label for="designTime">Time Estimate</label>
-                            <input type="text" id="designTime" placeholder="e.g., 2-4 hours">
-                        </div>
-                    </div>
-
-                    <div class="tnow-form-row">
-                        <div class="tnow-form-group">
-                            <label for="designPrice">Price Range</label>
-                            <input type="text" id="designPrice" placeholder="e.g., $300-500">
-                        </div>
-                        <div class="tnow-form-group">
                             <label for="designBodyPart">Perfect Body Part</label>
                             <input type="text" id="designBodyPart" placeholder="e.g., Forearm, Shoulder">
                         </div>
@@ -307,6 +297,17 @@ Configuration:
                             <span class="tnow-toggle-label">Share</span>
                             <span class="tnow-toggle-tip">Submit to TattooNOW Community Catalog</span>
                         </label>
+                    </div>
+
+                    <div class="tnow-form-row">
+                        <div class="tnow-form-group">
+                            <label for="designTime">Time Estimate</label>
+                            <input type="text" id="designTime" placeholder="e.g., 2-4 hours">
+                        </div>
+                        <div class="tnow-form-group">
+                            <label for="designPrice">Price Range</label>
+                            <input type="text" id="designPrice" placeholder="e.g., $300-500">
+                        </div>
                     </div>
 
                     <div class="tnow-form-row">
@@ -1619,6 +1620,24 @@ Configuration:
     margin-bottom: 0.5rem;
 }
 
+.tnow-badge-cat-active {
+    background: rgba(56, 161, 105, 0.2);
+    color: var(--tnow-green);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tnow-badge-cat-pending {
+    background: rgba(248, 165, 7, 0.2);
+    color: var(--tnow-gold);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 .tnow-cat-action-btn {
     padding: 0.5rem 1rem;
     border: 1px solid var(--card-border);
@@ -1923,7 +1942,7 @@ Configuration:
                     '<span class="tnow-cat-count">' + count + '</span>' +
                     '</button>';
         });
-        html += '<button class="tnow-cat-add" onclick="TattooAdmin.openAddCategory()" title="Add category">+</button>';
+        html += '<button class="tnow-cat-add" onclick="TattooAdmin.openAddCategory()" title="Add category">+ 🏷️</button>';
         els.categoryNav.innerHTML = html;
         bindCategoryNav();
     }
@@ -2704,12 +2723,20 @@ Configuration:
     // ADD CATEGORY
     // =================================================================
     function openAddCategory() {
+        state.editingCategory = null;
         document.getElementById('newCatName').value = '';
         document.getElementById('newCatIcon').value = '';
-        document.getElementById('addCategoryModal').style.display = 'flex';
+        var modal = document.getElementById('addCategoryModal');
+        modal.querySelector('h3').textContent = 'Request New Category';
+        modal.querySelector('.tnow-approval-note').style.display = '';
+        var saveBtn = document.getElementById('saveCatBtn');
+        saveBtn.textContent = 'Submit Request';
+        saveBtn.onclick = function() { saveCategory(); };
+        modal.style.display = 'flex';
     }
 
     function closeAddCategory() {
+        state.editingCategory = null;
         document.getElementById('addCategoryModal').style.display = 'none';
     }
 
@@ -2769,11 +2796,14 @@ Configuration:
         tabs.forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-view') === view); });
 
         var categoriesView = document.getElementById('categoriesView');
+        var headerBtn = document.getElementById('headerActionBtn');
 
         if (view === 'designs') {
             els.toolbar.style.display = '';
             els.categoryNav.style.display = '';
             categoriesView.style.display = 'none';
+            headerBtn.textContent = '+ Add Design';
+            headerBtn.onclick = function() { TattooAdmin.openAdd(); };
             renderTable();
         } else {
             els.tableWrap.style.display = 'none';
@@ -2783,11 +2813,13 @@ Configuration:
             els.toolbar.style.display = 'none';
             els.categoryNav.style.display = 'none';
             categoriesView.style.display = 'block';
-            fetchPendingCategories();
+            headerBtn.textContent = '+ Add Category';
+            headerBtn.onclick = function() { TattooAdmin.openAddCategory(); };
+            fetchCategoriesView();
         }
     }
 
-    function fetchPendingCategories() {
+    function fetchCategoriesView() {
         var loadingEl = document.getElementById('categoriesLoading');
         var emptyEl = document.getElementById('categoriesEmpty');
         var tableWrap = document.getElementById('categoriesTableWrap');
@@ -2796,32 +2828,59 @@ Configuration:
         emptyEl.style.display = 'none';
         tableWrap.style.display = 'none';
 
-        fetch(CONFIG.apiEndpoint + '?action=pendingCategories')
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
+        // Fetch both active and pending categories
+        var activeFetch = fetch(CONFIG.apiEndpoint + '?action=categories').then(function(r) { return r.json(); });
+        var pendingFetch = fetch(CONFIG.apiEndpoint + '?action=pendingCategories').then(function(r) { return r.json(); });
+
+        Promise.all([activeFetch, pendingFetch])
+            .then(function(results) {
                 loadingEl.style.display = 'none';
-                if (res.success) {
-                    state.pendingCategories = res.categories || [];
-                } else {
-                    state.pendingCategories = [];
-                }
-                renderPendingCategories();
+                state.categories = results[0].success ? results[0].categories || [] : [];
+                state.pendingCategories = results[1].success ? results[1].categories || [] : [];
+                renderCategoriesView();
                 updatePendingCount();
             })
             .catch(function(err) {
                 loadingEl.style.display = 'none';
-                console.error('Pending categories error:', err);
-                state.pendingCategories = [];
-                renderPendingCategories();
+                console.error('Categories fetch error:', err);
+                renderCategoriesView();
             });
     }
 
-    function renderPendingCategories() {
+    function fetchPendingCategories() {
+        fetch(CONFIG.apiEndpoint + '?action=pendingCategories')
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                state.pendingCategories = res.success ? res.categories || [] : [];
+                updatePendingCount();
+            })
+            .catch(function() {
+                state.pendingCategories = [];
+                updatePendingCount();
+            });
+    }
+
+    function renderCategoriesView() {
         var emptyEl = document.getElementById('categoriesEmpty');
         var tableWrap = document.getElementById('categoriesTableWrap');
         var tbody = document.getElementById('categoriesTableBody');
 
-        if (state.pendingCategories.length === 0) {
+        var allCats = [];
+
+        // Pending first (needs attention)
+        state.pendingCategories.forEach(function(cat) {
+            allCats.push({ id: cat.id, name: cat.name, slug: cat.slug, icon: cat.icon, sortOrder: cat.sortOrder, pending: true });
+        });
+
+        // Active categories sorted by sortOrder
+        var sorted = state.categories.slice().sort(function(a, b) {
+            return (a.sortOrder || 999) - (b.sortOrder || 999);
+        });
+        sorted.forEach(function(cat) {
+            allCats.push({ id: cat.id, name: cat.name, slug: cat.slug, icon: cat.icon, sortOrder: cat.sortOrder, pending: false });
+        });
+
+        if (allCats.length === 0) {
             emptyEl.style.display = 'block';
             tableWrap.style.display = 'none';
             return;
@@ -2831,16 +2890,26 @@ Configuration:
         tableWrap.style.display = 'block';
 
         var html = '';
-        state.pendingCategories.forEach(function(cat) {
+        allCats.forEach(function(cat) {
+            var safeName = escapeHtml(cat.name).replace(/'/g, "\\'");
             html += '<tr>' +
-                '<td style="font-size:1.5rem;text-align:center;width:60px;">' + escapeHtml(cat.icon || '🎨') + '</td>' +
+                '<td style="font-size:1.5rem;text-align:center;">' + escapeHtml(cat.icon || '🎨') + '</td>' +
                 '<td><strong>' + escapeHtml(cat.name) + '</strong></td>' +
                 '<td style="color:var(--text-muted);">' + escapeHtml(cat.slug || '') + '</td>' +
-                '<td>' +
-                    '<button class="tnow-cat-action-btn approve" onclick="TattooAdmin.approveCat(\'' + cat.id + '\', \'' + escapeHtml(cat.name) + '\')">Approve</button>' +
-                    '<button class="tnow-cat-action-btn reject" onclick="TattooAdmin.rejectCat(\'' + cat.id + '\', \'' + escapeHtml(cat.name) + '\')">Reject</button>' +
-                '</td>' +
-                '</tr>';
+                '<td>';
+            if (cat.pending) {
+                html += '<span class="tnow-badge-cat-pending">Pending</span>';
+            } else {
+                html += '<span class="tnow-badge-cat-active">Active</span>';
+            }
+            html += '</td><td>';
+            if (cat.pending) {
+                html += '<button class="tnow-cat-action-btn approve" onclick="TattooAdmin.approveCat(\'' + cat.id + '\', \'' + safeName + '\')">Approve</button>' +
+                    '<button class="tnow-cat-action-btn reject" onclick="TattooAdmin.rejectCat(\'' + cat.id + '\', \'' + safeName + '\')">Reject</button>';
+            } else {
+                html += '<button class="tnow-cat-action-btn" onclick="TattooAdmin.editCat(\'' + cat.id + '\')">Edit</button>';
+            }
+            html += '</td></tr>';
         });
         tbody.innerHTML = html;
     }
@@ -2850,6 +2919,61 @@ Configuration:
         if (badge) {
             badge.textContent = state.pendingCategories.length > 0 ? state.pendingCategories.length : '';
         }
+    }
+
+    function editCat(id) {
+        var cat = state.categories.find(function(c) { return c.id === id; });
+        if (!cat) return;
+
+        state.editingCategory = cat;
+        document.getElementById('newCatName').value = cat.name || '';
+        document.getElementById('newCatIcon').value = cat.icon || '';
+
+        var modal = document.getElementById('addCategoryModal');
+        modal.querySelector('h3').textContent = 'Edit Category';
+        modal.querySelector('.tnow-approval-note').style.display = 'none';
+        var saveBtn = document.getElementById('saveCatBtn');
+        saveBtn.textContent = 'Save';
+        saveBtn.onclick = function() { saveEditCategory(); };
+        modal.style.display = 'flex';
+    }
+
+    function saveEditCategory() {
+        var cat = state.editingCategory;
+        if (!cat) return;
+
+        var name = document.getElementById('newCatName').value.trim();
+        if (!name) { showToast('Please enter a category name', 'error'); return; }
+
+        var icon = document.getElementById('newCatIcon').value.trim();
+        var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        var btn = document.getElementById('saveCatBtn');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        fetch(CONFIG.adminEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'updateCategory', id: cat.id, name: name, icon: icon, slug: slug })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                showToast('Category "' + name + '" updated!', 'success');
+                closeAddCategory();
+                fetchCategoriesView();
+                fetchData(); // Refresh category nav in designs view
+            } else {
+                throw new Error(result.error || 'Failed to update');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Save';
+        });
     }
 
     function approveCat(id, name) {
@@ -2862,7 +2986,7 @@ Configuration:
         .then(function(result) {
             if (result.success) {
                 showToast('Category "' + name + '" approved!', 'success');
-                fetchPendingCategories();
+                fetchCategoriesView();
                 fetchData(); // Refresh category nav
             } else {
                 throw new Error(result.error || 'Failed to approve');
@@ -2885,7 +3009,7 @@ Configuration:
         .then(function(result) {
             if (result.success) {
                 showToast('Category "' + name + '" rejected.', 'success');
-                fetchPendingCategories();
+                fetchCategoriesView();
             } else {
                 throw new Error(result.error || 'Failed to reject');
             }
@@ -2917,6 +3041,7 @@ Configuration:
         switchView: switchView,
         approveCat: approveCat,
         rejectCat: rejectCat,
+        editCat: editCat,
         getState: function() { return state; }
     };
 
