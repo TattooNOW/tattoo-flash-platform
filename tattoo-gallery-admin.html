@@ -91,8 +91,8 @@ Configuration:
     <!-- Style Navigation -->
     <div class="tnow-category-nav" id="categoryNav">
         <button class="tnow-cat-btn active" data-category="all">
-            <span class="tnow-cat-icon">✨</span>
-            <span class="tnow-cat-label">All</span>
+            <span class="tnow-cat-icon">🎨</span>
+            <span class="tnow-cat-label">All Styles</span>
         </button>
         <!-- Dynamic style buttons inserted here -->
     </div>
@@ -100,8 +100,8 @@ Configuration:
     <!-- Subject Navigation -->
     <div class="tnow-category-nav" id="subjectNav" style="margin-top:-0.5rem;">
         <button class="tnow-cat-btn active" data-subject="all">
-            <span class="tnow-cat-icon">📌</span>
-            <span class="tnow-cat-label">All</span>
+            <span class="tnow-cat-icon">🏷️</span>
+            <span class="tnow-cat-label">All Subjects</span>
         </button>
         <!-- Dynamic subject buttons inserted here -->
     </div>
@@ -247,7 +247,7 @@ Configuration:
                 <!-- Tab 2: Style (Multi-select) -->
                 <div class="tnow-tab-panel" id="tabCategories">
                     <label class="tnow-picker-label">Select Styles *</label>
-                    <p class="tnow-picker-hint">Choose one or more styles that describe this design.</p>
+                    <p class="tnow-picker-hint"><strong>Style</strong> is the artistic technique or tradition — how the tattoo is drawn. Examples: Traditional, Japanese, Realism.</p>
                     <div class="tnow-category-picker" id="categoryPicker">
                         <!-- Dynamically rendered style pills -->
                     </div>
@@ -256,7 +256,7 @@ Configuration:
                 <!-- Tab 2b: Subject (Multi-select, optional) -->
                 <div class="tnow-tab-panel" id="tabSubjects">
                     <label class="tnow-picker-label">Select Subjects</label>
-                    <p class="tnow-picker-hint">What is depicted in this design? (optional)</p>
+                    <p class="tnow-picker-hint"><strong>Subject</strong> is what the tattoo depicts — the content or theme. Examples: Animals, Mythology, Skulls. (optional)</p>
                     <div class="tnow-category-picker" id="subjectPicker">
                         <!-- Dynamically rendered subject pills -->
                     </div>
@@ -613,6 +613,45 @@ Configuration:
 
 .col-status { width: 100px; }
 .col-actions { width: 120px; }
+
+/* Style/Subject cells — slim mode: one-line compact */
+.tnow-tax-compact {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+/* Style/Subject cells — large thumb mode: show icons */
+.tnow-admin-table.thumb-large .tnow-tax-compact {
+    white-space: normal;
+    max-width: none;
+}
+.tnow-tax-icons {
+    display: none;
+}
+.tnow-admin-table.thumb-large .tnow-tax-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+.tnow-tax-icon-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+.tnow-tax-icon-tag .tax-emoji {
+    font-size: 0.9rem;
+}
+.tnow-admin-table.thumb-large .tnow-tax-text-only {
+    display: none;
+}
 
 /* =================================================================
    THUMBNAIL SIZE TOGGLE
@@ -998,7 +1037,7 @@ Configuration:
 }
 
 .tnow-modal-form {
-    max-width: 600px;
+    max-width: 680px;
 }
 
 .tnow-modal-confirm {
@@ -1721,6 +1760,16 @@ Configuration:
     font-weight: 600;
 }
 
+.tnow-cat-section-header td {
+    background: rgba(255, 255, 255, 0.04);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--tnow-white);
+    padding: 0.6rem 1rem;
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid var(--tnow-orange);
+}
+
 .tnow-cat-action-btn {
     padding: 0.5rem 1rem;
     border: 1px solid var(--card-border);
@@ -2030,8 +2079,8 @@ Configuration:
         var counts = getCategoryCounts();
         var totalCount = state.designs.length;
         var html = '<button class="tnow-cat-btn' + (state.categoryFilter === 'all' ? ' active' : '') + '" data-category="all">' +
-                   '<span class="tnow-cat-icon">✨</span>' +
-                   '<span class="tnow-cat-label">All</span>' +
+                   '<span class="tnow-cat-icon">🎨</span>' +
+                   '<span class="tnow-cat-label">All Styles</span>' +
                    '<span class="tnow-cat-count">' + totalCount + '</span>' +
                    '</button>';
         state.styles.forEach(function(cat) {
@@ -2119,8 +2168,8 @@ Configuration:
         var counts = getSubjectCounts();
         var totalCount = state.designs.length;
         var html = '<button class="tnow-cat-btn' + (state.subjectFilter === 'all' ? ' active' : '') + '" data-subject="all">' +
-                   '<span class="tnow-cat-icon">📌</span>' +
-                   '<span class="tnow-cat-label">All</span>' +
+                   '<span class="tnow-cat-icon">🏷️</span>' +
+                   '<span class="tnow-cat-label">All Subjects</span>' +
                    '<span class="tnow-cat-count">' + totalCount + '</span>' +
                    '</button>';
         state.subjects.forEach(function(sub) {
@@ -2190,22 +2239,39 @@ Configuration:
 
     var isTattooNOW = CONFIG.locationId === 'dWlb0GcHLhNYv9zAChVt';
 
-    function getStyleNames(d) {
-        // If API provides subjectNames/styleNames, use those; otherwise filter by type
-        if (d.styleNames) return d.styleNames.filter(Boolean).join(', ');
+    function getStyleInfo(d) {
         var allIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
-        var styleIdSet = {};
-        state.styles.forEach(function(s) { styleIdSet[s.id] = s.name; });
-        var names = allIds.map(function(id) { return styleIdSet[id]; }).filter(Boolean);
-        return names.join(', ') || (d.categoryNames || [d.categoryName]).filter(Boolean).join(', ');
+        var styleMap = {};
+        state.styles.forEach(function(s) { styleMap[s.id] = s; });
+        var matches = allIds.map(function(id) { return styleMap[id]; }).filter(Boolean);
+        if (matches.length === 0 && d.styleNames && d.styleNames.length) {
+            return { text: d.styleNames.filter(Boolean).join(', '), items: [] };
+        }
+        return { text: matches.map(function(s) { return s.name; }).join(', '), items: matches };
     }
 
-    function getSubjectNames(d) {
-        if (d.subjectNames && d.subjectNames.length > 0) return d.subjectNames.filter(Boolean).join(', ');
+    function getSubjectInfo(d) {
         var allIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
-        var subjectIdSet = {};
-        state.subjects.forEach(function(s) { subjectIdSet[s.id] = s.name; });
-        return allIds.map(function(id) { return subjectIdSet[id]; }).filter(Boolean).join(', ');
+        var subMap = {};
+        state.subjects.forEach(function(s) { subMap[s.id] = s; });
+        var matches = allIds.map(function(id) { return subMap[id]; }).filter(Boolean);
+        if (matches.length === 0 && d.subjectNames && d.subjectNames.length) {
+            return { text: d.subjectNames.filter(Boolean).join(', '), items: [] };
+        }
+        return { text: matches.map(function(s) { return s.name; }).join(', '), items: matches };
+    }
+
+    function renderTaxCell(info, fallback) {
+        if (!info.text) return escapeHtml(fallback || '-');
+        var iconHtml = '';
+        if (info.items.length > 0) {
+            iconHtml = '<div class="tnow-tax-icons">';
+            info.items.forEach(function(item) {
+                iconHtml += '<span class="tnow-tax-icon-tag"><span class="tax-emoji">' + (item.icon || '🎨') + '</span> ' + escapeHtml(item.name) + '</span>';
+            });
+            iconHtml += '</div>';
+        }
+        return '<div class="tnow-tax-compact">' + iconHtml + '<span class="tnow-tax-text-only">' + escapeHtml(info.text) + '</span></div>';
     }
 
     function renderTable() {
@@ -2247,8 +2313,8 @@ Configuration:
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
                 '</td>' +
-                '<td class="col-category">' + escapeHtml(getStyleNames(d) || 'Uncategorized') + '</td>' +
-                '<td class="col-subject">' + escapeHtml(getSubjectNames(d) || '-') + '</td>' +
+                '<td class="col-category">' + renderTaxCell(getStyleInfo(d), 'Uncategorized') + '</td>' +
+                '<td class="col-subject">' + renderTaxCell(getSubjectInfo(d), '-') + '</td>' +
                 '<td class="col-size">' + escapeHtml(d.sizeEstimate || '-') + '</td>' +
                 '<td class="col-price">' + escapeHtml(d.priceRange || '-') + '</td>' +
 
@@ -3180,30 +3246,46 @@ Configuration:
         emptyEl.style.display = 'none';
         tableWrap.style.display = 'block';
 
-        var html = '';
-        allCats.forEach(function(cat) {
+        // Separate into styles and subjects
+        var styleRows = allCats.filter(function(c) { return c.type !== 'subject'; });
+        var subjectRows = allCats.filter(function(c) { return c.type === 'subject'; });
+
+        function renderCatRow(cat) {
             var safeName = escapeHtml(cat.name).replace(/'/g, "\\'");
             var typeLabel = cat.type === 'subject' ? 'Subject' : 'Style';
-            html += '<tr>' +
+            var row = '<tr>' +
                 '<td style="font-size:1.5rem;text-align:center;">' + escapeHtml(cat.icon || '🎨') + '</td>' +
                 '<td><strong>' + escapeHtml(cat.name) + '</strong></td>' +
                 '<td style="color:var(--text-muted);">' + escapeHtml(cat.slug || '') + '</td>' +
                 '<td style="color:var(--text-muted);">' + typeLabel + '</td>' +
                 '<td>';
             if (cat.pending) {
-                html += '<span class="tnow-badge-cat-pending">Pending</span>';
+                row += '<span class="tnow-badge-cat-pending">Pending</span>';
             } else {
-                html += '<span class="tnow-badge-cat-active">Active</span>';
+                row += '<span class="tnow-badge-cat-active">Active</span>';
             }
-            html += '</td><td>';
+            row += '</td><td>';
             if (cat.pending) {
-                html += '<button class="tnow-cat-action-btn approve" onclick="TattooAdmin.approveCat(\'' + cat.id + '\', \'' + safeName + '\')">Approve</button>' +
+                row += '<button class="tnow-cat-action-btn approve" onclick="TattooAdmin.approveCat(\'' + cat.id + '\', \'' + safeName + '\')">Approve</button>' +
                     '<button class="tnow-cat-action-btn reject" onclick="TattooAdmin.rejectCat(\'' + cat.id + '\', \'' + safeName + '\')">Reject</button>';
             } else {
-                html += '<button class="tnow-cat-action-btn" onclick="TattooAdmin.editCat(\'' + cat.id + '\')">Edit</button>';
+                row += '<button class="tnow-cat-action-btn" onclick="TattooAdmin.editCat(\'' + cat.id + '\')">Edit</button>';
             }
-            html += '</td></tr>';
-        });
+            row += '</td></tr>';
+            return row;
+        }
+
+        var html = '';
+        // Styles section header
+        if (styleRows.length > 0) {
+            html += '<tr class="tnow-cat-section-header"><td colspan="6">🎨 Styles (' + styleRows.length + ')</td></tr>';
+            styleRows.forEach(function(cat) { html += renderCatRow(cat); });
+        }
+        // Subjects section header
+        if (subjectRows.length > 0) {
+            html += '<tr class="tnow-cat-section-header"><td colspan="6">🏷️ Subjects (' + subjectRows.length + ')</td></tr>';
+            subjectRows.forEach(function(cat) { html += renderCatRow(cat); });
+        }
         tbody.innerHTML = html;
     }
 
