@@ -172,6 +172,7 @@ Configuration:
                 <!-- Tab Navigation -->
                 <div class="tnow-form-tabs">
                     <button type="button" class="tnow-tab active" data-tab="images" onclick="TattooAdmin.switchTab('images')">Design</button>
+                    <button type="button" class="tnow-tab" data-tab="categories" onclick="TattooAdmin.switchTab('categories')">Categories</button>
                     <button type="button" class="tnow-tab" data-tab="details" onclick="TattooAdmin.switchTab('details')">Details</button>
                     <button type="button" class="tnow-tab" data-tab="advanced" onclick="TattooAdmin.switchTab('advanced')">Submit</button>
                 </div>
@@ -231,21 +232,21 @@ Configuration:
                     </div>
                 </div>
 
-                <!-- Tab 2: Details (Basic Info) -->
+                <!-- Tab 2: Categories (Multi-select) -->
+                <div class="tnow-tab-panel" id="tabCategories">
+                    <label class="tnow-picker-label">Select Categories *</label>
+                    <p class="tnow-picker-hint">Choose one or more styles that describe this design.</p>
+                    <div class="tnow-category-picker" id="categoryPicker">
+                        <!-- Dynamically rendered category pills -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Details (Basic Info) -->
                 <div class="tnow-tab-panel" id="tabDetails">
                     <div class="tnow-form-row">
                         <div class="tnow-form-group full">
                             <label for="designName">Design Name *</label>
                             <input type="text" id="designName" placeholder="e.g., American Eagle">
-                        </div>
-                    </div>
-
-                    <div class="tnow-form-row">
-                        <div class="tnow-form-group full">
-                            <label for="designCategory">Category *</label>
-                            <select id="designCategory">
-                                <option value="">Select category...</option>
-                            </select>
                         </div>
                     </div>
 
@@ -873,6 +874,7 @@ Configuration:
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 0.2rem;
     flex: 0 0 auto;
     padding: 0.75rem 0.75rem;
     background: transparent;
@@ -880,7 +882,7 @@ Configuration:
     border-radius: var(--radius-md);
     color: var(--text-muted);
     font-family: var(--font-body);
-    font-size: 1.25rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 50px;
@@ -1000,6 +1002,65 @@ Configuration:
 /* =================================================================
    HEADER OPTIONS (inline toggles next to title)
    ================================================================= */
+/* =================================================================
+   CATEGORY PILL PICKER
+   ================================================================= */
+.tnow-picker-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--tnow-white);
+}
+
+.tnow-picker-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+}
+
+.tnow-category-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tnow-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tnow-cat-pill:hover {
+    border-color: var(--tnow-orange);
+    color: var(--tnow-white);
+}
+
+.tnow-cat-pill.active {
+    background: rgba(250, 145, 1, 0.15);
+    border-color: var(--tnow-orange);
+    color: var(--tnow-orange);
+    font-weight: 600;
+}
+
+.tnow-cat-pill .pill-icon {
+    font-size: 1rem;
+}
+
+.tnow-cat-pill .pill-check {
+    font-size: 0.7rem;
+    margin-left: 0.15rem;
+}
+
 .tnow-submit-options {
     display: flex;
     gap: 0.5rem;
@@ -1643,6 +1704,7 @@ Configuration:
     border: 1px solid var(--card-border);
     border-radius: var(--radius-sm);
     background: transparent;
+    color: var(--tnow-white);
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 600;
@@ -1809,13 +1871,13 @@ Configuration:
                 }
                 // Always render category UI even if designs fail
                 renderCategoryNav();
-                renderCategoryDropdown();
+                renderCategoryPicker();
             })
             .catch(function(err) {
                 console.error('Categories fetch error:', err);
                 state.categories = [];
                 renderCategoryNav();
-                renderCategoryDropdown();
+                renderCategoryPicker();
             });
 
         // Fetch designs separately (location-specific)
@@ -1916,9 +1978,10 @@ Configuration:
     function getCategoryCounts() {
         var counts = {};
         state.designs.forEach(function(d) {
-            if (d.categoryId) {
-                counts[d.categoryId] = (counts[d.categoryId] || 0) + 1;
-            }
+            var cats = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+            cats.forEach(function(catId) {
+                counts[catId] = (counts[catId] || 0) + 1;
+            });
         });
         return counts;
     }
@@ -1942,7 +2005,7 @@ Configuration:
                     '<span class="tnow-cat-count">' + count + '</span>' +
                     '</button>';
         });
-        html += '<button class="tnow-cat-add" onclick="TattooAdmin.openAddCategory()" title="Add category">+ 🏷️</button>';
+        html += '<button class="tnow-cat-add" onclick="TattooAdmin.openAddCategory()" title="Request new category"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1"/></svg> +</button>';
         els.categoryNav.innerHTML = html;
         bindCategoryNav();
     }
@@ -1959,13 +2022,42 @@ Configuration:
         });
     }
 
-    function renderCategoryDropdown() {
-        var select = document.getElementById('designCategory');
-        var html = '<option value="">Select category...</option>';
+    function renderCategoryPicker(selectedIds) {
+        var picker = document.getElementById('categoryPicker');
+        if (!picker) return;
+        selectedIds = selectedIds || [];
+        var html = '';
         state.categories.forEach(function(cat) {
-            html += '<option value="' + cat.id + '">' + escapeHtml(cat.name) + '</option>';
+            var isActive = selectedIds.indexOf(cat.id) !== -1;
+            html += '<button type="button" class="tnow-cat-pill' + (isActive ? ' active' : '') + '" data-cat-id="' + cat.id + '" onclick="TattooAdmin.toggleCatPill(this)">' +
+                '<span class="pill-icon">' + (cat.icon || '🎨') + '</span>' +
+                '<span>' + escapeHtml(cat.name) + '</span>' +
+                (isActive ? '<span class="pill-check">✓</span>' : '') +
+                '</button>';
         });
-        select.innerHTML = html;
+        picker.innerHTML = html;
+    }
+
+    function toggleCatPill(btn) {
+        btn.classList.toggle('active');
+        var check = btn.querySelector('.pill-check');
+        if (btn.classList.contains('active')) {
+            if (!check) {
+                var span = document.createElement('span');
+                span.className = 'pill-check';
+                span.textContent = '✓';
+                btn.appendChild(span);
+            }
+        } else {
+            if (check) check.remove();
+        }
+    }
+
+    function getSelectedCategoryIds() {
+        var pills = document.querySelectorAll('#categoryPicker .tnow-cat-pill.active');
+        var ids = [];
+        pills.forEach(function(p) { ids.push(p.getAttribute('data-cat-id')); });
+        return ids;
     }
 
     var isTattooNOW = CONFIG.locationId === 'dWlb0GcHLhNYv9zAChVt';
@@ -2009,7 +2101,7 @@ Configuration:
                         (d.status === 'Taken' && d.oneTimeFlash ? '<span class="tnow-badge tnow-badge-taken">Taken</span> ' : '') +
                     '</div>' +
                 '</td>' +
-                '<td class="col-category">' + escapeHtml(d.categoryName || 'Uncategorized') + '</td>' +
+                '<td class="col-category">' + escapeHtml((d.categoryNames || [d.categoryName]).filter(Boolean).join(', ') || 'Uncategorized') + '</td>' +
                 '<td class="col-size">' + escapeHtml(d.sizeEstimate || '-') + '</td>' +
                 '<td class="col-price">' + escapeHtml(d.priceRange || '-') + '</td>' +
 
@@ -2036,7 +2128,8 @@ Configuration:
         // Category filter
         if (state.categoryFilter !== 'all') {
             filtered = filtered.filter(function(d) {
-                return d.categoryId === state.categoryFilter;
+                var cats = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+                return cats.indexOf(state.categoryFilter) !== -1;
             });
         }
 
@@ -2123,6 +2216,7 @@ Configuration:
         document.getElementById('lineSheetUploadingState').style.display = 'none';
         document.getElementById('lineSheetPreviewRow').style.display = 'none';
         document.getElementById('lineSheetFile').value = '';
+        renderCategoryPicker([]); // Reset category pills
         switchTab('images'); // Reset to first tab
         els.modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -2138,7 +2232,7 @@ Configuration:
 
         document.getElementById('designId').value = design.id;
         document.getElementById('designName').value = design.name || '';
-        document.getElementById('designCategory').value = design.categoryId || '';
+        renderCategoryPicker(design.categoryIds || (design.categoryId ? [design.categoryId] : []));
         document.getElementById('designArtist').value = design.artist || '';
         document.getElementById('designImage').value = design.image || '';
         document.getElementById('designDescription').value = design.description || '';
@@ -2354,7 +2448,7 @@ Configuration:
         // Validate required fields
         var image = document.getElementById('designImage').value;
         var name = document.getElementById('designName').value;
-        var categoryId = document.getElementById('designCategory').value;
+        var categoryIds = getSelectedCategoryIds();
 
         if (!image) {
             showToast('Please upload a design image', 'error');
@@ -2362,9 +2456,15 @@ Configuration:
             return;
         }
 
-        if (!name || !categoryId) {
-            showToast('Please fill in design name and category', 'error');
+        if (!name) {
+            showToast('Please fill in design name', 'error');
             switchTab('details');
+            return;
+        }
+
+        if (categoryIds.length === 0) {
+            showToast('Please select at least one category', 'error');
+            switchTab('categories');
             return;
         }
 
@@ -2373,7 +2473,7 @@ Configuration:
         var data = {
             id: document.getElementById('designId').value || null,
             name: name,
-            categoryId: categoryId,
+            categoryIds: categoryIds,
             artist: document.getElementById('designArtist').value,
             image: image,
             description: document.getElementById('designDescription').value,
@@ -2582,13 +2682,14 @@ Configuration:
     // =================================================================
     // TAB SWITCHING
     // =================================================================
-    var tabOrder = ['images', 'details', 'advanced'];
+    var tabOrder = ['images', 'categories', 'details', 'advanced'];
     var currentTabIndex = 0;
 
     function switchTab(tabName) {
         // Map tab names to panel IDs
         var tabPanelMap = {
             'images': 'tabImages',
+            'categories': 'tabCategories',
             'details': 'tabDetails',
             'advanced': 'tabAdvanced'
         };
@@ -3042,6 +3143,7 @@ Configuration:
         approveCat: approveCat,
         rejectCat: rejectCat,
         editCat: editCat,
+        toggleCatPill: toggleCatPill,
         getState: function() { return state; }
     };
 

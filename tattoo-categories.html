@@ -516,20 +516,22 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
         var categoryData = {};
 
         designs.forEach(function(design) {
-            var catName = design.categoryName;
-            if (!catName) return;
+            var catNames = design.categoryNames || (design.categoryName ? [design.categoryName] : []);
+            if (catNames.length === 0) return;
 
-            // Find the category slug from our categories list
-            var category = state.categories.find(function(c) { return c.name === catName; });
-            if (!category) return;
+            catNames.forEach(function(catName) {
+                // Find the category slug from our categories list
+                var category = state.categories.find(function(c) { return c.name === catName; });
+                if (!category) return;
 
-            var slug = category.slug;
+                var slug = category.slug;
 
-            if (!categoryData[slug]) {
-                categoryData[slug] = { designs: [], count: 0 };
-            }
-            categoryData[slug].count++;
-            categoryData[slug].designs.push(design);
+                if (!categoryData[slug]) {
+                    categoryData[slug] = { designs: [], count: 0 };
+                }
+                categoryData[slug].count++;
+                categoryData[slug].designs.push(design);
+            });
         });
 
         // For each category, pick the best image (featured first, then first available)

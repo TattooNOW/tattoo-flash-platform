@@ -1481,16 +1481,14 @@ a.tnow-design-card {
     // RENDERING
     // =================================================================
     function sortCategoriesByDesignCount() {
-        var counts = {};
-        state.designs.forEach(function(d) {
-            if (d.categoryId) {
-                counts[d.categoryId] = (counts[d.categoryId] || 0) + 1;
-            }
-        });
         state.categories.sort(function(a, b) {
-            var countA = counts[a.id] || 0;
-            var countB = counts[b.id] || 0;
+            var countA = a.designCount || 0;
+            var countB = b.designCount || 0;
             return countB - countA; // Most designs first
+        });
+        // Remove categories with no designs
+        state.categories = state.categories.filter(function(cat) {
+            return (cat.designCount || 0) > 0;
         });
     }
 
@@ -1550,11 +1548,14 @@ a.tnow-design-card {
                            c.name === state.activeCategory;
                 });
                 if (cat) {
-                    // Match by categoryId or categoryName
-                    return d.categoryId === cat.id || d.categoryName === cat.name;
+                    // Match by categoryIds array or fallback to single categoryId
+                    var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+                    var catNames = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
+                    return catIds.indexOf(cat.id) !== -1 || catNames.indexOf(cat.name) !== -1;
                 }
                 // Fallback: match by name directly
-                return d.categoryName === state.activeCategory;
+                var names = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
+                return names.indexOf(state.activeCategory) !== -1;
             });
         }
 
@@ -1627,7 +1628,7 @@ a.tnow-design-card {
 
         var html = '';
         filtered.forEach(function(design) {
-            var categoryName = design.categoryName || getCategoryName(design.categoryId);
+            var categoryName = (design.categoryNames || [design.categoryName]).filter(Boolean).join(' · ') || getCategoryName(design.categoryId);
             var isTaken = design.status === 'Taken' && design.oneTimeFlash;
             var cardClass = 'tnow-design-card' + (isTaken ? ' is-taken' : '');
             html += '<div class="' + cardClass + '" data-id="' + design.id + '" onclick="TattooGallery.openModal(\'' + design.id + '\')">' +
@@ -1719,7 +1720,7 @@ a.tnow-design-card {
         setMetaField('modalTime', 'modalTimeWrap', design.timeEstimate);
         setMetaField('modalPrice', 'modalPriceWrap', design.priceRange);
         setMetaField('modalBodyPart', 'modalBodyPartWrap', design.bodyPart);
-        setMetaField('modalCategory', 'modalCategoryWrap', design.categoryName);
+        setMetaField('modalCategory', 'modalCategoryWrap', (design.categoryNames || [design.categoryName]).filter(Boolean).join(' · '));
 
         // Link to design form page with designId
         var designFormUrl = CONFIG.designFormUrl + '?05._online_design_id=' + encodeURIComponent(designId);
@@ -1744,8 +1745,13 @@ a.tnow-design-card {
                 var cat = state.categories.find(function(c) {
                     return c.slug === state.activeCategory || c.id === state.activeCategory || c.name === state.activeCategory;
                 });
-                if (cat) return d.categoryId === cat.id || d.categoryName === cat.name;
-                return d.categoryName === state.activeCategory;
+                if (cat) {
+                    var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+                    var catNames = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
+                    return catIds.indexOf(cat.id) !== -1 || catNames.indexOf(cat.name) !== -1;
+                }
+                var names = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
+                return names.indexOf(state.activeCategory) !== -1;
             });
         }
         if (state.priceFilter !== 'all') {
