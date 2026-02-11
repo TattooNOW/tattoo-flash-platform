@@ -19,6 +19,37 @@ Configuration:
         <button class="tnow-add-btn" onclick="TattooAdmin.openAdd()">+ Add Design</button>
     </div>
 
+    <!-- Page-Level Tabs (TattooNOW only) -->
+    <div class="tnow-page-tabs" id="pageTabs" style="display:none;">
+        <button class="tnow-page-tab active" data-view="designs" onclick="TattooAdmin.switchView('designs')">Designs</button>
+        <button class="tnow-page-tab" data-view="categories" onclick="TattooAdmin.switchView('categories')">Categories <span id="pendingCount" class="tnow-pending-count"></span></button>
+    </div>
+
+    <!-- Categories Approval View (TattooNOW only) -->
+    <div class="tnow-categories-view" id="categoriesView" style="display:none;">
+        <div class="tnow-categories-loading" id="categoriesLoading" style="display:none;">
+            <div class="tnow-spinner"></div>
+            <p>Loading pending categories...</p>
+        </div>
+        <div class="tnow-categories-empty" id="categoriesEmpty" style="display:none;">
+            <span class="tnow-empty-icon">✅</span>
+            <p>No pending category requests.</p>
+        </div>
+        <div class="tnow-admin-table-wrap" id="categoriesTableWrap" style="display:none;">
+            <table class="tnow-admin-table">
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>Name</th>
+                        <th>Slug</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Search & Filter -->
     <div class="tnow-admin-toolbar">
         <div class="tnow-search-wrap">
@@ -1521,6 +1552,106 @@ Configuration:
 }
 
 /* =================================================================
+   PAGE-LEVEL TABS (TattooNOW only)
+   ================================================================= */
+.tnow-page-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--card-border);
+}
+
+.tnow-page-tab {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+}
+
+.tnow-page-tab:hover {
+    color: var(--tnow-white);
+}
+
+.tnow-page-tab.active {
+    color: var(--tnow-orange);
+    border-bottom-color: var(--tnow-orange);
+}
+
+.tnow-pending-count {
+    display: inline-block;
+    background: var(--tnow-orange);
+    color: var(--tnow-black);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 10px;
+    margin-left: 0.3rem;
+    min-width: 1.2rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.tnow-pending-count:empty {
+    display: none;
+}
+
+.tnow-categories-view {
+    padding: 1rem 0;
+}
+
+.tnow-categories-loading,
+.tnow-categories-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.tnow-categories-empty .tnow-empty-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.tnow-cat-action-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    margin-right: 0.5rem;
+}
+
+.tnow-cat-action-btn.approve {
+    color: var(--tnow-green);
+    border-color: var(--tnow-green);
+}
+
+.tnow-cat-action-btn.approve:hover {
+    background: var(--tnow-green);
+    color: var(--tnow-black);
+}
+
+.tnow-cat-action-btn.reject {
+    color: var(--tnow-red);
+    border-color: var(--tnow-red);
+}
+
+.tnow-cat-action-btn.reject:hover {
+    background: var(--tnow-red);
+    color: var(--tnow-white);
+}
+
+/* =================================================================
    RESPONSIVE
    ================================================================= */
 @media (max-width: 768px) {
@@ -1601,7 +1732,9 @@ Configuration:
         priceFilter: 'all',
         isLoading: true,
         editingDesign: null,
-        deleteDesign: null
+        deleteDesign: null,
+        activeView: 'designs',
+        pendingCategories: []
     };
 
     // =================================================================
@@ -1618,6 +1751,7 @@ Configuration:
         els.empty = document.getElementById('adminEmpty');
         els.search = document.getElementById('adminSearch');
         els.categoryNav = document.getElementById('categoryNav');
+        els.toolbar = document.querySelector('.tnow-admin-toolbar');
         els.sizeFilter = document.getElementById('sizeFilter');
         els.statusFilter = document.getElementById('statusFilter');
         els.featuredCheckbox = document.getElementById('featuredCheckbox');
@@ -2626,6 +2760,141 @@ Configuration:
         });
     }
 
+    // =================================================================
+    // CATEGORY APPROVAL (TattooNOW only)
+    // =================================================================
+    function switchView(view) {
+        state.activeView = view;
+        var tabs = document.querySelectorAll('.tnow-page-tab');
+        tabs.forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-view') === view); });
+
+        var categoriesView = document.getElementById('categoriesView');
+
+        if (view === 'designs') {
+            els.toolbar.style.display = '';
+            els.categoryNav.style.display = '';
+            categoriesView.style.display = 'none';
+            renderTable();
+        } else {
+            els.tableWrap.style.display = 'none';
+            els.empty.style.display = 'none';
+            els.loading.style.display = 'none';
+            els.error.style.display = 'none';
+            els.toolbar.style.display = 'none';
+            els.categoryNav.style.display = 'none';
+            categoriesView.style.display = 'block';
+            fetchPendingCategories();
+        }
+    }
+
+    function fetchPendingCategories() {
+        var loadingEl = document.getElementById('categoriesLoading');
+        var emptyEl = document.getElementById('categoriesEmpty');
+        var tableWrap = document.getElementById('categoriesTableWrap');
+
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        tableWrap.style.display = 'none';
+
+        fetch(CONFIG.apiEndpoint + '?action=pendingCategories')
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                loadingEl.style.display = 'none';
+                if (res.success) {
+                    state.pendingCategories = res.categories || [];
+                } else {
+                    state.pendingCategories = [];
+                }
+                renderPendingCategories();
+                updatePendingCount();
+            })
+            .catch(function(err) {
+                loadingEl.style.display = 'none';
+                console.error('Pending categories error:', err);
+                state.pendingCategories = [];
+                renderPendingCategories();
+            });
+    }
+
+    function renderPendingCategories() {
+        var emptyEl = document.getElementById('categoriesEmpty');
+        var tableWrap = document.getElementById('categoriesTableWrap');
+        var tbody = document.getElementById('categoriesTableBody');
+
+        if (state.pendingCategories.length === 0) {
+            emptyEl.style.display = 'block';
+            tableWrap.style.display = 'none';
+            return;
+        }
+
+        emptyEl.style.display = 'none';
+        tableWrap.style.display = 'block';
+
+        var html = '';
+        state.pendingCategories.forEach(function(cat) {
+            html += '<tr>' +
+                '<td style="font-size:1.5rem;text-align:center;width:60px;">' + escapeHtml(cat.icon || '🎨') + '</td>' +
+                '<td><strong>' + escapeHtml(cat.name) + '</strong></td>' +
+                '<td style="color:var(--text-muted);">' + escapeHtml(cat.slug || '') + '</td>' +
+                '<td>' +
+                    '<button class="tnow-cat-action-btn approve" onclick="TattooAdmin.approveCat(\'' + cat.id + '\', \'' + escapeHtml(cat.name) + '\')">Approve</button>' +
+                    '<button class="tnow-cat-action-btn reject" onclick="TattooAdmin.rejectCat(\'' + cat.id + '\', \'' + escapeHtml(cat.name) + '\')">Reject</button>' +
+                '</td>' +
+                '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    function updatePendingCount() {
+        var badge = document.getElementById('pendingCount');
+        if (badge) {
+            badge.textContent = state.pendingCategories.length > 0 ? state.pendingCategories.length : '';
+        }
+    }
+
+    function approveCat(id, name) {
+        fetch(CONFIG.adminEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'approveCategory', id: id })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                showToast('Category "' + name + '" approved!', 'success');
+                fetchPendingCategories();
+                fetchData(); // Refresh category nav
+            } else {
+                throw new Error(result.error || 'Failed to approve');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        });
+    }
+
+    function rejectCat(id, name) {
+        if (!confirm('Reject and delete category "' + name + '"? This cannot be undone.')) return;
+
+        fetch(CONFIG.adminEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'rejectCategory', id: id })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                showToast('Category "' + name + '" rejected.', 'success');
+                fetchPendingCategories();
+            } else {
+                throw new Error(result.error || 'Failed to reject');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+        });
+    }
+
     window.TattooAdmin = {
         refresh: fetchData,
         openAdd: openAdd,
@@ -2645,6 +2914,9 @@ Configuration:
         openAddCategory: openAddCategory,
         closeAddCategory: closeAddCategory,
         saveCategory: saveCategory,
+        switchView: switchView,
+        approveCat: approveCat,
+        rejectCat: rejectCat,
         getState: function() { return state; }
     };
 
@@ -2655,6 +2927,12 @@ Configuration:
         cacheDOMElements();
         bindEvents();
         fetchData();
+
+        // Show page tabs and fetch pending count for TattooNOW admin
+        if (isTattooNOW) {
+            document.getElementById('pageTabs').style.display = 'flex';
+            fetchPendingCategories();
+        }
     }
 
     if (document.readyState === 'loading') {
