@@ -19,10 +19,11 @@ Configuration:
         <button class="tnow-add-btn" id="headerActionBtn" onclick="TattooAdmin.openAdd()">+ Add Design</button>
     </div>
 
-    <!-- Page-Level Tabs (TattooNOW only) -->
+    <!-- Page-Level Tabs -->
     <div class="tnow-page-tabs" id="pageTabs" style="display:none;">
         <button class="tnow-page-tab active" data-view="designs" onclick="TattooAdmin.switchView('designs')">Designs</button>
-        <button class="tnow-page-tab" data-view="categories" onclick="TattooAdmin.switchView('categories')">Styles & Subjects <span id="pendingCount" class="tnow-pending-count"></span></button>
+        <button class="tnow-page-tab" data-view="categories" id="tabCategories" onclick="TattooAdmin.switchView('categories')">Styles & Subjects <span id="pendingCount" class="tnow-pending-count"></span></button>
+        <button class="tnow-page-tab" data-view="catalog" id="tabCatalog" onclick="TattooAdmin.switchView('catalog')">Community Catalog</button>
     </div>
 
     <!-- Categories Approval View (TattooNOW only) -->
@@ -50,6 +51,23 @@ Configuration:
                 <tbody id="categoriesTableBody"></tbody>
             </table>
         </div>
+    </div>
+
+    <!-- Community Catalog View -->
+    <div id="catalogView" style="display:none;">
+        <div class="tnow-catalog-search">
+            <input type="text" class="tnow-search-input" id="catalogSearch" placeholder="Search community designs..." autocomplete="off" oninput="TattooAdmin.filterCatalog()">
+            <span class="tnow-search-icon">🔍</span>
+        </div>
+        <div class="tnow-admin-loading" id="catalogLoading" style="display:none;">
+            <div class="tnow-spinner"></div>
+            <p>Loading community catalog...</p>
+        </div>
+        <div class="tnow-admin-empty" id="catalogEmpty" style="display:none;">
+            <span class="tnow-empty-icon">📦</span>
+            <p>No shared designs available yet.</p>
+        </div>
+        <div class="tnow-catalog-grid" id="catalogGrid"></div>
     </div>
 
     <!-- Search & Filter -->
@@ -1757,6 +1775,86 @@ Configuration:
     display: none;
 }
 
+/* Community Catalog View */
+.tnow-catalog-search {
+    position: relative;
+    margin-bottom: 1rem;
+}
+.tnow-catalog-search .tnow-search-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+.tnow-catalog-search .tnow-search-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.tnow-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.tnow-catalog-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+.tnow-catalog-card:hover {
+    border-color: var(--tnow-orange);
+}
+.tnow-catalog-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+}
+.tnow-catalog-card-info {
+    padding: 0.6rem 0.75rem;
+}
+.tnow-catalog-card-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tnow-catalog-card-meta {
+    font-size: 0.75rem;
+    color: var(--tnow-gray);
+    margin-bottom: 0.5rem;
+}
+.tnow-catalog-btn {
+    display: block;
+    width: 100%;
+    padding: 0.4rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+}
+.tnow-catalog-btn.add {
+    background: var(--tnow-orange);
+    color: #000;
+}
+.tnow-catalog-btn.add:hover {
+    background: var(--tnow-orange-dark);
+}
+.tnow-catalog-btn.added {
+    background: rgba(255,255,255,0.1);
+    color: var(--tnow-gray);
+}
+.tnow-catalog-btn.added:hover {
+    background: rgba(220,50,50,0.2);
+    color: #e55;
+}
+
 .tnow-categories-view {
     padding: 1rem 0;
 }
@@ -2563,8 +2661,8 @@ Configuration:
 
         if (isShared) {
             document.getElementById('deleteTitle').textContent = 'Remove Shared Design?';
-            document.getElementById('deleteMessage').innerHTML = 'Remove "<span id="deleteName">' + escapeHtml(design.name) + '</span>" from the community catalog?';
-            document.getElementById('deleteWarning').textContent = 'This will unshare the design. The original owner will keep it.';
+            document.getElementById('deleteMessage').innerHTML = 'Remove "<span id="deleteName">' + escapeHtml(design.name) + '</span>" from your gallery?';
+            document.getElementById('deleteWarning').textContent = 'You can re-add it from the Community Catalog anytime.';
             document.getElementById('deleteConfirmBtn').textContent = 'Remove';
         } else {
             document.getElementById('deleteTitle').textContent = 'Delete Design?';
@@ -2785,33 +2883,20 @@ Configuration:
         var isShared = design.locationId && design.locationId !== CONFIG.locationId;
 
         if (isShared) {
-            // Unshare: send all existing fields with inCommunityCatalog set to false
-            saveDesignAPI({
-                id: design.id,
-                name: design.name || '',
-                categoryId: design.categoryId || '',
-                description: design.description || '',
-                artist: design.artist || '',
-                image: design.image || '',
-                sizeEstimate: design.sizeEstimate || '',
-                timeEstimate: design.timeEstimate || '',
-                priceRange: design.priceRange || '',
-                locationId: design.locationId || '',
-                featured: design.featured || false,
-                available: design.available !== false,
-                sortOrder: design.sortOrder || 999,
-                oneTimeFlash: design.oneTimeFlash || false,
-                inCommunityCatalog: false,
-                lineSheet: design.lineSheet || '',
-                bodyPart: design.bodyPart || ''
+            // Unsubscribe: remove this location from the design's subscribers
+            fetch(CONFIG.adminEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'unsubscribeDesign', designId: design.id, locationId: CONFIG.locationId })
             })
+                .then(function(r) { return r.json(); })
                 .then(function(result) {
                     if (result.success) {
-                        showToast('Design removed from catalog', 'success');
+                        showToast('Design removed from your gallery', 'success');
                         closeDeleteModal();
                         fetchData();
                     } else {
-                        throw new Error(result.error || 'Failed to unshare');
+                        throw new Error(result.error || 'Failed to remove');
                     }
                 })
                 .catch(function(err) {
@@ -3186,28 +3271,40 @@ Configuration:
         tabs.forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-view') === view); });
 
         var categoriesView = document.getElementById('categoriesView');
+        var catalogView = document.getElementById('catalogView');
         var headerBtn = document.getElementById('headerActionBtn');
+
+        // Hide all views first
+        els.tableWrap.style.display = 'none';
+        els.empty.style.display = 'none';
+        els.loading.style.display = 'none';
+        els.error.style.display = 'none';
+        els.toolbar.style.display = 'none';
+        els.categoryNav.style.display = 'none';
+        els.subjectNav.style.display = 'none';
+        categoriesView.style.display = 'none';
+        catalogView.style.display = 'none';
 
         if (view === 'designs') {
             els.toolbar.style.display = '';
             els.categoryNav.style.display = '';
             els.subjectNav.style.display = '';
-            categoriesView.style.display = 'none';
             headerBtn.textContent = '+ Add Design';
             headerBtn.onclick = function() { TattooAdmin.openAdd(); };
             renderTable();
+        } else if (view === 'catalog') {
+            catalogView.style.display = 'block';
+            headerBtn.style.display = 'none';
+            fetchCatalog();
         } else {
-            els.tableWrap.style.display = 'none';
-            els.empty.style.display = 'none';
-            els.loading.style.display = 'none';
-            els.error.style.display = 'none';
-            els.toolbar.style.display = 'none';
-            els.categoryNav.style.display = 'none';
-            els.subjectNav.style.display = 'none';
             categoriesView.style.display = 'block';
             headerBtn.textContent = '+ Add Category';
             headerBtn.onclick = function() { TattooAdmin.openAddCategory(); };
             fetchCategoriesView();
+        }
+
+        if (view !== 'catalog') {
+            headerBtn.style.display = '';
         }
     }
 
@@ -3429,6 +3526,111 @@ Configuration:
         });
     }
 
+    // =================================================================
+    // COMMUNITY CATALOG
+    // =================================================================
+    var catalogDesigns = [];
+
+    function fetchCatalog() {
+        var loadingEl = document.getElementById('catalogLoading');
+        var emptyEl = document.getElementById('catalogEmpty');
+        var gridEl = document.getElementById('catalogGrid');
+
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        gridEl.innerHTML = '';
+
+        fetch(CONFIG.apiEndpoint + '?action=catalog')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                loadingEl.style.display = 'none';
+                catalogDesigns = (data.designs || []);
+                if (catalogDesigns.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    renderCatalog();
+                }
+            })
+            .catch(function(err) {
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                emptyEl.querySelector('p').textContent = 'Error loading catalog: ' + err.message;
+            });
+    }
+
+    function renderCatalog() {
+        var gridEl = document.getElementById('catalogGrid');
+        var emptyEl = document.getElementById('catalogEmpty');
+        var searchVal = (document.getElementById('catalogSearch').value || '').toLowerCase();
+        var filtered = catalogDesigns.filter(function(d) {
+            if (!searchVal) return true;
+            return (d.name || '').toLowerCase().indexOf(searchVal) !== -1 ||
+                   (d.categoryName || '').toLowerCase().indexOf(searchVal) !== -1 ||
+                   (d.artist || '').toLowerCase().indexOf(searchVal) !== -1;
+        });
+
+        if (filtered.length === 0) {
+            gridEl.innerHTML = '';
+            emptyEl.style.display = 'block';
+            return;
+        }
+        emptyEl.style.display = 'none';
+
+        var locId = CONFIG.locationId;
+        var html = '';
+        filtered.forEach(function(d) {
+            var subs = d.subscribedLocations || '';
+            var isAdded = subs.indexOf(',' + locId + ',') !== -1;
+            html += '<div class="tnow-catalog-card" data-id="' + d.id + '">' +
+                '<img src="' + (d.thumbnail || d.image || '') + '" alt="' + (d.name || '') + '" loading="lazy">' +
+                '<div class="tnow-catalog-card-info">' +
+                    '<div class="tnow-catalog-card-name">' + (d.name || 'Untitled') + '</div>' +
+                    '<div class="tnow-catalog-card-meta">' + (d.categoryName || '') + (d.artist ? ' &bull; ' + d.artist : '') + '</div>' +
+                    '<button class="tnow-catalog-btn ' + (isAdded ? 'added' : 'add') + '" ' +
+                        'onclick="TattooAdmin.toggleCatalogDesign(\'' + d.id + '\', ' + (isAdded ? 'false' : 'true') + ')">' +
+                        (isAdded ? 'Added' : '+ Add') +
+                    '</button>' +
+                '</div>' +
+            '</div>';
+        });
+        gridEl.innerHTML = html;
+    }
+
+    function filterCatalog() {
+        renderCatalog();
+    }
+
+    function toggleCatalogDesign(designId, subscribe) {
+        var action = subscribe ? 'subscribeDesign' : 'unsubscribeDesign';
+        var btn = document.querySelector('.tnow-catalog-card[data-id="' + designId + '"] .tnow-catalog-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = subscribe ? 'Adding...' : 'Removing...';
+        }
+
+        fetch(CONFIG.adminEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action, designId: designId, locationId: CONFIG.locationId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                // Update local data
+                var design = catalogDesigns.find(function(d) { return d.id === designId; });
+                if (design) design.subscribedLocations = result.subscribedLocations || '';
+                renderCatalog();
+                showToast(subscribe ? 'Design added to your gallery' : 'Design removed from your gallery', 'success');
+            } else {
+                throw new Error(result.error || 'Failed');
+            }
+        })
+        .catch(function(err) {
+            showToast('Error: ' + err.message, 'error');
+            if (btn) { btn.disabled = false; btn.textContent = subscribe ? '+ Add' : 'Added'; }
+        });
+    }
+
     window.TattooAdmin = {
         refresh: fetchData,
         openAdd: openAdd,
@@ -3455,6 +3657,8 @@ Configuration:
         editCat: editCat,
         toggleCatPill: toggleCatPill,
         toggleSubPill: toggleSubPill,
+        filterCatalog: filterCatalog,
+        toggleCatalogDesign: toggleCatalogDesign,
         getState: function() { return state; }
     };
 
@@ -3466,10 +3670,13 @@ Configuration:
         bindEvents();
         fetchData();
 
-        // Show page tabs and fetch pending count for TattooNOW admin
+        // Show page tabs for all locations
+        document.getElementById('pageTabs').style.display = 'flex';
         if (isTattooNOW) {
-            document.getElementById('pageTabs').style.display = 'flex';
+            document.getElementById('tabCatalog').style.display = 'none';
             fetchPendingCategories();
+        } else {
+            document.getElementById('tabCategories').style.display = 'none';
         }
     }
 
