@@ -41,8 +41,8 @@ tattoo-flash-platform/
 
 | Workflow | ID | URL | Method |
 |----------|----|-----|--------|
-| Tattoo Gallery API (read) | `wYArwQruOnaoVGlR` | `https://reinventing.app.n8n.cloud/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4` | GET |
-| Tattoo Admin API (write) | `3ildRV1EjmaoZqhp` | `https://reinventing.app.n8n.cloud/webhook/tattoo-admin-api` | POST |
+| Tattoo Gallery API (read) | `wYArwQruOnaoVGlR` | `https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4` | GET |
+| Tattoo Admin API (write) | `3ildRV1EjmaoZqhp` | `https://tn.reinventingai.com/webhook/tattoo-admin-api` | POST |
 
 **Gallery API Actions (GET):**
 | Action | Purpose |

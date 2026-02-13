@@ -1,0 +1,138 @@
+<!--
+  GHL Custom Code Loader Snippets
+  ================================
+  Paste these into GoHighLevel page Custom Code elements.
+  Each loader fetches the latest HTML from the Tattoo Asset Server.
+
+  Updated: 2026-02-13
+  Domain: tn.reinventingai.com
+-->
+
+
+<!-- ============================================================
+     1. CATEGORIES PAGE
+     ============================================================
+-->
+<script>
+window.TNOW_LOCATION_ID = '{{location.id}}';
+window.TNOW_GALLERY_URL = '{{custom_values.gallery_page_url}}';
+</script>
+<div id="tnow-loader"></div>
+<script>
+fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=categories')
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    var c = document.getElementById('tnow-loader');
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+  });
+</script>
+
+
+<!-- ============================================================
+     2. GALLERY PAGE ("Pick a Tattoo")
+     ============================================================
+-->
+<script>
+window.TNOW_LOCATION_ID = '{{location.id}}';
+window.TNOW_CALENDAR_URL = '{{custom_values.03__consultation_calendar}}';
+window.TNOW_CATEGORIES_URL = '{{custom_values.categories_page_url}}';
+window.TNOW_DESIGN_FORM_URL = '{{custom_values.design_form_url}}';
+</script>
+<div id="tnow-loader"></div>
+<script>
+fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=gallery')
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    var c = document.getElementById('tnow-loader');
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+  });
+</script>
+
+
+<!-- ============================================================
+     3. ADMIN PAGE
+     ============================================================
+-->
+<script>
+window.TNOW_LOCATION_ID = '{{location.id}}';
+</script>
+<div id="tnow-loader"></div>
+<script>
+fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=gallery-admin')
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    var c = document.getElementById('tnow-loader');
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+  });
+</script>
+
+
+<!-- ============================================================
+     4. DESIGN CARD (Thank-you / Confirmation pages)
+     ============================================================
+-->
+<script>
+window.TNOW_LOCATION_ID = '{{location.id}}';
+window.TNOW_DESIGN_ID = '{{custom_values.05._online_design_id}}';
+</script>
+<div id="tnow-loader"></div>
+<script>
+fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=design-card')
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    var c = document.getElementById('tnow-loader');
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+  });
+</script>
+
+
+<!-- ============================================================
+     5. FAQ HEADER (Category navigation bar)
+     ============================================================
+-->
+<script>
+window.TNOW_LOCATION_ID = '{{location.id}}';
+</script>
+<div id="tnow-loader"></div>
+<script>
+fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=faq-header')
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    var c = document.getElementById('tnow-loader');
+    c.innerHTML = html;
+    c.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+  });
+</script>
+
+
+<!-- ============================================================
+     6. FAQ SCHEMA — CANNOT USE LOADER
+     ============================================================
+     faq-schema.html is entirely GHL merge fields.
+     It must be pasted directly into the page's Custom Code element.
+     See faq-schema.html in the repo.
+-->
