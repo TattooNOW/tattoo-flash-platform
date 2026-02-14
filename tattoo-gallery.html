@@ -1217,15 +1217,17 @@ a.tnow-design-card {
     }
 
     var CONFIG = {
-        // API endpoint - UPDATE THIS to your n8n webhook URL
-        apiEndpoint: 'https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        // Supabase REST API
+        supabaseUrl: 'https://ztueqtlqsjsfxskmyrgg.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0dWVxdGxxc2pzZnhza215cmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgzMzIwNSwiZXhwIjoyMDg2NDA5MjA1fQ.9bgNwxrYQST3iY6J7OKRgyxeogjU9_jOHFAf29nDGk8',
+        restBase: 'https://ztueqtlqsjsfxskmyrgg.supabase.co/rest/v1',
 
         // GHL Location ID - persisted across pages via localStorage
         locationId: getLocationId(),
 
         // Calendar booking URL - uses GHL custom value with fallback
         calendarUrl: window.TNOW_CALENDAR_URL || '{{custom_values.03__consultation_calendar}}',
-        defaultCalendarUrl: '/consultation', // Fallback if custom value not set
+        defaultCalendarUrl: '/consultation',
 
         // Categories page URL - for "More" link
         categoriesPageUrl: window.TNOW_CATEGORIES_URL || window.location.origin + '/tattoo-design-categories',
@@ -1237,6 +1239,37 @@ a.tnow-design-card {
         cacheKey: 'tnow_gallery_cache',
         cacheTTL: 5 * 60 * 1000 // 5 minutes
     };
+
+    // Supabase headers for REST API calls
+    var SUPABASE_HEADERS = {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+        'Content-Type': 'application/json'
+    };
+
+    function supabaseFetch(path, options) {
+        var opts = options || {};
+        var headers = Object.assign({}, SUPABASE_HEADERS, opts.headers || {});
+        return fetch(CONFIG.restBase + path, {
+            method: opts.method || 'GET',
+            headers: headers
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Supabase error: ' + r.status);
+            var total = null;
+            var contentRange = r.headers.get('Content-Range');
+            if (contentRange) {
+                var parts = contentRange.split('/');
+                if (parts[1]) total = parseInt(parts[1], 10);
+            }
+            return r.json().then(function(data) {
+                return { rows: data, total: total };
+            });
+        });
+    }
+
+    // Category lookup cache (populated after categories fetch)
+    var categoryLookup = {}; // id -> { name, slug }
 
     // =================================================================
     // STATE
@@ -1302,19 +1335,22 @@ a.tnow-design-card {
         var categoriesPromise;
         if (cachedCategories) {
             state.categories = cachedCategories;
+            // Rebuild lookup
+            categoryLookup = {};
+            state.categories.forEach(function(c) { categoryLookup[c.id] = { name: c.name, slug: c.slug }; });
             renderCategories();
-            categoriesPromise = Promise.resolve({ success: true, categories: cachedCategories });
+            categoriesPromise = Promise.resolve();
         } else {
-            categoriesPromise = fetch(CONFIG.apiEndpoint + '?action=categories')
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (!data.success) {
-                        throw new Error('Failed to load categories');
-                    }
-                    state.categories = data.categories || [];
+            categoriesPromise = supabaseFetch('/categories?status=eq.Active&order=sort_order.asc&select=id,name,slug,icon,sort_order,type')
+                .then(function(result) {
+                    state.categories = result.rows.map(function(r) {
+                        return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, designCount: 0, type: r.type };
+                    });
+                    // Build lookup for design -> category name mapping
+                    categoryLookup = {};
+                    state.categories.forEach(function(c) { categoryLookup[c.id] = { name: c.name, slug: c.slug }; });
                     saveCategoriesToCache();
                     renderCategories();
-                    return data;
                 });
         }
 
@@ -1336,58 +1372,83 @@ a.tnow-design-card {
     }
 
     function fetchDesignsPage(offset) {
-        // Build URL with server-side filters
-        var params = new URLSearchParams({
-            action: 'designs',
-            locationId: CONFIG.locationId,
-            offset: offset,
-            limit: state.pageSize
-        });
+        // Build Supabase PostgREST query
+        var filters = ['location_id=eq.' + encodeURIComponent(CONFIG.locationId), 'available=eq.true'];
 
         // Server-side filters
-        if (state.activeCategory !== 'all') {
-            params.append('category', state.activeCategory);
-        }
         if (state.sizeFilter !== 'all') {
-            params.append('size', state.sizeFilter);
+            filters.push('size_estimate=eq.' + encodeURIComponent(state.sizeFilter));
         }
         if (state.featuredFilter === 'featured') {
-            params.append('featured', 'true');
+            filters.push('featured=eq.true');
         }
         if (state.searchQuery) {
-            params.append('search', state.searchQuery);
+            filters.push('name=ilike.*' + encodeURIComponent(state.searchQuery) + '*');
+        }
+        // Category filter: find designs via junction table
+        if (state.activeCategory !== 'all') {
+            var cat = state.categories.find(function(c) {
+                return c.slug === state.activeCategory || c.id === state.activeCategory || c.name === state.activeCategory;
+            });
+            if (cat) {
+                filters.push('design_categories.category_id=eq.' + cat.id);
+            }
+        }
+
+        var url = '/designs?' + filters.join('&') +
+            '&select=*,design_categories!inner(category_id)' +
+            '&order=sort_order.asc,created_at.desc' +
+            '&offset=' + offset + '&limit=' + state.pageSize;
+
+        // For category filter we need !inner join; without category filter use regular join
+        if (state.activeCategory === 'all') {
+            url = '/designs?' + filters.join('&') +
+                '&select=*,design_categories(category_id)' +
+                '&order=sort_order.asc,created_at.desc' +
+                '&offset=' + offset + '&limit=' + state.pageSize;
         }
 
         var thisFetchId = ++fetchId;
 
-        return fetch(CONFIG.apiEndpoint + '?' + params.toString())
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                // Ignore stale responses from previous fetches
-                if (thisFetchId !== fetchId) return res;
+        return supabaseFetch(url, {
+            headers: { 'Prefer': 'count=exact', 'Range-Unit': 'items', 'Range': offset + '-' + (offset + state.pageSize - 1) }
+        })
+        .then(function(result) {
+            if (thisFetchId !== fetchId) return;
 
-                // Handle both success with empty results and error responses gracefully
-                if (!res.success && res.error) {
-                    console.warn('Designs API returned error:', res.error);
-                }
+            // Transform rows to frontend format
+            var designs = result.rows.map(function(row) {
+                var catIds = (row.design_categories || []).map(function(dc) { return dc.category_id; });
+                var catNames = catIds.map(function(id) {
+                    var c = categoryLookup[id];
+                    return c ? c.name : null;
+                }).filter(Boolean);
 
-                // First page or append - use empty array if no designs
-                var designs = res.designs || [];
-                if (offset === 0) {
-                    state.designs = designs;
-                } else {
-                    state.designs = state.designs.concat(designs);
-                }
-
-                // Update pagination state - handle missing pagination gracefully
-                var pagination = res.pagination || { offset: 0, total: designs.length, hasMore: false };
-                state.offset = pagination.offset;
-                state.total = pagination.total;
-                state.hasMore = pagination.hasMore;
-
-                renderDesigns();
-                return res;
+                return {
+                    id: row.id, name: row.name, description: row.description,
+                    image: row.image, thumbnail: row.thumbnail,
+                    sizeEstimate: row.size_estimate, timeEstimate: row.time_estimate,
+                    priceRange: row.price_range, bodyPart: row.body_part,
+                    featured: row.featured, status: row.status,
+                    oneTimeFlash: row.one_time_flash,
+                    categoryId: catIds[0] || null, categoryIds: catIds,
+                    categoryName: catNames[0] || '', categoryNames: catNames
+                };
             });
+
+            if (offset === 0) {
+                state.designs = designs;
+            } else {
+                state.designs = state.designs.concat(designs);
+            }
+
+            var total = result.total || designs.length;
+            state.offset = offset;
+            state.total = total;
+            state.hasMore = (offset + designs.length) < total;
+
+            renderDesigns();
+        });
     }
 
     function loadMoreFromServer() {

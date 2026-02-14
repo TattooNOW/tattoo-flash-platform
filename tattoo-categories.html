@@ -432,8 +432,10 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
     }
 
     var CONFIG = {
-        // API endpoint - same as gallery
-        apiEndpoint: 'https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        // Supabase REST API
+        supabaseUrl: 'https://ztueqtlqsjsfxskmyrgg.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0dWVxdGxxc2pzZnhza215cmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgzMzIwNSwiZXhwIjoyMDg2NDA5MjA1fQ.9bgNwxrYQST3iY6J7OKRgyxeogjU9_jOHFAf29nDGk8',
+        restBase: 'https://ztueqtlqsjsfxskmyrgg.supabase.co/rest/v1',
 
         // GHL Location ID - persisted across pages via localStorage
         locationId: getLocationId(),
@@ -445,6 +447,21 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
         cacheKey: 'tnow_categories_cache',
         cacheTTL: 30 * 60 * 1000 // 30 minutes (categories rarely change)
     };
+
+    // Supabase headers for REST API calls
+    var SUPABASE_HEADERS = {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+        'Content-Type': 'application/json'
+    };
+
+    function supabaseFetch(path) {
+        return fetch(CONFIG.restBase + path, { headers: SUPABASE_HEADERS })
+            .then(function(r) {
+                if (!r.ok) throw new Error('Supabase error: ' + r.status);
+                return r.json();
+            });
+    }
 
     // =================================================================
     // STATE
@@ -486,23 +503,39 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
             return;
         }
 
-        // Fetch categories first, then designs for featured images
-        fetch(CONFIG.apiEndpoint + '?action=categories')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (!data.success) {
-                    throw new Error('Failed to load categories');
-                }
-                state.categories = data.categories || [];
+        // Fetch categories and designs in parallel from Supabase
+        var catUrl = '/categories?status=eq.Active&type=eq.style&order=sort_order.asc&select=id,name,slug,icon,sort_order,type';
+        var designUrl = '/designs?location_id=eq.' + encodeURIComponent(CONFIG.locationId) +
+            '&available=eq.true&select=id,name,image,thumbnail,featured,design_categories(category_id)&limit=200';
 
-                // Now fetch designs to get featured images per category
-                return fetch(CONFIG.apiEndpoint + '?action=designs&locationId=' + encodeURIComponent(CONFIG.locationId) + '&limit=100');
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success && data.designs) {
-                    buildCategoryImages(data.designs);
-                }
+        Promise.all([
+            supabaseFetch(catUrl),
+            supabaseFetch(designUrl)
+        ])
+            .then(function(results) {
+                var catRows = results[0];
+                var designRows = results[1];
+
+                // Map categories to frontend format
+                state.categories = catRows.map(function(r) {
+                    return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, designCount: 0 };
+                });
+
+                // Map designs to frontend format with categoryNames
+                var catById = {};
+                catRows.forEach(function(c) { catById[c.id] = c.name; });
+
+                var designs = designRows.map(function(r) {
+                    var catIds = (r.design_categories || []).map(function(dc) { return dc.category_id; });
+                    var catNames = catIds.map(function(id) { return catById[id]; }).filter(Boolean);
+                    return {
+                        id: r.id, name: r.name, image: r.image, thumbnail: r.thumbnail,
+                        featured: r.featured, categoryIds: catIds, categoryNames: catNames,
+                        categoryName: catNames[0] || ''
+                    };
+                });
+
+                buildCategoryImages(designs);
                 saveToCache();
                 renderCategories();
                 setLoading(false);

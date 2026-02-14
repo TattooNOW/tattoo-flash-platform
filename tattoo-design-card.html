@@ -355,11 +355,12 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
     }
 
     var CONFIG = {
-        // API endpoint - same as gallery
-        apiEndpoint: 'https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        // Supabase REST API
+        supabaseUrl: 'https://ztueqtlqsjsfxskmyrgg.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0dWVxdGxxc2pzZnhza215cmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgzMzIwNSwiZXhwIjoyMDg2NDA5MjA1fQ.9bgNwxrYQST3iY6J7OKRgyxeogjU9_jOHFAf29nDGk8',
+        restBase: 'https://ztueqtlqsjsfxskmyrgg.supabase.co/rest/v1',
 
         // Design ID - from window variable or URL param
-        // Checks '05._online_design_id' first (GHL form field), then 'designId' for backwards compatibility
         designId: window.TNOW_DESIGN_ID ||
                   new URLSearchParams(window.location.search).get('05._online_design_id') ||
                   new URLSearchParams(window.location.search).get('designId') ||
@@ -368,6 +369,21 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
         // Location ID - persisted across pages via localStorage
         locationId: getLocationId()
     };
+
+    // Supabase headers for REST API calls
+    var SUPABASE_HEADERS = {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+        'Content-Type': 'application/json'
+    };
+
+    function supabaseFetch(path) {
+        return fetch(CONFIG.restBase + path, { headers: SUPABASE_HEADERS })
+            .then(function(r) {
+                if (!r.ok) throw new Error('Supabase error: ' + r.status);
+                return r.json();
+            });
+    }
 
     // =================================================================
     // STATE
@@ -417,15 +433,34 @@ Requires: n8n workflow "Tattoo Gallery API Proxy" to be active
 
         setLoading(true);
 
-        var url = CONFIG.apiEndpoint + '?action=design&designId=' + encodeURIComponent(CONFIG.designId) + '&locationId=' + encodeURIComponent(CONFIG.locationId);
+        var url = '/designs?id=eq.' + encodeURIComponent(CONFIG.designId) +
+            '&select=*,design_categories(category_id,categories(name))';
 
-        fetch(url)
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (!data.success || !data.design) {
+        supabaseFetch(url)
+            .then(function(rows) {
+                if (!rows || rows.length === 0) {
                     throw new Error('Design not found');
                 }
-                state.design = data.design;
+                var row = rows[0];
+                // Map snake_case DB fields to camelCase frontend fields
+                var catNames = (row.design_categories || [])
+                    .map(function(dc) { return dc.categories ? dc.categories.name : null; })
+                    .filter(Boolean);
+                state.design = {
+                    id: row.id,
+                    name: row.name,
+                    description: row.description,
+                    image: row.image,
+                    thumbnail: row.thumbnail,
+                    featured: row.featured,
+                    sizeEstimate: row.size_estimate,
+                    timeEstimate: row.time_estimate,
+                    priceRange: row.price_range,
+                    bodyPart: row.body_part,
+                    categoryName: catNames.join(' · '),
+                    categoryNames: catNames,
+                    status: row.status
+                };
                 renderCard();
                 setLoading(false);
             })
