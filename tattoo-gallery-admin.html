@@ -1997,10 +1997,120 @@ Configuration:
     }
 
     var CONFIG = {
-        apiEndpoint: 'https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        supabaseUrl: 'https://ztueqtlqsjsfxskmyrgg.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0dWVxdGxxc2pzZnhza215cmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgzMzIwNSwiZXhwIjoyMDg2NDA5MjA1fQ.9bgNwxrYQST3iY6J7OKRgyxeogjU9_jOHFAf29nDGk8',
+        restBase: 'https://ztueqtlqsjsfxskmyrgg.supabase.co/rest/v1',
+        // n8n webhook kept for image upload only (needs server-side GHL API key)
         adminEndpoint: 'https://tn.reinventingai.com/webhook/tattoo-admin-api',
         locationId: getLocationId()
     };
+
+    // =================================================================
+    // SUPABASE HELPERS
+    // =================================================================
+    var SUPABASE_HEADERS = {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    };
+
+    // Field name mapping: frontend camelCase -> DB snake_case
+    var FIELD_MAP = {
+        sizeEstimate: 'size_estimate',
+        timeEstimate: 'time_estimate',
+        priceRange: 'price_range',
+        bodyPart: 'body_part',
+        oneTimeFlash: 'one_time_flash',
+        lineSheet: 'line_sheet',
+        sortOrder: 'sort_order',
+        locationId: 'location_id',
+        artist: 'original_artist',
+        inCommunityCatalog: 'community_share',
+        takenDate: 'taken_date',
+        takenByContact: 'taken_by_contact'
+    };
+
+    // Reverse mapping: DB snake_case -> frontend camelCase
+    var REVERSE_MAP = {
+        size_estimate: 'sizeEstimate',
+        time_estimate: 'timeEstimate',
+        price_range: 'priceRange',
+        body_part: 'bodyPart',
+        one_time_flash: 'oneTimeFlash',
+        line_sheet: 'lineSheet',
+        sort_order: 'sortOrder',
+        location_id: 'locationId',
+        original_artist: 'artist',
+        community_share: 'inCommunityCatalog',
+        community_status: '_communityStatus',
+        taken_date: 'takenDate',
+        taken_by_contact: 'takenByContact',
+        created_at: 'createdAt',
+        updated_at: 'updatedAt',
+        featured_image: 'featuredImage',
+        is_custom: 'isCustom'
+    };
+
+    function supabaseFetch(path, options) {
+        var url = CONFIG.restBase + path;
+        var opts = {
+            method: (options && options.method) || 'GET',
+            headers: Object.assign({}, SUPABASE_HEADERS, (options && options.headers) || {})
+        };
+        if (options && options.body) {
+            opts.body = JSON.stringify(options.body);
+        }
+        return fetch(url, opts).then(function(r) {
+            if (!r.ok) {
+                return r.text().then(function(t) {
+                    throw new Error('Supabase error ' + r.status + ': ' + t);
+                });
+            }
+            var ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('json') !== -1) return r.json();
+            return [];
+        });
+    }
+
+    function toSnakeCase(obj) {
+        var result = {};
+        var skip = { categoryIds: 1, subjectIds: 1, action: 1, sharePending: 1, subscribedLocations: 1, categoryId: 1, design_categories: 1, design_subscriptions: 1 };
+        for (var key in obj) {
+            if (skip[key]) continue;
+            var snakeKey = FIELD_MAP[key] || key;
+            result[snakeKey] = obj[key];
+        }
+        // Handle sharePending -> community_status
+        if (obj.inCommunityCatalog && !obj.sharePending) {
+            result.community_status = 'Approved';
+        } else if (obj.sharePending) {
+            result.community_status = 'Pending';
+        }
+        return result;
+    }
+
+    function toCamelCase(obj) {
+        var result = {};
+        for (var key in obj) {
+            if (key === 'design_categories' || key === 'design_subscriptions') continue;
+            var camelKey = REVERSE_MAP[key] || key;
+            result[camelKey] = obj[key];
+        }
+        result.artist = obj.original_artist || '';
+        result.inCommunityCatalog = obj.community_share || false;
+        result.sharePending = (obj.community_status === 'Pending');
+        return result;
+    }
+
+    function transformDesignRow(row) {
+        var d = toCamelCase(row);
+        d.categoryIds = (row.design_categories || []).map(function(dc) { return dc.category_id; });
+        d.categoryId = d.categoryIds[0] || null;
+        var subs = (row.design_subscriptions || []).map(function(s) { return s.location_id; });
+        d.subscribedLocations = subs.length > 0 ? ',' + subs.join(',') + ',' : '';
+        return d;
+    }
 
     // =================================================================
     // STATE
@@ -2063,23 +2173,13 @@ Configuration:
     function fetchData() {
         setLoading(true);
 
-        var categoriesUrl = CONFIG.apiEndpoint + '?action=categories';
-        // Admin fetches all records with large limit for full management view
-        var designsUrl = CONFIG.apiEndpoint + '?action=designs&locationId=' + encodeURIComponent(CONFIG.locationId) + '&limit=1000';
-
-        // Fetch categories first (not location-specific, shared across all locations)
-        fetch(categoriesUrl)
-            .then(function(r) { return r.json(); })
-            .then(function(categoriesRes) {
-                if (categoriesRes.success) {
-                    state.categories = categoriesRes.categories || [];
-                } else {
-                    console.warn('Categories fetch returned error, using empty array');
-                    state.categories = [];
-                }
-                // Split into styles and subjects by type
+        // Fetch categories (shared across all locations)
+        supabaseFetch('/categories?status=eq.Active&order=sort_order.asc&select=id,name,slug,icon,sort_order,type')
+            .then(function(rows) {
+                state.categories = rows.map(function(r) {
+                    return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, sortOrder: r.sort_order, type: r.type };
+                });
                 splitCategories();
-                // Always render category UI even if designs fail
                 renderCategoryNav();
                 renderCategoryPicker();
                 renderSubjectNav();
@@ -2095,20 +2195,37 @@ Configuration:
                 renderSubjectPicker();
             });
 
-        // Fetch designs separately (location-specific)
-        fetch(designsUrl)
-            .then(function(r) { return r.json(); })
-            .then(function(designsRes) {
-                if (designsRes.success) {
-                    state.designs = designsRes.designs || [];
-                    state.totalCount = designsRes.pagination ? designsRes.pagination.total : state.designs.length;
-                } else {
-                    // No designs for this location is OK - just show empty state
-                    console.log('No designs found for location, showing empty state');
-                    state.designs = [];
-                    state.totalCount = 0;
-                }
-                renderCategoryNav(); // Re-render with counts after designs load
+        // Fetch designs for this location + subscribed designs, with embedded categories & subscriptions
+        var ownUrl = '/designs?location_id=eq.' + encodeURIComponent(CONFIG.locationId) +
+            '&order=sort_order.asc,created_at.desc' +
+            '&select=*,design_categories(category_id),design_subscriptions(location_id)';
+
+        var subUrl = '/design_subscriptions?location_id=eq.' + encodeURIComponent(CONFIG.locationId) +
+            '&select=design_id,designs(*,design_categories(category_id),design_subscriptions(location_id))';
+
+        Promise.all([
+            supabaseFetch(ownUrl, {}),
+            supabaseFetch(subUrl, {})
+        ])
+            .then(function(results) {
+                var ownDesigns = results[0];
+                var subRows = results[1];
+
+                var designs = ownDesigns.map(transformDesignRow);
+                var ownIds = {};
+                designs.forEach(function(d) { ownIds[d.id] = true; });
+
+                // Add subscribed designs from other locations
+                subRows.forEach(function(sub) {
+                    if (sub.designs && !ownIds[sub.designs.id]) {
+                        designs.push(transformDesignRow(sub.designs));
+                        ownIds[sub.designs.id] = true;
+                    }
+                });
+
+                state.designs = designs;
+                state.totalCount = designs.length;
+                renderCategoryNav();
                 renderSubjectNav();
                 renderTable();
                 setLoading(false);
@@ -2124,52 +2241,60 @@ Configuration:
 
     function saveDesignAPI(data) {
         var isEdit = !!data.id;
-        var payload = Object.assign({}, data, {
-            action: isEdit ? 'updateDesign' : 'createDesign'
-        });
+        var dbRow = toSnakeCase(data);
+        var allCatIds = (data.categoryIds || []);
 
-        return fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(function(r) {
-            if (!r.ok) {
-                throw new Error('Server error: ' + r.status);
-            }
-            return r.text().then(function(text) {
-                if (!text) {
-                    throw new Error('Empty response from server');
-                }
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
-                }
+        if (isEdit) {
+            var designId = data.id;
+            delete dbRow.id;
+            // Don't send null/undefined size_estimate — violates CHECK constraint
+            if (dbRow.size_estimate === '' || dbRow.size_estimate === undefined) delete dbRow.size_estimate;
+
+            return supabaseFetch('/designs?id=eq.' + designId, {
+                method: 'PATCH',
+                body: dbRow
+            })
+            .then(function() {
+                // Only rebuild junctions if categoryIds were provided
+                if (!data.categoryIds) return { success: true };
+
+                return supabaseFetch('/design_categories?design_id=eq.' + designId, {
+                    method: 'DELETE',
+                    headers: { 'Prefer': 'return=minimal' }
+                })
+                .then(function() {
+                    if (allCatIds.length === 0) return { success: true };
+                    var rows = allCatIds.map(function(cid) { return { design_id: designId, category_id: cid }; });
+                    return supabaseFetch('/design_categories', { method: 'POST', body: rows })
+                        .then(function() { return { success: true }; });
+                });
             });
-        });
+        } else {
+            // Create new design
+            delete dbRow.id;
+            if (dbRow.size_estimate === '' || dbRow.size_estimate === undefined) delete dbRow.size_estimate;
+
+            return supabaseFetch('/designs', {
+                method: 'POST',
+                body: dbRow
+            })
+            .then(function(result) {
+                var newId = result[0].id;
+                if (allCatIds.length === 0) return { success: true };
+                var rows = allCatIds.map(function(cid) { return { design_id: newId, category_id: cid }; });
+                return supabaseFetch('/design_categories', { method: 'POST', body: rows })
+                    .then(function() { return { success: true }; });
+            });
+        }
     }
 
     function deleteDesignAPI(id) {
-        return fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deleteDesign', id: id })
+        return supabaseFetch('/designs?id=eq.' + id, {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
         })
-        .then(function(r) {
-            if (!r.ok) {
-                throw new Error('Server error: ' + r.status);
-            }
-            return r.text().then(function(text) {
-                if (!text) {
-                    throw new Error('Empty response from server');
-                }
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Invalid JSON response');
-                }
-            });
+        .then(function() {
+            return { success: true };
         });
     }
 
@@ -2886,20 +3011,14 @@ Configuration:
 
         if (isShared) {
             // Unsubscribe: remove this location from the design's subscribers
-            fetch(CONFIG.adminEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'unsubscribeDesign', designId: design.id, locationId: CONFIG.locationId })
+            supabaseFetch('/design_subscriptions?design_id=eq.' + design.id + '&location_id=eq.' + encodeURIComponent(CONFIG.locationId), {
+                method: 'DELETE',
+                headers: { 'Prefer': 'return=minimal' }
             })
-                .then(function(r) { return r.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        showToast('Design removed from your gallery', 'success');
-                        closeDeleteModal();
-                        fetchData();
-                    } else {
-                        throw new Error(result.error || 'Failed to remove');
-                    }
+                .then(function() {
+                    showToast('Design removed from your gallery', 'success');
+                    closeDeleteModal();
+                    fetchData();
                 })
                 .catch(function(err) {
                     showToast('Error: ' + err.message, 'error');
@@ -3091,26 +3210,15 @@ Configuration:
         if (!design) return;
 
         var newFeatured = !design.featured;
-        var data = {
-            id: design.id,
-            featured: newFeatured,
-            action: 'updateDesign'
-        };
 
-        fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        supabaseFetch('/designs?id=eq.' + id, {
+            method: 'PATCH',
+            body: { featured: newFeatured }
         })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                design.featured = newFeatured;
-                renderTable();
-                showToast(newFeatured ? 'Design featured!' : 'Removed from featured', 'success');
-            } else {
-                throw new Error(result.error || 'Failed to update');
-            }
+        .then(function() {
+            design.featured = newFeatured;
+            renderTable();
+            showToast(newFeatured ? 'Design featured!' : 'Removed from featured', 'success');
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
@@ -3233,27 +3341,21 @@ Configuration:
         btn.textContent = 'Adding...';
 
         var catType = state.addingType || 'style';
-        fetch(CONFIG.adminEndpoint, {
+        supabaseFetch('/categories', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'createCategory',
+            body: {
                 name: name,
                 slug: slug,
                 icon: icon,
-                sortOrder: maxSort + 1,
-                type: catType
-            })
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                var label = catType === 'subject' ? 'Subject' : 'Style';
-                showToast(label + ' "' + name + '" submitted for approval!', 'success');
-                closeAddCategory();
-            } else {
-                throw new Error(result.error || 'Failed to submit category');
+                sort_order: maxSort + 1,
+                type: catType,
+                status: 'Pending'
             }
+        })
+        .then(function() {
+            var label = catType === 'subject' ? 'Subject' : 'Style';
+            showToast(label + ' "' + name + '" submitted for approval!', 'success');
+            closeAddCategory();
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
@@ -3319,15 +3421,17 @@ Configuration:
         emptyEl.style.display = 'none';
         tableWrap.style.display = 'none';
 
-        // Fetch both active and pending categories
-        var activeFetch = fetch(CONFIG.apiEndpoint + '?action=categories').then(function(r) { return r.json(); });
-        var pendingFetch = fetch(CONFIG.apiEndpoint + '?action=pendingCategories').then(function(r) { return r.json(); });
+        // Fetch both active and pending categories from Supabase
+        var activeFetch = supabaseFetch('/categories?status=eq.Active&order=sort_order.asc&select=id,name,slug,icon,sort_order,type');
+        var pendingFetch = supabaseFetch('/categories?status=eq.Pending&order=sort_order.asc&select=id,name,slug,icon,sort_order,type');
+
+        var mapCat = function(r) { return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, sortOrder: r.sort_order, type: r.type }; };
 
         Promise.all([activeFetch, pendingFetch])
             .then(function(results) {
                 loadingEl.style.display = 'none';
-                state.categories = results[0].success ? results[0].categories || [] : [];
-                state.pendingCategories = results[1].success ? results[1].categories || [] : [];
+                state.categories = results[0].map(mapCat);
+                state.pendingCategories = results[1].map(mapCat);
                 renderCategoriesView();
                 updatePendingCount();
             })
@@ -3339,10 +3443,11 @@ Configuration:
     }
 
     function fetchPendingCategories() {
-        fetch(CONFIG.apiEndpoint + '?action=pendingCategories')
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                state.pendingCategories = res.success ? res.categories || [] : [];
+        supabaseFetch('/categories?status=eq.Pending&order=sort_order.asc&select=id,name,slug,icon,sort_order,type')
+            .then(function(rows) {
+                state.pendingCategories = rows.map(function(r) {
+                    return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, sortOrder: r.sort_order, type: r.type };
+                });
                 updatePendingCount();
             })
             .catch(function() {
@@ -3460,21 +3565,15 @@ Configuration:
         btn.disabled = true;
         btn.textContent = 'Saving...';
 
-        fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'updateCategory', id: cat.id, name: name, icon: icon, slug: slug })
+        supabaseFetch('/categories?id=eq.' + cat.id, {
+            method: 'PATCH',
+            body: { name: name, icon: icon, slug: slug }
         })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                showToast('Category "' + name + '" updated!', 'success');
-                closeAddCategory();
-                fetchCategoriesView();
-                fetchData(); // Refresh category nav in designs view
-            } else {
-                throw new Error(result.error || 'Failed to update');
-            }
+        .then(function() {
+            showToast('Category "' + name + '" updated!', 'success');
+            closeAddCategory();
+            fetchCategoriesView();
+            fetchData(); // Refresh category nav in designs view
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
@@ -3486,20 +3585,14 @@ Configuration:
     }
 
     function approveCat(id, name) {
-        fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'approveCategory', id: id })
+        supabaseFetch('/categories?id=eq.' + id, {
+            method: 'PATCH',
+            body: { status: 'Active' }
         })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                showToast('Category "' + name + '" approved!', 'success');
-                fetchCategoriesView();
-                fetchData(); // Refresh category nav
-            } else {
-                throw new Error(result.error || 'Failed to approve');
-            }
+        .then(function() {
+            showToast('Category "' + name + '" approved!', 'success');
+            fetchCategoriesView();
+            fetchData(); // Refresh category nav
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
@@ -3509,19 +3602,13 @@ Configuration:
     function rejectCat(id, name) {
         if (!confirm('Reject and delete category "' + name + '"? This cannot be undone.')) return;
 
-        fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'rejectCategory', id: id })
+        supabaseFetch('/categories?id=eq.' + id, {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
         })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                showToast('Category "' + name + '" rejected.', 'success');
-                fetchCategoriesView();
-            } else {
-                throw new Error(result.error || 'Failed to reject');
-            }
+        .then(function() {
+            showToast('Category "' + name + '" rejected.', 'success');
+            fetchCategoriesView();
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
@@ -3542,11 +3629,27 @@ Configuration:
         emptyEl.style.display = 'none';
         gridEl.innerHTML = '';
 
-        fetch(CONFIG.apiEndpoint + '?action=catalog')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
+        var catalogUrl = '/designs?community_share=eq.true&community_status=eq.Approved' +
+            '&select=id,name,image,thumbnail,original_artist,design_categories(categories(name)),design_subscriptions(location_id)';
+
+        supabaseFetch(catalogUrl)
+            .then(function(rows) {
                 loadingEl.style.display = 'none';
-                catalogDesigns = (data.designs || []);
+                catalogDesigns = rows.map(function(r) {
+                    var catNames = (r.design_categories || [])
+                        .map(function(dc) { return dc.categories ? dc.categories.name : null; })
+                        .filter(Boolean);
+                    var subs = (r.design_subscriptions || []).map(function(s) { return s.location_id; });
+                    return {
+                        id: r.id,
+                        name: r.name,
+                        image: r.image,
+                        thumbnail: r.thumbnail,
+                        artist: r.original_artist || '',
+                        categoryName: catNames.join(', '),
+                        subscribedLocations: subs.length > 0 ? ',' + subs.join(',') + ',' : ''
+                    };
+                });
                 if (catalogDesigns.length === 0) {
                     emptyEl.style.display = 'block';
                 } else {
@@ -3610,22 +3713,32 @@ Configuration:
             btn.textContent = subscribe ? 'Adding...' : 'Removing...';
         }
 
-        fetch(CONFIG.adminEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: action, designId: designId, locationId: CONFIG.locationId })
+        var apiCall;
+        if (subscribe) {
+            apiCall = supabaseFetch('/design_subscriptions?on_conflict=design_id,location_id', {
+                method: 'POST',
+                body: { design_id: designId, location_id: CONFIG.locationId },
+                headers: { 'Prefer': 'return=representation,resolution=merge-duplicates' }
+            });
+        } else {
+            apiCall = supabaseFetch('/design_subscriptions?design_id=eq.' + designId + '&location_id=eq.' + encodeURIComponent(CONFIG.locationId), {
+                method: 'DELETE',
+                headers: { 'Prefer': 'return=minimal' }
+            });
+        }
+
+        apiCall
+        .then(function() {
+            // Re-fetch subscriptions for this design to update local state
+            return supabaseFetch('/design_subscriptions?design_id=eq.' + designId + '&select=location_id');
         })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                // Update local data
-                var design = catalogDesigns.find(function(d) { return d.id === designId; });
-                if (design) design.subscribedLocations = result.subscribedLocations || '';
-                renderCatalog();
-                showToast(subscribe ? 'Design added to your gallery' : 'Design removed from your gallery', 'success');
-            } else {
-                throw new Error(result.error || 'Failed');
-            }
+        .then(function(subs) {
+            var locs = subs.map(function(s) { return s.location_id; });
+            var subsStr = locs.length > 0 ? ',' + locs.join(',') + ',' : '';
+            var design = catalogDesigns.find(function(d) { return d.id === designId; });
+            if (design) design.subscribedLocations = subsStr;
+            renderCatalog();
+            showToast(subscribe ? 'Design added to your gallery' : 'Design removed from your gallery', 'success');
         })
         .catch(function(err) {
             showToast('Error: ' + err.message, 'error');
