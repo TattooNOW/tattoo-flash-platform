@@ -1,6 +1,7 @@
 {
-  "templateName": "The TattooNOW Show — Episode Template",
-  "description": "Google Slides template with TattooNOW branding. Duplicate per episode and populate via Slides API.",
+  "templateName": "The TattooNOW Show — Episode Run of Show",
+  "description": "Google Slides deck that IS the run of show. Each slide = what's displayed on screen. Speaker notes = host script/bullet points for that segment. Duplicate per episode and populate via Slides API.",
+  "concept": "The slide deck replaces the separate script document. During recording, Gabe uses Google Slides presenter view — the audience sees the slide, Gabe reads from the speaker notes.",
   "branding": {
     "backgroundColor": "#0a0a0a",
     "altBackground": "#1a1a1a",
@@ -8,126 +9,263 @@
     "accentColor": "#EA9320",
     "headingFont": "Roboto Slab",
     "bodyFont": "Roboto",
+    "logoUrl": "https://www.tattoonow.com/assets/img/tattoonow_orange_logo-100.png",
     "logoPlacement": "bottom-right corner of every slide",
-    "logoAsset": "tattoonow-logo-light.png"
+    "backgroundImageSource": "tattoonow.com brand assets"
   },
   "slides": [
     {
       "slideIndex": 0,
-      "name": "Title Slide",
+      "name": "Title / Cold Open",
+      "act": "ACT 1: OPENING",
+      "timestamp": "0:00-0:30",
       "layout": "title",
-      "elements": [
-        { "type": "text", "placeholder": "{{EPISODE_NUMBER}}", "position": "subtitle-left" },
-        { "type": "text", "placeholder": "{{EPISODE_TITLE}}", "position": "title-center" },
-        { "type": "text", "placeholder": "{{AIR_DATE}}", "position": "subtitle-right" },
-        { "type": "image", "asset": "tattoonow-logo", "position": "bottom-right" }
-      ],
-      "background": "#0a0a0a"
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "THE TATTOONOW SHOW", "position": "top-center", "style": { "font": "Roboto Slab", "size": 48, "color": "#EA9320" } },
+          { "type": "text", "placeholder": "Episode {{EPISODE_NUMBER}}: {{EPISODE_TITLE}}", "position": "title-center", "style": { "font": "Roboto Slab", "size": 36, "color": "#fafafa" } },
+          { "type": "text", "placeholder": "{{AIR_DATE}}", "position": "subtitle" },
+          { "type": "image", "asset": "tattoonow-logo", "position": "bottom-right" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "[COLD OPEN]\n→ Teaser clip or hook related to today's topic\n→ \"Coming up on The TattooNOW Show...\"\n\n[Transition to camera]\n→ Hold for intro music/graphic"
     },
     {
       "slideIndex": 1,
-      "name": "Guest Introduction",
-      "layout": "two-column",
-      "elements": [
-        { "type": "image", "placeholder": "{{GUEST_HEADSHOT}}", "position": "left-column", "size": "400x400" },
-        { "type": "text", "placeholder": "{{GUEST_NAME}}", "position": "right-title" },
-        { "type": "text", "placeholder": "{{GUEST_STUDIO}}, {{GUEST_LOCATION}}", "position": "right-subtitle" },
-        { "type": "text", "placeholder": "{{GUEST_STYLE}} | Tattooing since {{GUEST_SINCE}}", "position": "right-detail" },
-        { "type": "text", "placeholder": "{{GUEST_BIO}}", "position": "right-body" }
-      ],
-      "background": "#1a1a1a"
+      "name": "Welcome & Theme Intro",
+      "act": "ACT 1: OPENING",
+      "timestamp": "0:30-2:00",
+      "layout": "title-and-body",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "placeholder": "{{THEME}}", "position": "title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "ft. {{GUEST_NAME}}", "position": "subtitle" },
+          { "type": "text", "placeholder": "{{TALKING_POINTS_BRIEF}}", "position": "body-bullets" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "\"Welcome to the big show!\"\n\n→ Quick recap of what's happening in the tattoo world this week\n→ \"Today we're diving into {{THEME}}\"\n→ \"And we've got an incredible guest — {{GUEST_NAME}} from {{GUEST_STUDIO}} is joining us\"\n→ Tease what's coming: \"We'll be talking about [point 1], [point 2], and [point 3]\""
     },
     {
       "slideIndex": 2,
-      "name": "Topic Overview",
-      "layout": "title-and-body",
-      "elements": [
-        { "type": "text", "placeholder": "{{THEME}}", "position": "title" },
-        { "type": "text", "placeholder": "{{TALKING_POINTS}}", "position": "body-bullets", "format": "bullet-list" }
-      ],
-      "background": "#0a0a0a"
+      "name": "Community Check-In",
+      "act": "ACT 1: OPENING",
+      "timestamp": "2:00-5:00",
+      "layout": "centered",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "Community Check-In", "position": "title", "style": { "color": "#EA9320" } },
+          { "type": "text", "content": "Say hello in the chat!", "position": "body" }
+        ],
+        "background": "#1a1a1a"
+      },
+      "speakerNotes": "→ Shout out live chat participants by name\n→ Reference any viewer questions from last week\n→ Quick poll or engagement question: \"Before we get started — [question related to theme]?\"\n→ Read a couple early chat messages\n→ \"Alright, let's get into it!\""
     },
     {
       "slideIndex": 3,
-      "name": "Source Presentation Slide",
+      "name": "Main Topic — Source Presentation",
+      "act": "ACT 2: MAIN PRESENTATION",
+      "timestamp": "5:00-8:00",
       "layout": "full-content",
-      "elements": [
-        { "type": "text", "placeholder": "From: {{SOURCE_PRESENTATION}}, Slide {{SOURCE_SLIDE}}", "position": "footer" }
-      ],
-      "notes": "This slide references content from one of the 4 master presentations. May need to be manually copied or embedded.",
-      "background": "#1a1a1a"
+      "onScreen": {
+        "elements": [
+          { "type": "text", "placeholder": "From: {{SOURCE_PRESENTATION}}, Slide {{SOURCE_SLIDE}}", "position": "footer" }
+        ],
+        "notes": "This slide contains content copied/referenced from one of the 4 master presentations (P1-P4). The actual slide content is manually set or pulled from the source deck.",
+        "background": "#1a1a1a"
+      },
+      "speakerNotes": "→ Walk through the key content on this slide\n→ Source: {{SOURCE_PRESENTATION}}, Slide {{SOURCE_SLIDE}}\n→ Connect this material to today's theme: {{THEME}}\n→ \"Here's why this matters for your tattoo business...\""
     },
     {
       "slideIndex": 4,
-      "name": "TattooNOW Tech Corner",
+      "name": "Deep Dive — Talking Points",
+      "act": "ACT 2: MAIN PRESENTATION",
+      "timestamp": "8:00-20:00",
       "layout": "title-and-body",
-      "elements": [
-        { "type": "text", "content": "TattooNOW Tech Corner", "position": "title", "style": { "color": "#EA9320" } },
-        { "type": "text", "placeholder": "{{TECH_FEATURE}}", "position": "body" }
-      ],
-      "background": "#0a0a0a"
+      "onScreen": {
+        "elements": [
+          { "type": "text", "placeholder": "{{THEME}}", "position": "title" },
+          { "type": "text", "placeholder": "{{TALKING_POINTS}}", "position": "body-bullets", "format": "bullet-list" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "DEEP DIVE (12 minutes — this is the meat of the show)\n\n{{TALKING_POINTS_EXPANDED}}\n\n→ Personal stories and examples for each point\n→ Industry context: what's changing, what's working\n→ Practical takeaway: \"Here's what you can do this week...\"\n→ Check chat periodically for relevant questions\n→ Transition: \"Now I want to bring someone in who really embodies this...\""
     },
     {
       "slideIndex": 5,
-      "name": "Q&A Slide",
-      "layout": "centered",
-      "elements": [
-        { "type": "text", "content": "Q&A Time", "position": "title", "style": { "color": "#EA9320" } },
-        { "type": "text", "placeholder": "{{QA_TOPIC}}", "position": "subtitle" },
-        { "type": "text", "content": "Drop your questions in the chat!", "position": "body" }
-      ],
-      "background": "#1a1a1a"
+      "name": "Guest Spotlight",
+      "act": "ACT 2: MAIN PRESENTATION",
+      "timestamp": "20:00-25:00",
+      "layout": "two-column",
+      "onScreen": {
+        "elements": [
+          { "type": "image", "placeholder": "{{GUEST_HEADSHOT}}", "position": "left-column", "size": "400x400" },
+          { "type": "text", "placeholder": "{{GUEST_NAME}}", "position": "right-title", "style": { "font": "Roboto Slab", "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{GUEST_STUDIO}}, {{GUEST_LOCATION}}", "position": "right-subtitle" },
+          { "type": "text", "placeholder": "{{GUEST_STYLE}} | Tattooing since {{GUEST_SINCE}}", "position": "right-detail" },
+          { "type": "text", "placeholder": "{{GUEST_BIO}}", "position": "right-body" }
+        ],
+        "background": "#1a1a1a"
+      },
+      "speakerNotes": "→ \"Now let me introduce our guest — {{GUEST_NAME}}!\"\n→ Read bio: {{GUEST_BIO}}\n→ \"You've been tattooing since {{GUEST_SINCE}} — that's [calculated] years in the game\"\n→ \"Your {{GUEST_STYLE}} work is incredible\"\n→ Show portfolio pieces\n→ Discussion: \"How does today's topic — {{THEME}} — relate to your journey?\"\n→ Let guest talk (3-5 minutes)\n→ Transition to break: \"We'll be right back with more from {{GUEST_NAME}}\""
     },
     {
       "slideIndex": 6,
-      "name": "Event Spotlight",
+      "name": "Sponsor Spotlight #1",
+      "act": "AD BREAK #1",
+      "timestamp": "~25:00",
       "layout": "two-column",
-      "elements": [
-        { "type": "text", "content": "Upcoming Events", "position": "title", "style": { "color": "#EA9320" } },
-        { "type": "text", "placeholder": "{{EVENT_DETAILS}}", "position": "body" }
-      ],
-      "notes": "Icons & Prodigies Venice, Paradise Tattoo Gathering, partner conventions",
-      "background": "#0a0a0a"
+      "onScreen": {
+        "elements": [
+          { "type": "image", "placeholder": "{{SPONSOR_LOGO}}", "position": "left-column" },
+          { "type": "text", "placeholder": "{{SPONSOR}}", "position": "right-title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{SPONSOR_FRESH_POST}}", "position": "right-body" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "AD BREAK #1\n\n→ \"This episode is brought to you by {{SPONSOR}}\"\n→ Talk about something FRESH from the sponsor's recent social/activity:\n  {{SPONSOR_FRESH_POST}}\n→ \"Check them out at [link] — and use code [code] for [discount]\"\n→ Natural transition back: \"Alright, we're back!\""
     },
     {
       "slideIndex": 7,
-      "name": "Partner Spotlights",
-      "layout": "grid",
-      "elements": [
-        { "type": "text", "content": "Our Partners", "position": "title" },
-        { "type": "image-grid", "placeholder": "{{PARTNER_LOGOS}}", "position": "grid-center", "maxItems": 6 },
-        { "type": "text", "placeholder": "{{SPONSOR}}", "position": "footer" }
-      ],
-      "background": "#1a1a1a"
+      "name": "TattooNOW Tech Corner",
+      "act": "ACT 3: INTERACTIVE",
+      "timestamp": "25:00-30:00",
+      "layout": "title-and-body",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "TattooNOW Tech Corner", "position": "title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{TECH_FEATURE}}", "position": "body" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "TECH CORNER (5 minutes)\n\n→ \"Time for the Tech Corner — today I want to show you {{TECH_FEATURE}}\"\n→ Screen share or demo the TattooNOW tool/feature\n→ Connect to today's theme: how this tool helps with {{THEME}}\n→ Quick practical tip: \"Here's something you can implement in your studio today...\"\n→ \"Let's make it permanent!\""
     },
     {
       "slideIndex": 8,
-      "name": "Next Week Preview",
+      "name": "Q&A / Audience Interaction",
+      "act": "ACT 3: INTERACTIVE",
+      "timestamp": "30:00-40:00",
       "layout": "centered",
-      "elements": [
-        { "type": "text", "content": "Next Week on The TattooNOW Show", "position": "title" },
-        { "type": "text", "placeholder": "{{NEXT_TITLE}}", "position": "subtitle" },
-        { "type": "text", "placeholder": "Featuring {{NEXT_GUEST}}", "position": "body" }
-      ],
-      "background": "#0a0a0a"
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "Q&A", "position": "title", "style": { "color": "#EA9320", "size": 60 } },
+          { "type": "text", "placeholder": "{{QA_TOPIC}}", "position": "subtitle" },
+          { "type": "text", "content": "Drop your questions in the chat!", "position": "body" }
+        ],
+        "background": "#1a1a1a"
+      },
+      "speakerNotes": "Q&A SEGMENT (10 minutes)\n\n→ \"Alright, let's hear from you — today's Q&A topic: {{QA_TOPIC}}\"\n→ Read and answer live questions from chat\n→ Bring {{GUEST_NAME}} into the Q&A where relevant\n→ If chat is slow, have prepared questions ready\n→ Rotating humor segment (alternate weeks):\n  • \"First Tattoo\" story\n  • \"Bad Tattoo Cover-Up\" segment\n→ Keep energy up, engage directly with chatters by name"
     },
     {
       "slideIndex": 9,
-      "name": "Closing / CTA",
+      "name": "Industry News",
+      "act": "ACT 3: INTERACTIVE",
+      "timestamp": "40:00-45:00",
+      "layout": "title-and-body",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "Industry News", "position": "title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{INDUSTRY_NEWS}}", "position": "body-bullets" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "INDUSTRY NEWS (5 minutes)\n\n→ What's happening in the tattoo world this week\n→ {{INDUSTRY_NEWS}}\n→ Convention announcements\n→ Partner spotlights\n→ Transition to break: \"Quick break, then we've got [event spotlight / special segment] coming up\""
+    },
+    {
+      "slideIndex": 10,
+      "name": "Sponsor Spotlight #2",
+      "act": "AD BREAK #2",
+      "timestamp": "~45:00",
+      "layout": "two-column",
+      "onScreen": {
+        "elements": [
+          { "type": "image", "placeholder": "{{SPONSOR2_LOGO}}", "position": "left-column" },
+          { "type": "text", "placeholder": "{{SPONSOR2}}", "position": "right-title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{SPONSOR2_FRESH_POST}}", "position": "right-body" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "AD BREAK #2\n\n→ \"Before we close out, shout out to {{SPONSOR2}}\"\n→ Fresh content from their feed: {{SPONSOR2_FRESH_POST}}\n→ Affiliate link mention\n→ Back to show"
+    },
+    {
+      "slideIndex": 11,
+      "name": "Event Spotlight",
+      "act": "ACT 4: CLOSE",
+      "timestamp": "45:00-50:00",
+      "layout": "two-column",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "Upcoming Events", "position": "title", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{EVENT_DETAILS}}", "position": "body" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "EVENT SPOTLIGHT (5 minutes)\n\n→ Icons & Prodigies Venice update (if relevant):\n  [dates, booking status, featured artists]\n→ Paradise Tattoo Gathering update (if relevant):\n  [dates, early bird pricing, what's new]\n→ Partner convention shoutouts\n→ \"Booking is open at [website] — spots fill up fast\""
+    },
+    {
+      "slideIndex": 12,
+      "name": "Special Segment",
+      "act": "ACT 4: CLOSE",
+      "timestamp": "50:00-55:00",
       "layout": "centered",
-      "elements": [
-        { "type": "text", "placeholder": "{{CTA}}", "position": "title", "style": { "color": "#EA9320" } },
-        { "type": "text", "content": "Subscribe | Like | Comment", "position": "subtitle" },
-        { "type": "text", "content": "youtube.com/@tattoonowgabe", "position": "body" },
-        { "type": "text", "content": "\"Keep it clean, keep it bold, we'll see you next week!\"", "position": "footer", "style": { "italic": true } },
-        { "type": "image", "asset": "tattoonow-logo", "position": "center-bottom" }
-      ],
-      "background": "#0a0a0a"
+      "onScreen": {
+        "elements": [
+          { "type": "text", "placeholder": "{{SPECIAL_SEGMENT_TITLE}}", "position": "title", "style": { "color": "#EA9320" } }
+        ],
+        "notes": "Only used if episode includes a special segment",
+        "background": "#1a1a1a"
+      },
+      "speakerNotes": "SPECIAL SEGMENT (if applicable)\n\n→ {{SPECIAL_SEGMENT_TYPE}}: Comedy Sketch / Musical Guest / Live Tattoo / Product Review\n→ {{SPECIAL_SEGMENT_NOTES}}\n→ Keep it fun and spontaneous\n→ If no special segment, extend Q&A or event spotlight"
+    },
+    {
+      "slideIndex": 13,
+      "name": "Next Week Preview",
+      "act": "ACT 4: CLOSE",
+      "timestamp": "55:00-58:00",
+      "layout": "centered",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "content": "Next Week on The TattooNOW Show", "position": "top", "style": { "color": "#EA9320" } },
+          { "type": "text", "placeholder": "{{NEXT_TITLE}}", "position": "title" },
+          { "type": "text", "placeholder": "Featuring {{NEXT_GUEST}}", "position": "subtitle" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "NEXT WEEK PREVIEW\n\n→ \"Next week we're diving into {{NEXT_TITLE}}\"\n→ \"And we'll have {{NEXT_GUEST}} joining us — you do NOT want to miss that\"\n→ \"Make sure you're subscribed and hit that notification bell\""
+    },
+    {
+      "slideIndex": 14,
+      "name": "Closing / CTA / Sign Off",
+      "act": "ACT 4: CLOSE",
+      "timestamp": "58:00-60:00",
+      "layout": "centered",
+      "onScreen": {
+        "elements": [
+          { "type": "text", "placeholder": "{{CTA}}", "position": "title", "style": { "color": "#EA9320", "size": 36 } },
+          { "type": "text", "content": "Subscribe | Like | Comment", "position": "subtitle" },
+          { "type": "text", "content": "youtube.com/@tattoonowgabe", "position": "body" },
+          { "type": "text", "content": "longevity.tattoonow.com", "position": "body-2" },
+          { "type": "image", "asset": "tattoonow-logo", "position": "center-bottom" }
+        ],
+        "background": "#0a0a0a"
+      },
+      "speakerNotes": "SIGN OFF\n\n→ Call to Action: {{CTA}}\n→ \"If you got something out of today's show, smash that subscribe button\"\n→ \"Leave a comment — tell us [question related to theme]\"\n→ \"Thank you to {{GUEST_NAME}} for joining us today!\"\n→ \"Keep it clean, keep it bold, we'll see you next week!\"\n→ \"Let's make it permanent!\"\n→ [End screen plays]"
     }
   ],
+  "sponsorIntegration": {
+    "description": "Each week, pull fresh content from sponsors' recent social posts to discuss on-air. Makes sponsor mentions feel organic rather than scripted.",
+    "dataSource": "Sponsor's latest Instagram/social post — fetched weekly by n8n workflow or manually noted",
+    "placeholders": {
+      "{{SPONSOR_FRESH_POST}}": "Summary of sponsor's most recent/interesting social post or news",
+      "{{SPONSOR2_FRESH_POST}}": "Same for second sponsor"
+    },
+    "notes": "This keeps sponsor mentions current and authentic. Rather than reading a static ad script, Gabe talks about what the sponsor is actually doing right now."
+  },
   "implementationOptions": {
-    "recommended": "Google Slides API via n8n",
-    "alternative1": "Google Apps Script triggered by spreadsheet",
+    "recommended": "Google Slides API via n8n — duplicate template, replace placeholders, populate speaker notes",
+    "alternative1": "Google Apps Script triggered by spreadsheet changes",
     "alternative2": "python-pptx local generation + Drive upload"
-  }
+  },
+  "presenterViewNotes": "During recording, use Google Slides Presenter View. The audience sees the slide content on screen share. Gabe sees the speaker notes with his script/bullet points. This eliminates the need for a separate script document."
 }

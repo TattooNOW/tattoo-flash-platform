@@ -1,6 +1,7 @@
 {
-  "description": "Maps data sources to Google Slides placeholders. Used by n8n episode-setup workflow to populate slide decks.",
-  "placeholders": {
+  "description": "Maps data sources to Google Slides placeholders. Used by n8n episode-setup workflow to populate both slide content AND speaker notes (which serve as the host script).",
+  "notes": "Placeholders appear in both onScreen elements and speakerNotes. The Slides API replaceAllText operation handles both.",
+  "slideContent": {
     "{{EPISODE_NUMBER}}": {
       "source": "Episode Calendar",
       "column": "Episode #",
@@ -17,6 +18,61 @@
       "type": "date",
       "format": "MMMM D, YYYY"
     },
+    "{{THEME}}": {
+      "source": "Episode Calendar",
+      "column": "Theme/Topic",
+      "type": "text"
+    },
+    "{{TALKING_POINTS}}": {
+      "source": "Episode Calendar",
+      "column": "Key Talking Points",
+      "type": "text",
+      "format": "Convert newlines to bullet points (for slide body)"
+    },
+    "{{TALKING_POINTS_BRIEF}}": {
+      "source": "Episode Calendar",
+      "column": "Key Talking Points",
+      "type": "computed",
+      "format": "First 3 points only, shortened to 1 line each"
+    },
+    "{{TALKING_POINTS_EXPANDED}}": {
+      "source": "AI-generated",
+      "input": "Episode Calendar → Key Talking Points",
+      "type": "computed",
+      "format": "Each point expanded to 2-3 sentences with discussion prompts (for speaker notes)"
+    },
+    "{{QA_TOPIC}}": {
+      "source": "Episode Calendar",
+      "column": "Q&A Topic",
+      "type": "text"
+    },
+    "{{CTA}}": {
+      "source": "Episode Calendar",
+      "column": "Call to Action",
+      "type": "text"
+    },
+    "{{SOURCE_PRESENTATION}}": {
+      "source": "Episode Calendar",
+      "column": "Presentation Source",
+      "type": "text"
+    },
+    "{{SOURCE_SLIDE}}": {
+      "source": "Episode Calendar",
+      "column": "Source Slide(s)",
+      "type": "text"
+    },
+    "{{NEXT_TITLE}}": {
+      "source": "Episode Calendar (next row)",
+      "column": "Episode Title",
+      "type": "text"
+    },
+    "{{NEXT_GUEST}}": {
+      "source": "Episode Calendar (next row)",
+      "column": "Guest Artist",
+      "type": "text"
+    }
+  },
+  "guestData": {
     "{{GUEST_NAME}}": {
       "source": "Talent Database",
       "column": "Artist Name",
@@ -52,65 +108,86 @@
       "source": "Talent Database",
       "column": "Studio Location",
       "type": "text"
-    },
-    "{{THEME}}": {
-      "source": "Episode Calendar",
-      "column": "Theme/Topic",
-      "type": "text"
-    },
-    "{{TALKING_POINTS}}": {
-      "source": "Episode Calendar",
-      "column": "Key Talking Points",
-      "type": "text",
-      "format": "Convert newlines to bullet points"
-    },
-    "{{QA_TOPIC}}": {
-      "source": "Episode Calendar",
-      "column": "Q&A Topic",
-      "type": "text"
-    },
-    "{{CTA}}": {
-      "source": "Episode Calendar",
-      "column": "Call to Action",
-      "type": "text"
-    },
-    "{{SOURCE_PRESENTATION}}": {
-      "source": "Episode Calendar",
-      "column": "Presentation Source",
-      "type": "text"
-    },
-    "{{SOURCE_SLIDE}}": {
-      "source": "Episode Calendar",
-      "column": "Source Slide(s)",
-      "type": "text"
-    },
+    }
+  },
+  "sponsorData": {
     "{{SPONSOR}}": {
       "source": "Episode Calendar",
       "column": "Sponsor/Partner",
       "type": "text"
     },
-    "{{NEXT_TITLE}}": {
-      "source": "Episode Calendar (next row)",
-      "column": "Episode Title",
+    "{{SPONSOR_LOGO}}": {
+      "source": "Affiliate Partners",
+      "column": "Logo URL",
+      "filter": "Partner Name matches Sponsor",
+      "type": "image"
+    },
+    "{{SPONSOR_FRESH_POST}}": {
+      "source": "n8n workflow: fetch sponsor's latest social post",
+      "type": "computed",
+      "notes": "Pulled weekly from sponsor's Instagram/social feed. Makes sponsor mentions feel organic — Gabe talks about what the sponsor is actually doing right now rather than reading a static ad."
+    },
+    "{{SPONSOR2}}": {
+      "source": "Episode Calendar or Affiliate Partners (second sponsor)",
       "type": "text"
     },
-    "{{NEXT_GUEST}}": {
-      "source": "Episode Calendar (next row)",
-      "column": "Guest Artist",
+    "{{SPONSOR2_LOGO}}": {
+      "source": "Affiliate Partners",
+      "column": "Logo URL",
+      "type": "image"
+    },
+    "{{SPONSOR2_FRESH_POST}}": {
+      "source": "n8n workflow: fetch second sponsor's latest social post",
+      "type": "computed"
+    }
+  },
+  "contentData": {
+    "{{INDUSTRY_NEWS}}": {
+      "source": "Manual or AI-curated",
+      "type": "text",
+      "format": "3-5 bullet points of tattoo industry news for the week"
+    },
+    "{{TECH_FEATURE}}": {
+      "source": "Episode Calendar or manual",
+      "type": "text",
+      "notes": "TattooNOW tool/feature being demonstrated in Tech Corner"
+    },
+    "{{EVENT_DETAILS}}": {
+      "source": "Manual or event database",
+      "type": "text",
+      "notes": "I&P Venice, Paradise Gathering, partner convention details"
+    },
+    "{{SPECIAL_SEGMENT_TITLE}}": {
+      "source": "Episode Calendar → Special Segment",
       "type": "text"
     },
+    "{{SPECIAL_SEGMENT_TYPE}}": {
+      "source": "Episode Calendar → Special Segment type",
+      "type": "text"
+    },
+    "{{SPECIAL_SEGMENT_NOTES}}": {
+      "source": "Manual",
+      "type": "text"
+    }
+  },
+  "affiliateData": {
     "{{AFFILIATE_LINKS}}": {
       "source": "Affiliate Partners",
       "filter": "Active = true",
       "type": "computed",
-      "notes": "Generated by joining all active partners' Cross-Promo Links"
+      "notes": "Generated by link-generator.js — all active partners' Cross-Promo Links"
     },
     "{{PARTNER_LOGOS}}": {
       "source": "Affiliate Partners",
       "filter": "Active = true",
       "column": "Logo URL",
       "type": "image-array",
-      "notes": "Grid of partner logos for the Partner Spotlights slide"
+      "notes": "Grid of partner logos"
     }
+  },
+  "speakerNotesStrategy": {
+    "description": "Speaker notes are populated per-slide with the host's script/bullet points. They contain the same placeholders as the slides, plus expanded versions for the presenter to reference.",
+    "population": "The n8n episode-setup workflow replaces placeholders in BOTH slide content and speaker notes in a single batchUpdate call to the Slides API.",
+    "aiExpansion": "For deeper talking points, the Claude API expands brief bullet points into conversational prompts and transition language, populated into the speaker notes."
   }
 }

@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "placid": {
+      "command": "npx",
+      "args": ["-y", "@felores/placid-mcp-server"],
+      "env": {
+        "PLACID_API_TOKEN": "${PLACID_API_TOKEN}"
+      }
+    },
+    "shotstack": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.pipedream.net/v2"],
+      "env": {}
+    },
+    "google-docs": {
+      "command": "npx",
+      "args": ["-y", "google-docs-mcp"],
+      "env": {
+        "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+        "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}"
+      }
+    },
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=${SUPABASE_PROJECT_REF}"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+      }
+    }
+  }
+}
