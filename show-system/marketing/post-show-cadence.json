@@ -1,0 +1,86 @@
+{
+  "name": "Post-Show Content Cadence",
+  "description": "Thursday through Sunday content schedule after each episode recording",
+  "schedule": [
+    {
+      "day": "Thursday",
+      "action": "Upload Full Episode",
+      "channel": "YouTube",
+      "automation": "Manual edit + scheduled publish",
+      "details": "Light edit of recording, add intro/outro, upload with full metadata"
+    },
+    {
+      "day": "Thursday",
+      "action": "Blog Post",
+      "channel": "GHL Blog",
+      "automation": "n8n post-show-processing workflow",
+      "details": "AI-generated blog post from episode script and talking points",
+      "template": "episode-summary"
+    },
+    {
+      "day": "Friday",
+      "time": "10:00 AM",
+      "action": "Episode Recap Email",
+      "channel": "Email newsletter",
+      "automation": "GHL Email Campaign (queued by post-show workflow)",
+      "template": "post-show-recap",
+      "subject": "This Week on The TattooNOW Show: {{EPISODE_TITLE}}"
+    },
+    {
+      "day": "Friday",
+      "time": "12:00 PM",
+      "action": "Short-Form Video Clips (3-5)",
+      "channels": ["instagram_reels", "tiktok", "youtube_shorts"],
+      "assetGenerator": "Shotstack",
+      "clips": [
+        {
+          "type": "hook",
+          "duration": "15-30 seconds",
+          "format": "9:16",
+          "template": "hook-clip"
+        },
+        {
+          "type": "guest-spotlight",
+          "duration": "60-90 seconds",
+          "format": "9:16",
+          "template": "guest-spotlight-clip"
+        },
+        {
+          "type": "tech-tip",
+          "duration": "60-90 seconds",
+          "format": "9:16",
+          "template": "tech-tip-clip"
+        },
+        {
+          "type": "funny-moment",
+          "duration": "30-60 seconds",
+          "format": "9:16",
+          "template": "funny-moment-clip"
+        }
+      ],
+      "automation": "Shotstack API/MCP → GHL Post Scheduler"
+    },
+    {
+      "day": "Saturday",
+      "time": "11:00 AM",
+      "action": "Best Quote Graphic",
+      "channels": ["instagram", "facebook"],
+      "assetType": "image",
+      "assetGenerator": "Placid",
+      "template": "quote-card",
+      "size": "1080x1080",
+      "dynamicFields": {
+        "quote": "{{BEST_QUOTE}}",
+        "attribution": "— {{GUEST_NAME}}, The TattooNOW Show #{{EPISODE_NUMBER}}"
+      },
+      "automation": "Placid API/MCP → GHL Post Scheduler"
+    },
+    {
+      "day": "Sunday",
+      "action": "Behind-the-Scenes / Throwback",
+      "channels": ["instagram_stories"],
+      "notes": "BTS from recording, outtakes, or throwback to relevant past episode",
+      "automation": "Manual"
+    }
+  ]
+}

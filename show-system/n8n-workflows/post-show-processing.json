@@ -1,0 +1,224 @@
+{
+  "name": "WS — Post-Show Processing",
+  "description": "Triggered when episode status changes to 'Recorded'. Generates blog post, populates affiliate folder, sends partner notifications, queues recap email.",
+  "triggerType": "webhook",
+  "instance": "tn.reinventingai.com",
+  "notes": "Can also be triggered manually via webhook call when Gabe marks an episode as recorded",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Post-Show Trigger",
+      "parameters": {
+        "path": "ws-post-show",
+        "httpMethod": "POST"
+      },
+      "notes": "Triggered by status change to 'Recorded' or manual API call"
+    },
+    {
+      "id": "fetch_episode",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Fetch Full Episode Data",
+      "parameters": {
+        "operation": "read",
+        "sheetName": "Episode Calendar",
+        "filters": {
+          "Episode #": "={{ $json.episodeNumber }}"
+        }
+      },
+      "notes": "Get complete episode data including guest, talking points, etc."
+    },
+    {
+      "id": "fetch_talent",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Fetch Guest Data",
+      "parameters": {
+        "operation": "read",
+        "sheetName": "Talent Database",
+        "filters": {
+          "Artist Name": "={{ $json.guestName }}"
+        }
+      }
+    },
+    {
+      "id": "fetch_affiliates",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Fetch Active Affiliates",
+      "parameters": {
+        "operation": "read",
+        "sheetName": "Affiliate Partners",
+        "filters": {
+          "Active": true
+        }
+      }
+    },
+    {
+      "id": "generate_blog",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Generate Blog Post via AI",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "body": {
+          "model": "claude-sonnet-4-20250514",
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "role": "user",
+              "content": "Write a blog post summarizing Episode {{ $json.episodeNumber }}: {{ $json.episodeTitle }}. Theme: {{ $json.theme }}. Guest: {{ $json.guestName }}. Key points: {{ $json.talkingPoints }}. Include a CTA to watch the full episode on YouTube."
+            }
+          ]
+        }
+      },
+      "notes": "Generate blog post HTML from episode data"
+    },
+    {
+      "id": "submit_blog",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Submit Blog to GHL",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Blog API",
+        "body": {
+          "title": "The TattooNOW Show #{{ $json.episodeNumber }}: {{ $json.episodeTitle }}",
+          "content": "={{ $json.blogHtml }}",
+          "status": "draft"
+        }
+      },
+      "notes": "Create draft blog post in GHL for review"
+    },
+    {
+      "id": "create_folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "name": "Create Episode Affiliate Folder",
+      "parameters": {
+        "operation": "createFolder",
+        "name": "Episode {{ $json.episodeNumber }} — {{ $json.episodeTitle }}",
+        "parentFolderId": "={{ $env.AFFILIATE_ASSETS_FOLDER_ID }}"
+      },
+      "notes": "Create the episode folder under TattooNOW Show — Affiliate Assets"
+    },
+    {
+      "id": "create_subfolders",
+      "type": "n8n-nodes-base.googleDrive",
+      "name": "Create Subfolders",
+      "parameters": {
+        "operation": "createFolder",
+        "folders": [
+          "Social Graphics",
+          "Video Clips",
+          "Written Content",
+          "Partner Links"
+        ]
+      },
+      "notes": "Create standard subfolder structure"
+    },
+    {
+      "id": "generate_affiliate_links",
+      "type": "n8n-nodes-base.code",
+      "name": "Generate Affiliate Links Doc",
+      "parameters": {
+        "code": "const affiliates = $input.all();\nconst episodeNum = $('fetch_episode').first().json.episodeNumber;\nconst youtubeUrl = $('fetch_episode').first().json.youtubeUrl || 'TBD';\n\nlet markdown = `## Episode ${episodeNum} — Affiliate Links\\n\\n`;\n\nfor (const partner of affiliates) {\n  const p = partner.json;\n  const mainLink = `https://longevity.tattoonow.com/tattoonow-home?am_id=${p.am_id}${p.coupon_code ? `&coupon_code=${p.coupon_code}` : ''}`;\n  const episodeLink = youtubeUrl !== 'TBD' ? `${youtubeUrl}?ref=${p.am_id}` : 'TBD';\n  \n  markdown += `### ${p.partnerName}\\n`;\n  markdown += `- Main link: ${mainLink}\\n`;\n  markdown += `- Episode direct: ${episodeLink}\\n\\n`;\n}\n\nreturn [{ json: { affiliateLinksMarkdown: markdown } }];"
+      },
+      "notes": "Generate the affiliate-links.md content with each partner's unique URLs"
+    },
+    {
+      "id": "upload_affiliate_doc",
+      "type": "n8n-nodes-base.googleDrive",
+      "name": "Upload Affiliate Links Doc",
+      "parameters": {
+        "operation": "upload",
+        "fileName": "affiliate-links.md",
+        "folderId": "={{ $json.partnerLinksFolderId }}"
+      }
+    },
+    {
+      "id": "notify_partners",
+      "type": "n8n-nodes-base.splitInBatches",
+      "name": "Notify Each Partner",
+      "parameters": {
+        "batchSize": 1
+      },
+      "notes": "Loop through active affiliates and send notification email to each"
+    },
+    {
+      "id": "send_partner_email",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Send Partner Email via GHL",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Email API",
+        "body": {
+          "to": "={{ $json.contactEmail }}",
+          "subject": "New TattooNOW Show Episode — Your Promo Assets Are Ready",
+          "template": "partner-episode-notification",
+          "data": {
+            "partnerName": "={{ $json.partnerName }}",
+            "episodeTitle": "={{ $('fetch_episode').first().json.episodeTitle }}",
+            "folderLink": "={{ $json.publishingFolderUrl }}",
+            "affiliateLink": "={{ $json.crossPromoLink }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "update_status",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Update Status to Publishing",
+      "parameters": {
+        "operation": "update",
+        "sheetName": "Episode Calendar",
+        "matchingColumn": "Episode #",
+        "values": {
+          "Status": "Publishing"
+        }
+      }
+    },
+    {
+      "id": "queue_recap_email",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Queue Friday Recap Email",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Email Campaign API",
+        "body": {
+          "subject": "This Week on The TattooNOW Show: {{ $json.episodeTitle }}",
+          "template": "post-show-recap",
+          "scheduledDate": "Friday 10:00 AM",
+          "data": {
+            "episodeTitle": "={{ $json.episodeTitle }}",
+            "episodeNumber": "={{ $json.episodeNumber }}",
+            "youtubeUrl": "={{ $json.youtubeUrl }}",
+            "blogUrl": "={{ $json.blogPostUrl }}",
+            "guestName": "={{ $json.guestName }}"
+          }
+        }
+      },
+      "notes": "Schedule the post-show recap email for Friday delivery"
+    },
+    {
+      "id": "telegram_notify",
+      "type": "n8n-nodes-base.telegram",
+      "name": "Notify: Post-Processing Complete",
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "✅ Post-show processing complete for Episode {{ $json.episodeNumber }}!\n\n📝 Blog draft submitted\n📁 Affiliate folder populated\n📧 Partner notifications sent\n📨 Recap email queued for Friday"
+      }
+    }
+  ],
+  "connections": {
+    "trigger": ["fetch_episode"],
+    "fetch_episode": ["fetch_talent", "fetch_affiliates"],
+    "fetch_talent": ["generate_blog"],
+    "generate_blog": ["submit_blog"],
+    "fetch_affiliates": ["create_folder", "generate_affiliate_links"],
+    "create_folder": ["create_subfolders"],
+    "generate_affiliate_links": ["upload_affiliate_doc"],
+    "upload_affiliate_doc": ["notify_partners"],
+    "notify_partners": ["send_partner_email"],
+    "send_partner_email": ["update_status"],
+    "submit_blog": ["queue_recap_email"],
+    "update_status": ["telegram_notify"],
+    "queue_recap_email": ["telegram_notify"]
+  }
+}

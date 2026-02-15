@@ -1,0 +1,133 @@
+{
+  "templateName": "The TattooNOW Show — Episode Template",
+  "description": "Google Slides template with TattooNOW branding. Duplicate per episode and populate via Slides API.",
+  "branding": {
+    "backgroundColor": "#0a0a0a",
+    "altBackground": "#1a1a1a",
+    "textColor": "#fafafa",
+    "accentColor": "#EA9320",
+    "headingFont": "Roboto Slab",
+    "bodyFont": "Roboto",
+    "logoPlacement": "bottom-right corner of every slide",
+    "logoAsset": "tattoonow-logo-light.png"
+  },
+  "slides": [
+    {
+      "slideIndex": 0,
+      "name": "Title Slide",
+      "layout": "title",
+      "elements": [
+        { "type": "text", "placeholder": "{{EPISODE_NUMBER}}", "position": "subtitle-left" },
+        { "type": "text", "placeholder": "{{EPISODE_TITLE}}", "position": "title-center" },
+        { "type": "text", "placeholder": "{{AIR_DATE}}", "position": "subtitle-right" },
+        { "type": "image", "asset": "tattoonow-logo", "position": "bottom-right" }
+      ],
+      "background": "#0a0a0a"
+    },
+    {
+      "slideIndex": 1,
+      "name": "Guest Introduction",
+      "layout": "two-column",
+      "elements": [
+        { "type": "image", "placeholder": "{{GUEST_HEADSHOT}}", "position": "left-column", "size": "400x400" },
+        { "type": "text", "placeholder": "{{GUEST_NAME}}", "position": "right-title" },
+        { "type": "text", "placeholder": "{{GUEST_STUDIO}}, {{GUEST_LOCATION}}", "position": "right-subtitle" },
+        { "type": "text", "placeholder": "{{GUEST_STYLE}} | Tattooing since {{GUEST_SINCE}}", "position": "right-detail" },
+        { "type": "text", "placeholder": "{{GUEST_BIO}}", "position": "right-body" }
+      ],
+      "background": "#1a1a1a"
+    },
+    {
+      "slideIndex": 2,
+      "name": "Topic Overview",
+      "layout": "title-and-body",
+      "elements": [
+        { "type": "text", "placeholder": "{{THEME}}", "position": "title" },
+        { "type": "text", "placeholder": "{{TALKING_POINTS}}", "position": "body-bullets", "format": "bullet-list" }
+      ],
+      "background": "#0a0a0a"
+    },
+    {
+      "slideIndex": 3,
+      "name": "Source Presentation Slide",
+      "layout": "full-content",
+      "elements": [
+        { "type": "text", "placeholder": "From: {{SOURCE_PRESENTATION}}, Slide {{SOURCE_SLIDE}}", "position": "footer" }
+      ],
+      "notes": "This slide references content from one of the 4 master presentations. May need to be manually copied or embedded.",
+      "background": "#1a1a1a"
+    },
+    {
+      "slideIndex": 4,
+      "name": "TattooNOW Tech Corner",
+      "layout": "title-and-body",
+      "elements": [
+        { "type": "text", "content": "TattooNOW Tech Corner", "position": "title", "style": { "color": "#EA9320" } },
+        { "type": "text", "placeholder": "{{TECH_FEATURE}}", "position": "body" }
+      ],
+      "background": "#0a0a0a"
+    },
+    {
+      "slideIndex": 5,
+      "name": "Q&A Slide",
+      "layout": "centered",
+      "elements": [
+        { "type": "text", "content": "Q&A Time", "position": "title", "style": { "color": "#EA9320" } },
+        { "type": "text", "placeholder": "{{QA_TOPIC}}", "position": "subtitle" },
+        { "type": "text", "content": "Drop your questions in the chat!", "position": "body" }
+      ],
+      "background": "#1a1a1a"
+    },
+    {
+      "slideIndex": 6,
+      "name": "Event Spotlight",
+      "layout": "two-column",
+      "elements": [
+        { "type": "text", "content": "Upcoming Events", "position": "title", "style": { "color": "#EA9320" } },
+        { "type": "text", "placeholder": "{{EVENT_DETAILS}}", "position": "body" }
+      ],
+      "notes": "Icons & Prodigies Venice, Paradise Tattoo Gathering, partner conventions",
+      "background": "#0a0a0a"
+    },
+    {
+      "slideIndex": 7,
+      "name": "Partner Spotlights",
+      "layout": "grid",
+      "elements": [
+        { "type": "text", "content": "Our Partners", "position": "title" },
+        { "type": "image-grid", "placeholder": "{{PARTNER_LOGOS}}", "position": "grid-center", "maxItems": 6 },
+        { "type": "text", "placeholder": "{{SPONSOR}}", "position": "footer" }
+      ],
+      "background": "#1a1a1a"
+    },
+    {
+      "slideIndex": 8,
+      "name": "Next Week Preview",
+      "layout": "centered",
+      "elements": [
+        { "type": "text", "content": "Next Week on The TattooNOW Show", "position": "title" },
+        { "type": "text", "placeholder": "{{NEXT_TITLE}}", "position": "subtitle" },
+        { "type": "text", "placeholder": "Featuring {{NEXT_GUEST}}", "position": "body" }
+      ],
+      "background": "#0a0a0a"
+    },
+    {
+      "slideIndex": 9,
+      "name": "Closing / CTA",
+      "layout": "centered",
+      "elements": [
+        { "type": "text", "placeholder": "{{CTA}}", "position": "title", "style": { "color": "#EA9320" } },
+        { "type": "text", "content": "Subscribe | Like | Comment", "position": "subtitle" },
+        { "type": "text", "content": "youtube.com/@tattoonowgabe", "position": "body" },
+        { "type": "text", "content": "\"Keep it clean, keep it bold, we'll see you next week!\"", "position": "footer", "style": { "italic": true } },
+        { "type": "image", "asset": "tattoonow-logo", "position": "center-bottom" }
+      ],
+      "background": "#0a0a0a"
+    }
+  ],
+  "implementationOptions": {
+    "recommended": "Google Slides API via n8n",
+    "alternative1": "Google Apps Script triggered by spreadsheet",
+    "alternative2": "python-pptx local generation + Drive upload"
+  }
+}

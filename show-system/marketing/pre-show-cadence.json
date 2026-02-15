@@ -1,0 +1,66 @@
+{
+  "name": "Pre-Show Marketing Cadence",
+  "description": "Monday through Wednesday marketing sequence before each episode recording",
+  "schedule": [
+    {
+      "day": "Monday",
+      "time": "10:00 AM",
+      "action": "Episode Announcement",
+      "channels": ["instagram", "facebook", "twitter"],
+      "assetType": "image",
+      "assetGenerator": "Placid",
+      "template": "episode-announcement",
+      "sizes": ["1080x1080", "1080x1920"],
+      "caption": "🎬 This Wednesday on The TattooNOW Show!\n\n{{EPISODE_TITLE}}\n\nFeaturing {{GUEST_NAME}} from {{GUEST_STUDIO}}\n\nWe're diving into {{THEME}} — you won't want to miss this.\n\n🔴 Live on YouTube this Wednesday!\n\n#TattooNOWShow #TattooIndustry #TattooArtist #TattooBusiness",
+      "automation": "GHL Post Scheduler"
+    },
+    {
+      "day": "Monday",
+      "time": "10:30 AM",
+      "action": "Newsletter Email",
+      "channels": ["email"],
+      "template": "pre-show-announcement",
+      "subject": "This Wednesday: {{EPISODE_TITLE}} ft. {{GUEST_NAME}}",
+      "automation": "GHL Email Campaign"
+    },
+    {
+      "day": "Tuesday",
+      "time": "11:00 AM",
+      "action": "Guest Artist Spotlight",
+      "channels": ["instagram", "facebook"],
+      "assetType": "image",
+      "assetGenerator": "Placid",
+      "template": "guest-spotlight",
+      "sizes": ["1080x1080"],
+      "dynamicFields": {
+        "headshot": "{{GUEST_HEADSHOT}}",
+        "name": "{{GUEST_NAME}}",
+        "style": "{{GUEST_STYLE}}",
+        "studio": "{{GUEST_STUDIO}}, {{GUEST_LOCATION}}",
+        "since": "Tattooing since {{GUEST_SINCE}}"
+      },
+      "caption": "🎨 Guest Artist Spotlight\n\nMeet {{GUEST_NAME}} — {{GUEST_BIO}}\n\n📍 {{GUEST_STUDIO}}, {{GUEST_LOCATION}}\n🎯 Style: {{GUEST_STYLE}}\n⏰ Tattooing since {{GUEST_SINCE}}\n\nCatch them on The TattooNOW Show TOMORROW!\n\n#TattooNOWShow #ArtistSpotlight #TattooArtist",
+      "automation": "n8n → GHL Social"
+    },
+    {
+      "day": "Tuesday",
+      "time": "3:00 PM",
+      "action": "Countdown Story/Reel",
+      "channels": ["instagram_stories"],
+      "assetType": "video",
+      "assetGenerator": "Shotstack",
+      "template": "countdown-story",
+      "size": "1080x1920",
+      "notes": "Short animated countdown with episode details. Can be manual if Shotstack template not ready.",
+      "automation": "Manual or scheduled"
+    },
+    {
+      "day": "Wednesday",
+      "time": "10:00 AM",
+      "action": "Going Live Reminder",
+      "channels": ["sms", "instagram", "facebook", "twitter", "push"],
+      "message": "🔴 LIVE today at [TIME]! The TattooNOW Show #{{EPISODE_NUMBER}}: {{EPISODE_TITLE}}\n\nWatch: youtube.com/@tattoonowgabe",
+      "automation": "GHL Workflow (multi-channel)"
+    }
+  ]
+}
