@@ -31,26 +31,35 @@ const CONFIG = {
 // ---------------------------------------------------------------------------
 
 const PLACEHOLDERS = {
-  '{{EPISODE_NUMBER}}':      (d) => d.episodeNumber,
-  '{{EPISODE_TITLE}}':       (d) => d.episodeTitle,
-  '{{AIR_DATE}}':            (d) => d.airDate,
-  '{{GUEST_NAME}}':          (d) => d.guestName || 'TBD',
-  '{{GUEST_HEADSHOT}}':      (d) => d.guestHeadshot || '',
-  '{{GUEST_BIO}}':           (d) => d.guestBio || '',
-  '{{GUEST_STYLE}}':         (d) => d.guestStyle || '',
-  '{{GUEST_SINCE}}':         (d) => d.guestSince || '',
-  '{{GUEST_STUDIO}}':        (d) => d.guestStudio || '',
-  '{{GUEST_LOCATION}}':      (d) => d.guestLocation || '',
-  '{{THEME}}':               (d) => d.theme || '',
-  '{{TALKING_POINTS}}':      (d) => formatTalkingPoints(d.talkingPoints),
-  '{{QA_TOPIC}}':            (d) => d.qaTopic || '',
-  '{{CTA}}':                 (d) => d.callToAction || '',
-  '{{SOURCE_PRESENTATION}}': (d) => d.presentationSource || '',
-  '{{SOURCE_SLIDE}}':        (d) => d.sourceSlides || '',
-  '{{SPONSOR}}':             (d) => d.sponsor || 'None',
-  '{{NEXT_TITLE}}':          (d) => d.nextTitle || 'TBD',
-  '{{NEXT_GUEST}}':          (d) => d.nextGuest || 'TBD',
-  '{{AFFILIATE_LINKS}}':     (d) => formatAffiliateLinks(d.affiliateLinks),
+  '{{EPISODE_NUMBER}}':        (d) => d.episodeNumber,
+  '{{EPISODE_TITLE}}':         (d) => d.episodeTitle,
+  '{{AIR_DATE}}':              (d) => d.airDate,
+  '{{GUEST_NAME}}':            (d) => d.guestName || 'TBD',
+  '{{GUEST_HEADSHOT}}':        (d) => d.guestHeadshot || '',
+  '{{GUEST_BIO}}':             (d) => d.guestBio || '',
+  '{{GUEST_STYLE}}':           (d) => d.guestStyle || '',
+  '{{GUEST_SINCE}}':           (d) => d.guestSince || '',
+  '{{GUEST_STUDIO}}':          (d) => d.guestStudio || '',
+  '{{GUEST_LOCATION}}':        (d) => d.guestLocation || '',
+  '{{THEME}}':                 (d) => d.theme || '',
+  '{{TALKING_POINTS}}':        (d) => formatTalkingPoints(d.talkingPoints),
+  '{{QA_TOPIC}}':              (d) => d.qaTopic || '',
+  '{{CTA}}':                   (d) => d.callToAction || '',
+  '{{SOURCE_PRESENTATION}}':   (d) => d.presentationSource || '',
+  '{{SOURCE_SLIDE}}':          (d) => d.sourceSlides || '',
+  '{{SPONSOR}}':               (d) => d.sponsor || 'None',
+  '{{SPONSOR2}}':              (d) => d.sponsor2 || '',
+  '{{SPONSOR_FRESH_POST}}':    (d) => d.sponsorFreshPost || '',
+  '{{SPONSOR2_FRESH_POST}}':   (d) => d.sponsor2FreshPost || '',
+  '{{TECH_FEATURE}}':          (d) => d.techFeature || 'TattooNOW tool/feature demo related to today\'s theme',
+  '{{INDUSTRY_NEWS}}':         (d) => formatIndustryNews(d.industryNews),
+  '{{EVENT_DETAILS}}':         (d) => d.eventDetails || 'No event details this week',
+  '{{SPECIAL_SEGMENT_TITLE}}': (d) => d.specialSegmentTitle || '(none scheduled)',
+  '{{SPECIAL_SEGMENT_TYPE}}':  (d) => d.specialSegmentType || '',
+  '{{SPECIAL_SEGMENT_NOTES}}': (d) => d.specialSegmentNotes || '',
+  '{{NEXT_TITLE}}':            (d) => d.nextTitle || 'TBD',
+  '{{NEXT_GUEST}}':            (d) => d.nextGuest || 'TBD',
+  '{{AFFILIATE_LINKS}}':       (d) => formatAffiliateLinks(d.affiliateLinks),
 };
 
 // ---------------------------------------------------------------------------
@@ -71,6 +80,22 @@ function formatTalkingPoints(points) {
     return points.map((p) => `  → ${p}`).join('\n');
   }
   return `  → ${String(points)}`;
+}
+
+function formatIndustryNews(news) {
+  if (!news) return '  → [No industry news this week]';
+  if (typeof news === 'string') {
+    return news
+      .split(/\n|;/)
+      .map((n) => n.trim())
+      .filter(Boolean)
+      .map((n) => `  → ${n}`)
+      .join('\n');
+  }
+  if (Array.isArray(news)) {
+    return news.map((n) => `  → ${n}`).join('\n');
+  }
+  return `  → ${String(news)}`;
 }
 
 function formatAffiliateLinks(links) {

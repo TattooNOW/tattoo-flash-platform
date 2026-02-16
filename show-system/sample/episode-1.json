@@ -1,0 +1,39 @@
+{
+  "episodeNumber": 1,
+  "episodeTitle": "Why Your Website Is Losing You Clients",
+  "airDate": "February 26, 2026",
+  "theme": "Studio Websites That Actually Convert",
+  "guestName": "Mike DeVries",
+  "guestHeadshot": "https://tattoonow.com/assets/img/artists/mike-devries.jpg",
+  "guestBio": "Mike DeVries is a world-renowned realism tattoo artist based in Camarillo, California. A pioneer in color portrait tattooing, Mike has been featured on Ink Master and is known for pushing the boundaries of photorealism in skin art. He's also been an early adopter of TattooNOW's web platform, using it to drive consistent bookings.",
+  "guestStyle": "Color Realism / Portraits",
+  "guestSince": "1995",
+  "guestStudio": "MD Tattoo Studio",
+  "guestLocation": "Camarillo, CA",
+  "talkingPoints": "Most tattoo studio websites look like they were built in 2012\nYour portfolio page is not your homepage — stop treating it that way\nMobile-first isn't optional anymore — 78% of tattoo searches happen on phones\nThe 3-second rule: if visitors can't book in 3 clicks, you're losing them\nSEO basics every tattoo artist should know but nobody teaches",
+  "qaTopic": "What's the one thing you'd change about your website today?",
+  "callToAction": "Book a free 15-minute website review at longevity.tattoonow.com",
+  "presentationSource": "P2 — Digital Marketing for Tattoo Studios",
+  "sourceSlides": "14-18",
+  "sponsor": "Inkjecta",
+  "sponsor2": "Saniderm",
+  "sponsorFreshPost": "Inkjecta just dropped a behind-the-scenes reel of their new Flite X1 machine assembly process — really cool to see the precision engineering that goes into these",
+  "sponsor2FreshPost": "Saniderm posted a side-by-side healing comparison that's been blowing up — 2.3M views on their latest TikTok showing a full sleeve heal with vs without",
+  "techFeature": "TattooNOW's new SEO Dashboard — see exactly how your site ranks for local tattoo searches and what keywords to target",
+  "industryNews": [
+    "Philadelphia Tattoo Convention announced their 2026 lineup — biggest yet",
+    "New EU ink regulation guidance released — what US artists need to know about traveling to work overseas",
+    "Instagram testing 'Portfolio Mode' for creator accounts — could be huge for artists"
+  ],
+  "eventDetails": "Icons & Prodigies Venice — June 12-14, 2026. Early bird pricing ends March 1st. Featured artists include Nikko Hurtado, Ryan Ashley, and Steve Butcher.",
+  "specialSegmentTitle": null,
+  "specialSegmentType": null,
+  "specialSegmentNotes": null,
+  "nextTitle": "Pricing Your Flash Without Leaving Money on the Table",
+  "nextGuest": "Kelly Doty",
+  "affiliateLinks": [
+    { "partnerName": "Inkjecta", "amId": "inkjecta", "couponCode": "TNOW10" },
+    { "partnerName": "Saniderm", "amId": "saniderm", "couponCode": null },
+    { "partnerName": "TattooNOW Longevity", "amId": "longevity", "couponCode": null }
+  ]
+}
