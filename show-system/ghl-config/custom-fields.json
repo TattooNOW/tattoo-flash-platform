@@ -1,0 +1,48 @@
+{
+  "moduleId": "WS",
+  "moduleName": "Weekly Show",
+  "description": "GHL custom fields for the TattooNOW Show system",
+  "fields": [
+    {
+      "name": "WS - Episode Number",
+      "type": "number",
+      "description": "Episode number for contact's appearance"
+    },
+    {
+      "name": "WS - Episode Title",
+      "type": "text",
+      "description": "Title of the episode"
+    },
+    {
+      "name": "WS - Air Date",
+      "type": "date",
+      "description": "Recording/air date"
+    },
+    {
+      "name": "WS - Guest Artist",
+      "type": "text",
+      "description": "Featured guest artist name"
+    },
+    {
+      "name": "WS - Talent Source",
+      "type": "dropdown",
+      "options": [
+        "Icons & Prodigies",
+        "Paradise Gathering",
+        "Partner Convention",
+        "Independent"
+      ],
+      "description": "How the talent was sourced"
+    },
+    {
+      "name": "WS - Affiliate ID",
+      "type": "text",
+      "description": "Partner's am_id for affiliate tracking"
+    },
+    {
+      "name": "WS - Publishing Folder URL",
+      "type": "text",
+      "description": "Link to partner's Google Drive publishing folder"
+    }
+  ]
+}

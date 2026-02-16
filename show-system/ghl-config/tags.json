@@ -1,0 +1,62 @@
+{
+  "moduleId": "WS",
+  "moduleName": "Weekly Show",
+  "description": "GHL tags for the TattooNOW Show system. Follows convention: [MODULE_ID]. [category] function : status",
+  "tags": [
+    {
+      "name": "WS. [show] episode : planning",
+      "category": "episode",
+      "description": "Episode is in planning stage"
+    },
+    {
+      "name": "WS. [show] episode : script_ready",
+      "category": "episode",
+      "description": "Script has been generated and reviewed"
+    },
+    {
+      "name": "WS. [show] episode : recorded",
+      "category": "episode",
+      "description": "Episode has been recorded"
+    },
+    {
+      "name": "WS. [show] episode : editing",
+      "category": "episode",
+      "description": "Episode is in post-production editing"
+    },
+    {
+      "name": "WS. [show] episode : published",
+      "category": "episode",
+      "description": "Episode is published and distributed"
+    },
+    {
+      "name": "WS. [show] guest : invited",
+      "category": "guest",
+      "description": "Guest has been invited to appear on the show"
+    },
+    {
+      "name": "WS. [show] guest : confirmed",
+      "category": "guest",
+      "description": "Guest has confirmed their appearance"
+    },
+    {
+      "name": "WS. [show] guest : materials_received",
+      "category": "guest",
+      "description": "Guest headshot, bio, and portfolio images collected"
+    },
+    {
+      "name": "WS. [show] guest : appeared",
+      "category": "guest",
+      "description": "Guest has appeared on an episode"
+    },
+    {
+      "name": "WS. [show] affiliate : active",
+      "category": "affiliate",
+      "description": "Affiliate partner is active and receiving assets"
+    },
+    {
+      "name": "WS. [show] affiliate : notified",
+      "category": "affiliate",
+      "description": "Affiliate was notified about latest episode assets"
+    }
+  ]
+}

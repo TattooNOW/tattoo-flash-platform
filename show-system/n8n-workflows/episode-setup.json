@@ -1,0 +1,177 @@
+{
+  "name": "WS — Episode Setup",
+  "description": "Triggered by GHL form submission or Google Sheets update. Creates episode infrastructure: script, slide deck, notifications.",
+  "triggerType": "webhook",
+  "instance": "tn.reinventingai.com",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Episode Form Webhook",
+      "parameters": {
+        "path": "ws-episode-setup",
+        "httpMethod": "POST"
+      },
+      "notes": "Receives episode data from GHL form or direct API call"
+    },
+    {
+      "id": "parse",
+      "type": "n8n-nodes-base.set",
+      "name": "Parse Episode Data",
+      "parameters": {
+        "values": {
+          "episodeNumber": "={{ $json.episodeNumber }}",
+          "episodeTitle": "={{ $json.episodeTitle }}",
+          "airDate": "={{ $json.airDate }}",
+          "theme": "={{ $json.theme }}",
+          "guestName": "={{ $json.guestName }}",
+          "guestInstagram": "={{ $json.guestInstagram }}",
+          "talkingPoints": "={{ $json.talkingPoints }}",
+          "specialSegment": "={{ $json.specialSegment }}",
+          "sponsor": "={{ $json.sponsor }}",
+          "callToAction": "={{ $json.callToAction }}"
+        }
+      },
+      "notes": "Normalize incoming data into standard field names"
+    },
+    {
+      "id": "sheets_update",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Update Episode Calendar",
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "sheetName": "Episode Calendar",
+        "matchingColumn": "Episode #"
+      },
+      "notes": "Create or update the row in the Episode Calendar tab"
+    },
+    {
+      "id": "lookup_talent",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Lookup Guest in Talent DB",
+      "parameters": {
+        "operation": "read",
+        "sheetName": "Talent Database",
+        "filters": {
+          "Artist Name": "={{ $json.guestName }}"
+        }
+      },
+      "notes": "Fetch guest details (headshot, bio, style, etc.) from Talent Database tab"
+    },
+    {
+      "id": "slides_duplicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Duplicate Slides Template",
+      "parameters": {
+        "method": "POST",
+        "url": "https://slides.googleapis.com/v1/presentations/{{TEMPLATE_ID}}/copy",
+        "authentication": "oAuth2",
+        "body": {
+          "name": "TattooNOW Show #{{ $json.episodeNumber }} — {{ $json.episodeTitle }}"
+        }
+      },
+      "notes": "Copy the master Google Slides template for this episode. Requires Google Slides API OAuth2 credentials."
+    },
+    {
+      "id": "slides_populate",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Populate Slide Placeholders",
+      "parameters": {
+        "method": "POST",
+        "url": "https://slides.googleapis.com/v1/presentations/{{NEW_PRESENTATION_ID}}:batchUpdate",
+        "authentication": "oAuth2",
+        "body": {
+          "requests": [
+            {
+              "replaceAllText": {
+                "containsText": { "text": "{{EPISODE_NUMBER}}" },
+                "replaceText": "={{ $json.episodeNumber }}"
+              }
+            },
+            {
+              "replaceAllText": {
+                "containsText": { "text": "{{EPISODE_TITLE}}" },
+                "replaceText": "={{ $json.episodeTitle }}"
+              }
+            },
+            {
+              "replaceAllText": {
+                "containsText": { "text": "{{AIR_DATE}}" },
+                "replaceText": "={{ $json.airDate }}"
+              }
+            },
+            {
+              "replaceAllText": {
+                "containsText": { "text": "{{GUEST_NAME}}" },
+                "replaceText": "={{ $json.guestName }}"
+              }
+            },
+            {
+              "replaceAllText": {
+                "containsText": { "text": "{{THEME}}" },
+                "replaceText": "={{ $json.theme }}"
+              }
+            }
+          ]
+        }
+      },
+      "notes": "Replace all placeholder text in the duplicated presentation. Full placeholder list in slides/placeholder-mapping.json"
+    },
+    {
+      "id": "generate_script",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Generate Script via Claude API",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": {
+          "x-api-key": "={{ $env.ANTHROPIC_API_KEY }}",
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "model": "claude-sonnet-4-20250514",
+          "max_tokens": 8192,
+          "system": "You are a TV show writer for 'The TattooNOW Show'... (see scripts/system-prompt.md)",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Generate a full script for Episode {{ $json.episodeNumber }}: {{ $json.episodeTitle }}. Theme: {{ $json.theme }}. Guest: {{ $json.guestName }}. Talking Points: {{ $json.talkingPoints }}. CTA: {{ $json.callToAction }}"
+            }
+          ]
+        }
+      },
+      "notes": "Call Claude API to generate the episode script. System prompt from scripts/system-prompt.md"
+    },
+    {
+      "id": "save_script",
+      "type": "n8n-nodes-base.googleDrive",
+      "name": "Save Script to Drive",
+      "parameters": {
+        "operation": "upload",
+        "folderId": "={{ $json.episodeFolderId }}",
+        "fileName": "Episode-{{ $json.episodeNumber }}-Script.md"
+      },
+      "notes": "Save the generated script to the episode folder in Google Drive"
+    },
+    {
+      "id": "telegram_notify",
+      "type": "n8n-nodes-base.telegram",
+      "name": "Notify: Deck & Script Ready",
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "📺 Episode {{ $json.episodeNumber }} setup complete!\n\n📝 {{ $json.episodeTitle }}\n📅 {{ $json.airDate }}\n🎨 Guest: {{ $json.guestName }}\n\n✅ Script generated\n✅ Slide deck populated\n\nDeck: {{ $json.slidesUrl }}\nScript: {{ $json.scriptUrl }}"
+      },
+      "notes": "Send Telegram notification when episode setup is complete"
+    }
+  ],
+  "connections": {
+    "trigger": ["parse"],
+    "parse": ["sheets_update", "lookup_talent"],
+    "lookup_talent": ["slides_duplicate", "generate_script"],
+    "slides_duplicate": ["slides_populate"],
+    "slides_populate": ["telegram_notify"],
+    "generate_script": ["save_script"],
+    "save_script": ["telegram_notify"]
+  }
+}

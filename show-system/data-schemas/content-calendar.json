@@ -1,0 +1,80 @@
+{
+  "sheetName": "Content Calendar",
+  "tabIndex": 2,
+  "description": "52-week content calendar mapping 4 presentations across the year — Tab 3",
+  "quarterMapping": {
+    "Q1": {
+      "weeks": "1-13",
+      "theme": "Foundation & Systems",
+      "focus": "Business Plan + Client Acquisition basics",
+      "presentations": ["P1: Business Plan", "P2: Getting Clients"]
+    },
+    "Q2": {
+      "weeks": "14-26",
+      "theme": "Growth & Collaboration",
+      "focus": "Network strategies and implementation",
+      "presentations": ["P3: Network", "P2: Getting Clients"]
+    },
+    "Q3": {
+      "weeks": "27-39",
+      "theme": "Business Mastery & Leadership",
+      "focus": "Essential principles + deep engagement",
+      "presentations": ["P4: Essentials", "P1: Business Plan"]
+    },
+    "Q4": {
+      "weeks": "40-52",
+      "theme": "Advanced Implementation",
+      "focus": "Integration, case studies, next-year planning",
+      "presentations": ["P3: Network", "P4: Essentials"]
+    }
+  },
+  "columns": [
+    {
+      "name": "Week #",
+      "type": "number",
+      "description": "Week number 1-52"
+    },
+    {
+      "name": "Quarter",
+      "type": "dropdown",
+      "options": ["Q1", "Q2", "Q3", "Q4"],
+      "description": "Fiscal quarter"
+    },
+    {
+      "name": "Episode Date",
+      "type": "date",
+      "description": "Wednesday air date for this week"
+    },
+    {
+      "name": "Presentation",
+      "type": "dropdown",
+      "options": [
+        "P1: Business Plan",
+        "P2: Getting Clients",
+        "P3: Network",
+        "P4: Essentials"
+      ],
+      "description": "Primary presentation source for this week"
+    },
+    {
+      "name": "Slide Reference",
+      "type": "text",
+      "description": "Specific slide number(s) from the presentation"
+    },
+    {
+      "name": "Newsletter Topic",
+      "type": "text",
+      "description": "Newsletter theme aligned with this week's episode"
+    },
+    {
+      "name": "Meeting Focus",
+      "type": "text",
+      "description": "Community meeting discussion topic"
+    },
+    {
+      "name": "Key Points",
+      "type": "longText",
+      "description": "3-5 key content points for the week"
+    }
+  ]
+}

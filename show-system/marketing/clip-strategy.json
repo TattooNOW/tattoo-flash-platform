@@ -1,0 +1,82 @@
+{
+  "name": "Episode Clip Extraction Strategy",
+  "description": "From each 60-minute episode, extract 5 pieces of short-form content",
+  "generator": "Shotstack (API or MCP)",
+  "clips": [
+    {
+      "name": "Hook Clip",
+      "duration": "15-30 seconds",
+      "format": "9:16 vertical (1080x1920)",
+      "purpose": "Social media teaser to drive full episode views",
+      "platforms": ["Instagram Reels", "TikTok", "YouTube Shorts"],
+      "source": "Best single moment from the episode — surprise, insight, or drama",
+      "overlay": {
+        "topBar": "THE TATTOONOW SHOW",
+        "bottomBar": "Watch full episode — link in bio",
+        "branding": "Logo watermark bottom-right"
+      },
+      "publishDay": "Friday"
+    },
+    {
+      "name": "Guest Spotlight Clip",
+      "duration": "60-90 seconds",
+      "format": "9:16 vertical (1080x1920)",
+      "purpose": "Feature the guest artist — intro + portfolio highlight",
+      "platforms": ["Instagram Reels", "TikTok", "YouTube Shorts"],
+      "source": "ACT 2, Guest Spotlight segment (20:00-25:00)",
+      "overlay": {
+        "nameCard": "{{GUEST_NAME}} | {{GUEST_STYLE}}",
+        "studioCard": "{{GUEST_STUDIO}}, {{GUEST_LOCATION}}",
+        "branding": "Logo watermark"
+      },
+      "publishDay": "Friday",
+      "notes": "Tag the guest artist in all posts"
+    },
+    {
+      "name": "Tech Tip Clip",
+      "duration": "60-90 seconds",
+      "format": "9:16 vertical (1080x1920)",
+      "purpose": "Quick actionable tip studios can implement",
+      "platforms": ["Instagram Reels", "TikTok", "YouTube Shorts"],
+      "source": "ACT 3, TattooNOW Tech Corner (25:00-30:00)",
+      "overlay": {
+        "topBar": "TATTOO TECH TIP",
+        "bottomBar": "More at longevity.tattoonow.com",
+        "branding": "Logo watermark"
+      },
+      "publishDay": "Friday-Saturday"
+    },
+    {
+      "name": "Funny Moment Clip",
+      "duration": "30-60 seconds",
+      "format": "9:16 vertical (1080x1920)",
+      "purpose": "Entertainment — comedy segment or spontaneous humor",
+      "platforms": ["Instagram Reels", "TikTok"],
+      "source": "Best organic funny moment from any segment",
+      "overlay": {
+        "branding": "Logo watermark"
+      },
+      "publishDay": "Saturday",
+      "notes": "Humor clips tend to get highest engagement — prioritize authenticity"
+    },
+    {
+      "name": "Quote Card",
+      "type": "static image",
+      "format": "1080x1080",
+      "purpose": "Shareable quote graphic for feed posts",
+      "platforms": ["Instagram", "Facebook", "Twitter"],
+      "generator": "Placid (image template)",
+      "template": {
+        "background": "#0a0a0a",
+        "quoteText": "{{BEST_QUOTE}}",
+        "quoteFont": "Roboto Slab",
+        "quoteColor": "#fafafa",
+        "attribution": "— {{GUEST_NAME}}",
+        "attributionColor": "#EA9320",
+        "logo": "bottom-right",
+        "episodeBadge": "Ep. {{EPISODE_NUMBER}}"
+      },
+      "publishDay": "Saturday"
+    }
+  ]
+}

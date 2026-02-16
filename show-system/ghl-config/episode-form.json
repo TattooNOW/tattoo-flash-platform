@@ -1,0 +1,94 @@
+{
+  "formName": "Quick Episode Setup",
+  "description": "GHL form for rapid episode planning — when Gabe needs to set up a show quickly without opening the spreadsheet",
+  "fields": [
+    {
+      "name": "episodeTitle",
+      "label": "Episode Title",
+      "type": "text",
+      "required": true,
+      "placeholder": "e.g., Building Your Brand in 2026"
+    },
+    {
+      "name": "airDate",
+      "label": "Episode Date",
+      "type": "datePicker",
+      "required": true,
+      "default": "next Wednesday",
+      "notes": "Default to next Wednesday from current date"
+    },
+    {
+      "name": "theme",
+      "label": "Theme / Topic",
+      "type": "dropdown",
+      "required": true,
+      "options": [
+        "Business Foundations",
+        "Client Acquisition",
+        "Portfolio Development",
+        "Social Media Strategy",
+        "Studio Operations",
+        "Financial Management",
+        "Networking & Collaboration",
+        "Convention Strategy",
+        "Marketing & Branding",
+        "Technology & Tools",
+        "Leadership & Mentorship",
+        "Industry Trends",
+        "Case Study / Deep Dive"
+      ]
+    },
+    {
+      "name": "guestName",
+      "label": "Guest Artist Name",
+      "type": "text",
+      "required": false,
+      "placeholder": "Full name"
+    },
+    {
+      "name": "guestInstagram",
+      "label": "Guest Instagram",
+      "type": "text",
+      "required": false,
+      "placeholder": "@handle"
+    },
+    {
+      "name": "talkingPoints",
+      "label": "3-5 Key Talking Points",
+      "type": "textarea",
+      "required": true,
+      "placeholder": "One talking point per line"
+    },
+    {
+      "name": "specialSegment",
+      "label": "Special Segment?",
+      "type": "checkboxGroup",
+      "required": false,
+      "options": [
+        "Comedy Sketch",
+        "Musical Guest",
+        "Live Tattoo",
+        "Product Review"
+      ]
+    },
+    {
+      "name": "sponsor",
+      "label": "Sponsor / Partner for this episode",
+      "type": "text",
+      "required": false,
+      "placeholder": "Sponsor or partner name"
+    },
+    {
+      "name": "callToAction",
+      "label": "Call to Action",
+      "type": "text",
+      "required": false,
+      "placeholder": "What should viewers do after watching?"
+    }
+  ],
+  "submissionTriggers": [
+    "Create/update row in Episode Calendar spreadsheet via n8n webhook",
+    "Notify via Telegram: Episode [#] scheduled: [Title] on [Date]",
+    "Begin pre-show marketing countdown if within 7 days of air date"
+  ]
+}
