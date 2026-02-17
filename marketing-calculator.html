@@ -1,0 +1,869 @@
+<!--
+=================================================================
+MARKETING COST CALCULATOR
+=================================================================
+Self-contained HTML/CSS/JS for GHL Custom Code element.
+Interactive tool that estimates a visitor's monthly marketing spend
+across common platforms. TattooNOW branded.
+
+Modes: Step-by-step wizard OR single-form view (user toggleable)
+=================================================================
+-->
+
+<div class="tnow-calc" id="marketingCalc">
+    <!-- Dev Banner -->
+    <div style="background:#ff4444;color:#fff;text-align:center;padding:8px;font-family:sans-serif;font-weight:bold;font-size:1.1rem;">DEV BRANCH - TEST MODE</div>
+
+    <!-- Header -->
+    <div class="tnow-calc-header">
+        <h1 class="tnow-calc-title">What Are You Spending on Marketing?</h1>
+        <p class="tnow-calc-subtitle">Select the platforms you use and we'll estimate your monthly costs</p>
+        <button class="tnow-calc-mode-toggle" id="modeToggle" onclick="MarketingCalc.toggleMode()">
+            Prefer to see everything at once?
+        </button>
+    </div>
+
+    <!-- ============ WIZARD MODE ============ -->
+    <div class="tnow-calc-wizard" id="wizardMode">
+        <!-- Progress Bar -->
+        <div class="tnow-calc-progress">
+            <div class="tnow-calc-progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div class="tnow-calc-step-label" id="stepLabel">Step 1 of 8</div>
+
+        <!-- Wizard Cards (one per platform) -->
+        <div class="tnow-calc-wizard-card" id="wizardCard">
+            <div class="tnow-calc-wizard-icon" id="wizardIcon"></div>
+            <h2 class="tnow-calc-wizard-name" id="wizardName"></h2>
+            <p class="tnow-calc-wizard-desc" id="wizardDesc"></p>
+            <label class="tnow-calc-toggle-label">
+                <span>I use this</span>
+                <input type="checkbox" id="wizardCheck" onchange="MarketingCalc.wizardToggle(this.checked)">
+                <span class="tnow-calc-switch"></span>
+            </label>
+            <div class="tnow-calc-wizard-cost" id="wizardCostGroup" style="display:none;">
+                <label>Monthly cost estimate</label>
+                <div class="tnow-calc-input-wrap">
+                    <span class="tnow-calc-dollar">$</span>
+                    <input type="number" id="wizardCost" min="0" step="10" onchange="MarketingCalc.wizardCostChange(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Nav -->
+        <div class="tnow-calc-wizard-nav">
+            <button class="tnow-calc-btn tnow-calc-btn-back" id="btnBack" onclick="MarketingCalc.prev()" style="display:none;">Back</button>
+            <button class="tnow-calc-btn tnow-calc-btn-next" id="btnNext" onclick="MarketingCalc.next()">Next</button>
+        </div>
+    </div>
+
+    <!-- ============ FORM MODE ============ -->
+    <div class="tnow-calc-form" id="formMode" style="display:none;">
+        <div class="tnow-calc-form-grid" id="formGrid"></div>
+        <button class="tnow-calc-btn tnow-calc-btn-next tnow-calc-btn-calculate" onclick="MarketingCalc.showResults()">Calculate My Costs</button>
+    </div>
+
+    <!-- ============ RESULTS ============ -->
+    <div class="tnow-calc-results" id="resultsPanel" style="display:none;">
+        <h2 class="tnow-calc-results-title">Your Marketing Cost Breakdown</h2>
+        <div class="tnow-calc-results-table" id="resultsTable"></div>
+        <div class="tnow-calc-totals">
+            <div class="tnow-calc-total-row">
+                <span>Monthly Total</span>
+                <span class="tnow-calc-total-amount" id="monthlyTotal">$0</span>
+            </div>
+            <div class="tnow-calc-total-row tnow-calc-yearly">
+                <span>Yearly Total</span>
+                <span class="tnow-calc-total-amount" id="yearlyTotal">$0</span>
+            </div>
+        </div>
+        <button class="tnow-calc-btn tnow-calc-btn-back tnow-calc-btn-restart" onclick="MarketingCalc.restart()">Start Over</button>
+    </div>
+</div>
+
+<style>
+/* =================================================================
+   CSS VARIABLES (TattooNOW Brand)
+   ================================================================= */
+.tnow-calc {
+    --tnow-orange: #fa9101;
+    --tnow-orange-dark: #cd7600;
+    --tnow-gold: #F8A507;
+    --tnow-black: #000000;
+    --tnow-navy: #000321;
+    --tnow-teal: #81e6d9;
+    --tnow-white: #ffffff;
+    --tnow-gray: #8893A8;
+    --tnow-gray-light: #C9D8E0;
+
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-hover-border: rgba(250, 145, 1, 0.5);
+
+    --font-headline: 'Roboto Slab', 'Arial Black', sans-serif;
+    --font-body: 'Roboto', Arial, sans-serif;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    font-family: var(--font-body);
+    color: var(--tnow-white);
+    background: var(--tnow-navy);
+    padding: 2rem 1rem;
+    min-height: 80vh;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* =================================================================
+   HEADER
+   ================================================================= */
+.tnow-calc-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.tnow-calc-title {
+    font-family: var(--font-headline);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--tnow-orange);
+}
+
+.tnow-calc-subtitle {
+    font-size: 1rem;
+    color: var(--tnow-gray-light);
+    margin: 0 0 1rem 0;
+}
+
+.tnow-calc-mode-toggle {
+    background: none;
+    border: none;
+    color: var(--tnow-teal);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.tnow-calc-mode-toggle:hover {
+    color: var(--tnow-orange);
+}
+
+/* =================================================================
+   PROGRESS BAR (Wizard)
+   ================================================================= */
+.tnow-calc-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.tnow-calc-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--tnow-orange), var(--tnow-gold));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+.tnow-calc-step-label {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--tnow-gray);
+    margin-bottom: 1.5rem;
+}
+
+/* =================================================================
+   WIZARD CARD
+   ================================================================= */
+.tnow-calc-wizard-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: border-color 0.3s ease, transform 0.3s ease;
+    animation: tnow-calc-fadeIn 0.3s ease;
+}
+
+.tnow-calc-wizard-card.active {
+    border-color: var(--card-hover-border);
+}
+
+@keyframes tnow-calc-fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tnow-calc-wizard-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.tnow-calc-wizard-name {
+    font-family: var(--font-headline);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--tnow-white);
+}
+
+.tnow-calc-wizard-desc {
+    font-size: 0.9rem;
+    color: var(--tnow-gray);
+    margin: 0 0 1.5rem 0;
+}
+
+/* Toggle Switch */
+.tnow-calc-toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tnow-calc-toggle-label input {
+    display: none;
+}
+
+.tnow-calc-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 13px;
+    transition: background 0.3s ease;
+}
+
+.tnow-calc-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: var(--tnow-white);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.tnow-calc-toggle-label input:checked + .tnow-calc-switch {
+    background: var(--tnow-orange);
+}
+
+.tnow-calc-toggle-label input:checked + .tnow-calc-switch::after {
+    transform: translateX(22px);
+}
+
+/* Wizard Cost Input */
+.tnow-calc-wizard-cost {
+    animation: tnow-calc-fadeIn 0.3s ease;
+}
+
+.tnow-calc-wizard-cost label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--tnow-gray);
+    margin-bottom: 0.5rem;
+}
+
+.tnow-calc-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.tnow-calc-input-wrap:focus-within {
+    border-color: var(--tnow-orange);
+}
+
+.tnow-calc-dollar {
+    color: var(--tnow-orange);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.tnow-calc-input-wrap input {
+    background: none;
+    border: none;
+    color: var(--tnow-white);
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 100px;
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.tnow-calc-input-wrap input::-webkit-outer-spin-button,
+.tnow-calc-input-wrap input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* =================================================================
+   WIZARD NAV
+   ================================================================= */
+.tnow-calc-wizard-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.tnow-calc-btn {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+}
+
+.tnow-calc-btn:active {
+    transform: scale(0.97);
+}
+
+.tnow-calc-btn-next {
+    background: var(--tnow-orange);
+    color: var(--tnow-white);
+}
+
+.tnow-calc-btn-next:hover {
+    background: var(--tnow-orange-dark);
+}
+
+.tnow-calc-btn-back {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--tnow-white);
+}
+
+.tnow-calc-btn-back:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tnow-calc-btn-calculate {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 2rem auto 0;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+}
+
+.tnow-calc-btn-restart {
+    display: block;
+    margin: 1.5rem auto 0;
+}
+
+/* =================================================================
+   FORM MODE
+   ================================================================= */
+.tnow-calc-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.tnow-calc-form-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.tnow-calc-form-card:hover {
+    border-color: var(--card-hover-border);
+}
+
+.tnow-calc-form-card.selected {
+    border-color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.05);
+}
+
+.tnow-calc-form-card-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.tnow-calc-form-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tnow-calc-form-card-name {
+    font-family: var(--font-headline);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+}
+
+.tnow-calc-form-card-desc {
+    font-size: 0.8rem;
+    color: var(--tnow-gray);
+    margin: 0;
+}
+
+.tnow-calc-form-card-cost {
+    flex-shrink: 0;
+}
+
+.tnow-calc-form-card-cost .tnow-calc-input-wrap {
+    padding: 0.35rem 0.6rem;
+}
+
+.tnow-calc-form-card-cost input {
+    width: 70px;
+    font-size: 1rem;
+}
+
+.tnow-calc-form-card-cost .tnow-calc-dollar {
+    font-size: 1rem;
+}
+
+/* Checkbox hidden, card click toggles */
+.tnow-calc-form-card input[type="checkbox"] {
+    display: none;
+}
+
+.tnow-calc-form-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tnow-calc-form-card.selected .tnow-calc-form-check {
+    background: var(--tnow-orange);
+    border-color: var(--tnow-orange);
+}
+
+.tnow-calc-form-check::after {
+    content: '';
+    display: none;
+    width: 6px;
+    height: 10px;
+    border: solid var(--tnow-white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-top: -2px;
+}
+
+.tnow-calc-form-card.selected .tnow-calc-form-check::after {
+    display: block;
+}
+
+/* =================================================================
+   RESULTS
+   ================================================================= */
+.tnow-calc-results {
+    animation: tnow-calc-fadeIn 0.5s ease;
+}
+
+.tnow-calc-results-title {
+    font-family: var(--font-headline);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 1.5rem 0;
+    color: var(--tnow-white);
+}
+
+.tnow-calc-results-table {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.tnow-calc-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    animation: tnow-calc-slideIn 0.4s ease both;
+}
+
+.tnow-calc-result-row:last-child {
+    border-bottom: none;
+}
+
+@keyframes tnow-calc-slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.tnow-calc-result-row-icon {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+}
+
+.tnow-calc-result-row-name {
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.tnow-calc-result-row-cost {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--tnow-white);
+}
+
+/* Totals */
+.tnow-calc-totals {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.tnow-calc-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.tnow-calc-total-row span:first-child {
+    font-size: 1rem;
+    color: var(--tnow-gray-light);
+}
+
+.tnow-calc-total-amount {
+    font-family: var(--font-headline);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--tnow-orange);
+}
+
+.tnow-calc-yearly {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+}
+
+.tnow-calc-yearly .tnow-calc-total-amount {
+    font-size: 1.4rem;
+    color: var(--tnow-gold);
+}
+
+/* No selections message */
+.tnow-calc-no-selection {
+    text-align: center;
+    padding: 2rem;
+    color: var(--tnow-gray);
+    font-size: 1rem;
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (min-width: 640px) {
+    .tnow-calc {
+        padding: 3rem 2rem;
+    }
+
+    .tnow-calc-title {
+        font-size: 2.5rem;
+    }
+
+    .tnow-calc-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .tnow-calc-form-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem;
+    }
+
+    .tnow-calc-form-card-icon {
+        font-size: 2.2rem;
+    }
+
+    .tnow-calc-form-check {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .tnow-calc-form-card {
+        position: relative;
+    }
+}
+
+@media (max-width: 380px) {
+    .tnow-calc-title {
+        font-size: 1.5rem;
+    }
+
+    .tnow-calc-wizard-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .tnow-calc-wizard-name {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
+<script>
+var MarketingCalc = (function() {
+    var platforms = [
+        { id: 'google_ads',   name: 'Google Ads',             icon: '🔍', desc: 'Search & display advertising',      cost: 500 },
+        { id: 'facebook_ads', name: 'Facebook / Meta Ads',    icon: '📘', desc: 'Social media advertising',           cost: 400 },
+        { id: 'instagram_ads',name: 'Instagram Ads',           icon: '📸', desc: 'Visual social advertising',          cost: 300 },
+        { id: 'email',        name: 'Email Marketing',         icon: '✉️', desc: 'Mailchimp, Constant Contact, etc.', cost: 50  },
+        { id: 'crm',          name: 'CRM Software',            icon: '📊', desc: 'HubSpot, Salesforce, etc.',          cost: 150 },
+        { id: 'seo',          name: 'SEO Tools',               icon: '📈', desc: 'Ahrefs, SEMrush, Moz, etc.',        cost: 100 },
+        { id: 'website',      name: 'Website Builder',         icon: '🌐', desc: 'Squarespace, Wix, WordPress, etc.', cost: 30  },
+        { id: 'scheduler',    name: 'Social Media Scheduler',  icon: '📅', desc: 'Hootsuite, Buffer, Later, etc.',     cost: 50  }
+    ];
+
+    var state = {
+        mode: 'wizard', // 'wizard' or 'form'
+        step: 0,
+        selections: {} // { platformId: { selected: bool, cost: number } }
+    };
+
+    // Initialize selections with defaults
+    platforms.forEach(function(p) {
+        state.selections[p.id] = { selected: false, cost: p.cost };
+    });
+
+    function init() {
+        renderWizardStep();
+    }
+
+    // ---- MODE TOGGLE ----
+    function toggleMode() {
+        var toggle = document.getElementById('modeToggle');
+        var wizard = document.getElementById('wizardMode');
+        var form = document.getElementById('formMode');
+        var results = document.getElementById('resultsPanel');
+
+        results.style.display = 'none';
+
+        if (state.mode === 'wizard') {
+            state.mode = 'form';
+            wizard.style.display = 'none';
+            form.style.display = 'block';
+            toggle.textContent = 'Switch to guided mode';
+            renderFormMode();
+        } else {
+            state.mode = 'wizard';
+            wizard.style.display = 'block';
+            form.style.display = 'none';
+            toggle.textContent = 'Prefer to see everything at once?';
+            renderWizardStep();
+        }
+    }
+
+    // ---- WIZARD MODE ----
+    function renderWizardStep() {
+        var p = platforms[state.step];
+        var sel = state.selections[p.id];
+
+        document.getElementById('wizardIcon').textContent = p.icon;
+        document.getElementById('wizardName').textContent = p.name;
+        document.getElementById('wizardDesc').textContent = p.desc;
+        document.getElementById('wizardCheck').checked = sel.selected;
+        document.getElementById('wizardCost').value = sel.cost;
+        document.getElementById('wizardCostGroup').style.display = sel.selected ? 'block' : 'none';
+
+        var card = document.getElementById('wizardCard');
+        card.classList.toggle('active', sel.selected);
+
+        // Re-trigger animation
+        card.style.animation = 'none';
+        card.offsetHeight; // reflow
+        card.style.animation = '';
+
+        // Progress
+        var pct = ((state.step + 1) / platforms.length) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('stepLabel').textContent = 'Step ' + (state.step + 1) + ' of ' + platforms.length;
+
+        // Nav buttons
+        document.getElementById('btnBack').style.display = state.step > 0 ? 'inline-block' : 'none';
+        document.getElementById('btnNext').textContent = state.step === platforms.length - 1 ? 'See Results' : 'Next';
+    }
+
+    function wizardToggle(checked) {
+        var p = platforms[state.step];
+        state.selections[p.id].selected = checked;
+        document.getElementById('wizardCostGroup').style.display = checked ? 'block' : 'none';
+        document.getElementById('wizardCard').classList.toggle('active', checked);
+    }
+
+    function wizardCostChange(val) {
+        var p = platforms[state.step];
+        state.selections[p.id].cost = Math.max(0, parseInt(val) || 0);
+    }
+
+    function next() {
+        if (state.step < platforms.length - 1) {
+            state.step++;
+            renderWizardStep();
+        } else {
+            showResults();
+        }
+    }
+
+    function prev() {
+        if (state.step > 0) {
+            state.step--;
+            renderWizardStep();
+        }
+    }
+
+    // ---- FORM MODE ----
+    function renderFormMode() {
+        var grid = document.getElementById('formGrid');
+        grid.innerHTML = '';
+
+        platforms.forEach(function(p) {
+            var sel = state.selections[p.id];
+            var card = document.createElement('div');
+            card.className = 'tnow-calc-form-card' + (sel.selected ? ' selected' : '');
+            card.setAttribute('data-id', p.id);
+
+            card.innerHTML =
+                '<div class="tnow-calc-form-check"></div>' +
+                '<div class="tnow-calc-form-card-icon">' + p.icon + '</div>' +
+                '<div class="tnow-calc-form-card-info">' +
+                    '<p class="tnow-calc-form-card-name">' + p.name + '</p>' +
+                    '<p class="tnow-calc-form-card-desc">' + p.desc + '</p>' +
+                '</div>' +
+                '<div class="tnow-calc-form-card-cost">' +
+                    '<div class="tnow-calc-input-wrap">' +
+                        '<span class="tnow-calc-dollar">$</span>' +
+                        '<input type="number" min="0" step="10" value="' + sel.cost + '" onclick="event.stopPropagation()" onchange="MarketingCalc.formCostChange(\'' + p.id + '\', this.value)">' +
+                    '</div>' +
+                '</div>';
+
+            card.addEventListener('click', function() {
+                var s = state.selections[p.id];
+                s.selected = !s.selected;
+                card.classList.toggle('selected', s.selected);
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+    function formCostChange(id, val) {
+        state.selections[id].cost = Math.max(0, parseInt(val) || 0);
+    }
+
+    // ---- RESULTS ----
+    function showResults() {
+        var wizard = document.getElementById('wizardMode');
+        var form = document.getElementById('formMode');
+        var results = document.getElementById('resultsPanel');
+        var table = document.getElementById('resultsTable');
+
+        wizard.style.display = 'none';
+        form.style.display = 'none';
+        results.style.display = 'block';
+
+        // Build results
+        var selected = [];
+        var total = 0;
+        platforms.forEach(function(p) {
+            var sel = state.selections[p.id];
+            if (sel.selected) {
+                selected.push({ name: p.name, icon: p.icon, cost: sel.cost });
+                total += sel.cost;
+            }
+        });
+
+        if (selected.length === 0) {
+            table.innerHTML = '<div class="tnow-calc-no-selection">You didn\'t select any platforms. Go back and select the ones you use!</div>';
+            document.getElementById('monthlyTotal').textContent = '$0';
+            document.getElementById('yearlyTotal').textContent = '$0';
+            return;
+        }
+
+        var html = '';
+        selected.forEach(function(item, i) {
+            html += '<div class="tnow-calc-result-row" style="animation-delay: ' + (i * 0.08) + 's">' +
+                '<span class="tnow-calc-result-row-icon">' + item.icon + '</span>' +
+                '<span class="tnow-calc-result-row-name">' + item.name + '</span>' +
+                '<span class="tnow-calc-result-row-cost">$' + item.cost.toLocaleString() + '/mo</span>' +
+            '</div>';
+        });
+        table.innerHTML = html;
+
+        document.getElementById('monthlyTotal').textContent = '$' + total.toLocaleString();
+        document.getElementById('yearlyTotal').textContent = '$' + (total * 12).toLocaleString();
+    }
+
+    function restart() {
+        var results = document.getElementById('resultsPanel');
+        results.style.display = 'none';
+
+        // Reset selections
+        platforms.forEach(function(p) {
+            state.selections[p.id] = { selected: false, cost: p.cost };
+        });
+        state.step = 0;
+
+        if (state.mode === 'wizard') {
+            document.getElementById('wizardMode').style.display = 'block';
+            renderWizardStep();
+        } else {
+            document.getElementById('formMode').style.display = 'block';
+            renderFormMode();
+        }
+    }
+
+    // Auto-init
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    return {
+        toggleMode: toggleMode,
+        wizardToggle: wizardToggle,
+        wizardCostChange: wizardCostChange,
+        next: next,
+        prev: prev,
+        showResults: showResults,
+        formCostChange: formCostChange,
+        restart: restart
+    };
+})();
+</script>
