@@ -25,27 +25,25 @@ with Airtable credentials configured.
             <span class="tnow-search-icon">🔍</span>
             <button class="tnow-search-clear" id="searchClear" style="display:none;">&times;</button>
         </div>
-        <div class="tnow-filter-row">
-            <label class="tnow-filter-check" id="featuredFilter">
-                <input type="checkbox" id="featuredCheckbox">
-                <span class="tnow-check-mark"></span>
-                <span>Featured</span>
-            </label>
-            <select class="tnow-filter-select" id="sizeFilter">
-                <option value="all">All Sizes</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
-                <option value="XL">XL</option>
-            </select>
-            <select class="tnow-filter-select" id="priceFilter">
-                <option value="all">All Prices</option>
-                <option value="under500">Under $500</option>
-                <option value="500to1000">$500 - $1,000</option>
-                <option value="1000to2000">$1,000 - $2,000</option>
-                <option value="over2000">Over $2,000</option>
-            </select>
-        </div>
+        <label class="tnow-filter-check" id="featuredFilter">
+            <input type="checkbox" id="featuredCheckbox">
+            <span class="tnow-check-mark"></span>
+            <span>Featured</span>
+        </label>
+        <select class="tnow-filter-select" id="sizeFilter">
+            <option value="all">All Sizes</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+            <option value="XL">XL</option>
+        </select>
+        <select class="tnow-filter-select" id="priceFilter">
+            <option value="all">All Prices</option>
+            <option value="under500">Under $500</option>
+            <option value="500to1000">$500 - $1,000</option>
+            <option value="1000to2000">$1,000 - $2,000</option>
+            <option value="over2000">Over $2,000</option>
+        </select>
     </div>
 
     <!-- Category Navigation -->
@@ -184,7 +182,10 @@ with Airtable credentials configured.
    FILTERS WRAP
    ================================================================= */
 .tnow-filters-wrap {
+    display: flex;
+    gap: 1rem;
     margin-bottom: 0;
+    flex-wrap: wrap;
     background: rgba(0, 3, 33, 0.6);
     padding: 1rem 1.25rem;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -199,14 +200,7 @@ with Airtable credentials configured.
     border-color: rgba(255, 255, 255, 0.12);
 }
 
-.tnow-filter-row {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-}
-
 .tnow-filter-select {
-    flex: 1;
     padding: 0.75rem 1rem;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -280,19 +274,21 @@ with Airtable credentials configured.
    ================================================================= */
 .tnow-search-wrap {
     position: relative;
+    flex: 1;
+    min-width: 200px;
 }
 
 .tnow-search-input {
     width: 100%;
-    padding: 0.875rem 3rem 0.875rem 2.75rem;
+    padding: 0.75rem 2.5rem 0.75rem 2.5rem;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     color: var(--tnow-white);
     font-family: var(--font-body);
-    font-size: 1rem;
+    font-size: 0.9rem;
     outline: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .tnow-search-input::placeholder {
@@ -306,10 +302,10 @@ with Airtable credentials configured.
 
 .tnow-search-icon {
     position: absolute;
-    left: 1rem;
+    left: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 1rem;
+    font-size: 0.9rem;
     pointer-events: none;
 }
 
@@ -1322,6 +1318,12 @@ a.tnow-design-card {
     // API FETCHING
     // =================================================================
     function fetchData() {
+        if (!CONFIG.locationId) {
+            setLoading(false);
+            showError('Location not configured. Please contact support.');
+            console.error('Gallery error: locationId is null. Set window.TNOW_LOCATION_ID or pass ?locationId= in the URL.');
+            return;
+        }
         setLoading(true);
         hideError();
 
