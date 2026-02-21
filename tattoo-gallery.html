@@ -46,13 +46,22 @@ with Airtable credentials configured.
         </select>
     </div>
 
-    <!-- Category Navigation -->
+    <!-- Style Navigation -->
     <div class="tnow-gallery-nav" id="galleryNav">
         <button class="tnow-cat-btn" data-category="all" data-active="true">
-            <span class="tnow-cat-icon">✨</span>
-            <span class="tnow-cat-label">All</span>
+            <span class="tnow-cat-icon">🎨</span>
+            <span class="tnow-cat-label">All Styles</span>
         </button>
-        <!-- Dynamic category buttons + "More" link inserted here -->
+        <!-- Dynamic style buttons + "More" link inserted here -->
+    </div>
+
+    <!-- Subject Navigation -->
+    <div class="tnow-gallery-nav tnow-subject-nav" id="subjectNav">
+        <button class="tnow-cat-btn" data-subject="all" data-active="true">
+            <span class="tnow-cat-icon">🏷️</span>
+            <span class="tnow-cat-label">All Subjects</span>
+        </button>
+        <!-- Dynamic subject buttons inserted here -->
     </div>
 
     <!-- Loading State -->
@@ -345,10 +354,20 @@ with Airtable credentials configured.
     scrollbar-width: thin;
     scrollbar-color: var(--tnow-orange) transparent;
     background: rgba(0, 3, 33, 0.6);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-top: 1px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.tnow-gallery-nav:first-of-type {
+    border-radius: 0;
+}
+
+.tnow-subject-nav {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     margin-bottom: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .tnow-gallery-nav::-webkit-scrollbar {
@@ -1275,7 +1294,10 @@ a.tnow-design-card {
     var state = {
         designs: [],          // Loaded designs (accumulates on Load More)
         categories: [],
+        styles: [],           // Categories with type !== 'subject'
+        subjects: [],         // Categories with type === 'subject'
         activeCategory: 'all',
+        activeSubject: 'all',
         searchQuery: '',      // Client-side search within loaded designs
         sizeFilter: 'all',    // Server-side filter
         priceFilter: 'all',   // Client-side filter (price ranges need parsing)
@@ -1299,6 +1321,7 @@ a.tnow-design-card {
     function cacheDOMElements() {
         els.root = document.getElementById('tattooGallery');
         els.nav = document.getElementById('galleryNav');
+        els.subjectNav = document.getElementById('subjectNav');
         els.grid = document.getElementById('galleryGrid');
         els.loading = document.getElementById('galleryLoading');
         els.error = document.getElementById('galleryError');
@@ -1545,35 +1568,46 @@ a.tnow-design-card {
     // =================================================================
     // RENDERING
     // =================================================================
+    function splitCategories() {
+        state.styles = state.categories.filter(function(c) { return c.type !== 'subject'; });
+        state.subjects = state.categories.filter(function(c) { return c.type === 'subject'; });
+    }
+
     function sortCategoriesByDesignCount() {
+        // Compute counts from loaded designs
+        var counts = {};
+        state.designs.forEach(function(d) {
+            var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+            catIds.forEach(function(id) { counts[id] = (counts[id] || 0) + 1; });
+        });
+        state.categories.forEach(function(cat) { cat.designCount = counts[cat.id] || 0; });
+
         state.categories.sort(function(a, b) {
-            var countA = a.designCount || 0;
-            var countB = b.designCount || 0;
-            return countB - countA; // Most designs first
+            return (b.designCount || 0) - (a.designCount || 0);
         });
         // Remove categories with no designs
         state.categories = state.categories.filter(function(cat) {
             return (cat.designCount || 0) > 0;
         });
+        splitCategories();
     }
 
     function renderCategories() {
-        // Show first N categories as main buttons, rest hidden (accessible via "More" link)
-        // Mobile: 2 categories + All + More = 4 buttons
-        // Tablet: 4 categories + All + More = 6 buttons
-        // Desktop: 4 categories + All + More = 6 buttons (or more if space)
-        var mainCount = 4;
-        var mainCategories = state.categories.slice(0, mainCount);
-        var moreCategories = state.categories.slice(mainCount);
+        splitCategories();
+        renderStyleNav();
+        renderSubjectNav();
+    }
 
-        // Build main buttons HTML - "All" button first
+    function renderStyleNav() {
+        var mainCount = 4;
+        var mainStyles = state.styles.slice(0, mainCount);
+
         var html = '<button class="tnow-cat-btn" data-category="all" data-cat-index="0" data-active="' + (state.activeCategory === 'all') + '">' +
-                   '<span class="tnow-cat-icon">✨</span>' +
-                   '<span class="tnow-cat-label">All</span>' +
+                   '<span class="tnow-cat-icon">🎨</span>' +
+                   '<span class="tnow-cat-label">All Styles</span>' +
                    '</button>';
 
-        // Add category buttons with index for responsive hiding
-        mainCategories.forEach(function(cat, index) {
+        mainStyles.forEach(function(cat, index) {
             var isActive = state.activeCategory === cat.slug;
             html += '<button class="tnow-cat-btn" data-category="' + cat.slug + '" data-cat-index="' + (index + 1) + '" data-active="' + isActive + '">' +
                     (cat.icon ? '<span class="tnow-cat-icon">' + cat.icon + '</span>' : '') +
@@ -1581,9 +1615,8 @@ a.tnow-design-card {
                     '</button>';
         });
 
-        // Always add "More" link to categories page (for full category browsing)
         var moreHasActive = state.activeCategory !== 'all' &&
-                           !mainCategories.some(function(cat) { return state.activeCategory === cat.slug; });
+                           !mainStyles.some(function(cat) { return state.activeCategory === cat.slug; });
 
         var categoriesUrl = CONFIG.categoriesPageUrl;
         if (CONFIG.locationId) {
@@ -1599,28 +1632,61 @@ a.tnow-design-card {
         bindCategoryEvents();
     }
 
+    function renderSubjectNav() {
+        if (!els.subjectNav) return;
+        var html = '<button class="tnow-cat-btn" data-subject="all" data-active="' + (state.activeSubject === 'all') + '">' +
+                   '<span class="tnow-cat-icon">🏷️</span>' +
+                   '<span class="tnow-cat-label">All Subjects</span>' +
+                   '</button>';
+
+        state.subjects.forEach(function(sub) {
+            if ((sub.designCount || 0) === 0) return;
+            var isActive = state.activeSubject === sub.slug;
+            html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-active="' + isActive + '">' +
+                    (sub.icon ? '<span class="tnow-cat-icon">' + sub.icon + '</span>' : '') +
+                    '<span class="tnow-cat-label">' + escapeHtml(sub.name) + '</span>' +
+                    '</button>';
+        });
+
+        els.subjectNav.innerHTML = html;
+        bindSubjectEvents();
+    }
+
     function renderDesigns() {
         // Client-side filtering (like admin does - more reliable)
         var filtered = state.designs;
 
-        // Apply client-side category filter (like admin does)
+        // Apply client-side style filter
         if (state.activeCategory !== 'all') {
             filtered = filtered.filter(function(d) {
-                // Find the category to match against
                 var cat = state.categories.find(function(c) {
                     return c.slug === state.activeCategory ||
                            c.id === state.activeCategory ||
                            c.name === state.activeCategory;
                 });
                 if (cat) {
-                    // Match by categoryIds array or fallback to single categoryId
                     var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
                     var catNames = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
                     return catIds.indexOf(cat.id) !== -1 || catNames.indexOf(cat.name) !== -1;
                 }
-                // Fallback: match by name directly
                 var names = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
                 return names.indexOf(state.activeCategory) !== -1;
+            });
+        }
+
+        // Apply client-side subject filter
+        if (state.activeSubject !== 'all') {
+            filtered = filtered.filter(function(d) {
+                var sub = state.subjects.find(function(c) {
+                    return c.slug === state.activeSubject ||
+                           c.id === state.activeSubject ||
+                           c.name === state.activeSubject;
+                });
+                if (sub) {
+                    var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+                    return catIds.indexOf(sub.id) !== -1;
+                }
+                return false;
             });
         }
 
@@ -1652,7 +1718,7 @@ a.tnow-design-card {
                 emptyMsg.textContent = 'No designs found for "' + state.searchQuery + '"';
                 emptyAction.textContent = 'Clear Search';
                 emptyAction.onclick = function() { clearSearch(); };
-            } else if (state.activeCategory !== 'all' || state.sizeFilter !== 'all' || state.priceFilter !== 'all' || state.featuredFilter !== 'all') {
+            } else if (state.activeCategory !== 'all' || state.activeSubject !== 'all' || state.sizeFilter !== 'all' || state.priceFilter !== 'all' || state.featuredFilter !== 'all') {
                 emptyIcon.textContent = '🔍';
                 emptyMsg.textContent = 'No designs match the current filters.';
                 emptyAction.textContent = 'Clear Filters';
@@ -1934,6 +2000,31 @@ a.tnow-design-card {
         refetchDesigns();
     }
 
+    function bindSubjectEvents() {
+        if (!els.subjectNav) return;
+        els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var subject = this.getAttribute('data-subject');
+                filterSubject(subject);
+            });
+        });
+    }
+
+    function filterSubject(subject) {
+        if (state.activeSubject === subject) return;
+
+        state.activeSubject = subject;
+
+        // Update active state on buttons
+        els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+            var isActive = btn.getAttribute('data-subject') === subject;
+            btn.setAttribute('data-active', isActive.toString());
+        });
+
+        // Client-side filter - just re-render
+        renderDesigns();
+    }
+
     function bindGlobalEvents() {
         // Keyboard navigation for modal
         document.addEventListener('keydown', function(e) {
@@ -2005,6 +2096,7 @@ a.tnow-design-card {
                           state.activeCategory !== 'all';
 
         state.activeCategory = 'all';
+        state.activeSubject = 'all';
         state.sizeFilter = 'all';
         state.priceFilter = 'all';
         state.featuredFilter = 'all';
@@ -2017,11 +2109,19 @@ a.tnow-design-card {
         if (els.searchInput) els.searchInput.value = '';
         if (els.searchClear) els.searchClear.style.display = 'none';
 
-        // Update category buttons
+        // Update style buttons
         els.nav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
             var isActive = btn.getAttribute('data-category') === 'all';
             btn.setAttribute('data-active', isActive.toString());
         });
+
+        // Update subject buttons
+        if (els.subjectNav) {
+            els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+                var isActive = btn.getAttribute('data-subject') === 'all';
+                btn.setAttribute('data-active', isActive.toString());
+            });
+        }
 
         if (needsRefetch) {
             refetchDesigns(); // Server-side filters changed
