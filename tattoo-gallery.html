@@ -423,6 +423,50 @@ with Airtable credentials configured.
     color: var(--tnow-orange);
 }
 
+/* More Dropdown (for subjects) */
+.tnow-more-wrap {
+    position: relative;
+}
+
+.tnow-more-toggle {
+    cursor: pointer;
+}
+
+.tnow-more-toggle[data-active="true"] {
+    border-color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.15);
+    color: var(--tnow-orange);
+}
+
+.tnow-more-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0.5rem;
+    background: var(--tnow-navy);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    min-width: 160px;
+}
+
+.tnow-more-dropdown .tnow-cat-btn {
+    width: 100%;
+    justify-content: flex-start;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.tnow-more-dropdown .tnow-cat-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
 /* =================================================================
    LOADING STATE (Skeleton)
    ================================================================= */
@@ -1149,18 +1193,30 @@ a.tnow-design-card {
     }
 }
 
-/* Mobile: Show All + 1 category + More link only */
+/* Mobile: Show All + 1 category + More only */
 @media (max-width: 480px) {
     .tnow-cat-btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
     }
 
-    /* Hide category buttons beyond index 1 on mobile (show All + 1 cat + More) */
+    /* Hide style buttons beyond index 1 on mobile (show All + 1 + More) */
     .tnow-cat-btn[data-cat-index="2"],
     .tnow-cat-btn[data-cat-index="3"],
     .tnow-cat-btn[data-cat-index="4"] {
         display: none;
+    }
+
+    /* Hide subject buttons beyond index 1 on mobile (show All + 1 + More) */
+    .tnow-cat-btn[data-sub-index="2"],
+    .tnow-cat-btn[data-sub-index="3"],
+    .tnow-cat-btn[data-sub-index="4"] {
+        display: none;
+    }
+
+    .tnow-gallery-nav {
+        padding: 0.5rem 0.75rem;
+        gap: 6px;
     }
 
     .tnow-design-info {
@@ -1182,11 +1238,20 @@ a.tnow-design-card {
     .tnow-cat-btn[data-cat-index="4"] {
         display: none;
     }
+
+    .tnow-cat-btn[data-sub-index="3"],
+    .tnow-cat-btn[data-sub-index="4"] {
+        display: none;
+    }
 }
 
 /* Medium tablet: Show All + 3 categories + More */
 @media (min-width: 641px) and (max-width: 900px) {
     .tnow-cat-btn[data-cat-index="4"] {
+        display: none;
+    }
+
+    .tnow-cat-btn[data-sub-index="4"] {
         display: none;
     }
 }
@@ -1634,19 +1699,42 @@ a.tnow-design-card {
 
     function renderSubjectNav() {
         if (!els.subjectNav) return;
-        var html = '<button class="tnow-cat-btn" data-subject="all" data-active="' + (state.activeSubject === 'all') + '">' +
+        var mainCount = 4;
+        var visibleSubjects = state.subjects.filter(function(s) { return (s.designCount || 0) > 0; });
+        var mainSubjects = visibleSubjects.slice(0, mainCount);
+        var moreSubjects = visibleSubjects.slice(mainCount);
+
+        var html = '<button class="tnow-cat-btn" data-subject="all" data-sub-index="0" data-active="' + (state.activeSubject === 'all') + '">' +
                    '<span class="tnow-cat-icon">🏷️</span>' +
                    '<span class="tnow-cat-label">All Subjects</span>' +
                    '</button>';
 
-        state.subjects.forEach(function(sub) {
-            if ((sub.designCount || 0) === 0) return;
+        mainSubjects.forEach(function(sub, index) {
             var isActive = state.activeSubject === sub.slug;
-            html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-active="' + isActive + '">' +
+            html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-sub-index="' + (index + 1) + '" data-active="' + isActive + '">' +
                     (sub.icon ? '<span class="tnow-cat-icon">' + sub.icon + '</span>' : '') +
                     '<span class="tnow-cat-label">' + escapeHtml(sub.name) + '</span>' +
                     '</button>';
         });
+
+        if (moreSubjects.length > 0) {
+            var moreHasActive = state.activeSubject !== 'all' &&
+                               !mainSubjects.some(function(s) { return state.activeSubject === s.slug; });
+            html += '<div class="tnow-more-wrap">' +
+                    '<button class="tnow-cat-btn tnow-more-toggle" data-active="' + moreHasActive + '">' +
+                    '<span class="tnow-cat-icon">•••</span>' +
+                    '<span class="tnow-cat-label">More</span>' +
+                    '</button>' +
+                    '<div class="tnow-more-dropdown" style="display:none;">';
+            moreSubjects.forEach(function(sub) {
+                var isActive = state.activeSubject === sub.slug;
+                html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-active="' + isActive + '">' +
+                        (sub.icon ? '<span class="tnow-cat-icon">' + sub.icon + '</span>' : '') +
+                        '<span class="tnow-cat-label">' + escapeHtml(sub.name) + '</span>' +
+                        '</button>';
+            });
+            html += '</div></div>';
+        }
 
         els.subjectNav.innerHTML = html;
         bindSubjectEvents();
@@ -2002,12 +2090,35 @@ a.tnow-design-card {
 
     function bindSubjectEvents() {
         if (!els.subjectNav) return;
-        els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+        els.subjectNav.querySelectorAll('.tnow-cat-btn[data-subject]').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 var subject = this.getAttribute('data-subject');
                 filterSubject(subject);
+                // Close dropdown after selection
+                var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
             });
         });
+        // More toggle
+        var moreToggle = els.subjectNav.querySelector('.tnow-more-toggle');
+        if (moreToggle) {
+            moreToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                if (dropdown) {
+                    var isOpen = dropdown.style.display !== 'none';
+                    dropdown.style.display = isOpen ? 'none' : 'flex';
+                }
+            });
+            // Close dropdown on outside click
+            document.addEventListener('click', function(e) {
+                var wrap = els.subjectNav.querySelector('.tnow-more-wrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                    if (dropdown) dropdown.style.display = 'none';
+                }
+            });
+        }
     }
 
     function filterSubject(subject) {
@@ -2015,11 +2126,19 @@ a.tnow-design-card {
 
         state.activeSubject = subject;
 
-        // Update active state on buttons
-        els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+        // Update active state on all subject buttons (main + dropdown)
+        els.subjectNav.querySelectorAll('.tnow-cat-btn[data-subject]').forEach(function(btn) {
             var isActive = btn.getAttribute('data-subject') === subject;
             btn.setAttribute('data-active', isActive.toString());
         });
+
+        // Update More toggle active state (active if selection is in dropdown)
+        var moreToggle = els.subjectNav.querySelector('.tnow-more-toggle');
+        if (moreToggle) {
+            var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+            var inDropdown = dropdown && dropdown.querySelector('[data-subject="' + subject + '"]');
+            moreToggle.setAttribute('data-active', (!!inDropdown).toString());
+        }
 
         // Client-side filter - just re-render
         renderDesigns();
