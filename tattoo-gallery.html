@@ -1703,7 +1703,7 @@ a.tnow-design-card {
     function renderSubjectNav() {
         if (!els.subjectNav) return;
         var mainCount = 4;
-        var visibleSubjects = state.subjects.filter(function(s) { return (s.designCount || 0) > 0; });
+        var visibleSubjects = state.subjects;
         var mainSubjects = visibleSubjects.slice(0, mainCount);
         var moreSubjects = visibleSubjects.slice(mainCount);
 
