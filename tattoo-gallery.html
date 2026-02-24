@@ -2162,6 +2162,26 @@ a.tnow-design-card {
             if (e.key === 'ArrowRight') navNext();
         });
 
+        // Touch swipe navigation for modal
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchStartTime = 0;
+        els.modal.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+        els.modal.addEventListener('touchend', function(e) {
+            var dx = e.changedTouches[0].clientX - touchStartX;
+            var dy = e.changedTouches[0].clientY - touchStartY;
+            var dt = Date.now() - touchStartTime;
+            // Require: horizontal > 50px, more horizontal than vertical, under 500ms
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 500) {
+                if (dx > 0) navPrev();
+                else navNext();
+            }
+        }, { passive: true });
+
         // Search input - server-side search with debounce
         if (els.searchInput) {
             els.searchInput.addEventListener('input', function(e) {
