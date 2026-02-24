@@ -1197,24 +1197,24 @@ a.tnow-design-card {
     }
 }
 
-/* Mobile: Show All + 1 category + More only */
+/* Mobile: Show only "All Styles" and "All Subjects" buttons */
 @media (max-width: 480px) {
     .tnow-cat-btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
     }
 
-    /* Hide style buttons beyond index 1 on mobile (show All + 1 + More) */
+    /* Hide all style/subject buttons except "All" */
+    .tnow-cat-btn[data-cat-index="1"],
     .tnow-cat-btn[data-cat-index="2"],
     .tnow-cat-btn[data-cat-index="3"],
-    .tnow-cat-btn[data-cat-index="4"] {
-        display: none;
-    }
-
-    /* Hide subject buttons beyond index 1 on mobile (show All + 1 + More) */
+    .tnow-cat-btn[data-cat-index="4"],
+    .tnow-more-link,
+    .tnow-cat-btn[data-sub-index="1"],
     .tnow-cat-btn[data-sub-index="2"],
     .tnow-cat-btn[data-sub-index="3"],
-    .tnow-cat-btn[data-sub-index="4"] {
+    .tnow-cat-btn[data-sub-index="4"],
+    .tnow-more-wrap {
         display: none;
     }
 
@@ -1915,7 +1915,7 @@ a.tnow-design-card {
         document.getElementById('modalImage').src = design.image || '';
         document.getElementById('modalImage').alt = design.name;
         document.getElementById('modalTitle').textContent = design.name;
-        document.getElementById('modalDescription').textContent = design.description || 'No description available.';
+        document.getElementById('modalDescription').textContent = design.description || '';
 
         // Featured badge
         document.getElementById('modalFeatured').style.display = design.featured ? 'block' : 'none';
