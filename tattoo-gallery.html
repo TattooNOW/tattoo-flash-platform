@@ -23,36 +23,43 @@ with Airtable credentials configured.
             <span class="tnow-search-icon">🔍</span>
             <button class="tnow-search-clear" id="searchClear" style="display:none;">&times;</button>
         </div>
-        <div class="tnow-filter-row">
-            <label class="tnow-filter-check" id="featuredFilter">
-                <input type="checkbox" id="featuredCheckbox">
-                <span class="tnow-check-mark"></span>
-                <span>Featured</span>
-            </label>
-            <select class="tnow-filter-select" id="sizeFilter">
-                <option value="all">All Sizes</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
-                <option value="XL">XL</option>
-            </select>
-            <select class="tnow-filter-select" id="priceFilter">
-                <option value="all">All Prices</option>
-                <option value="under500">Under $500</option>
-                <option value="500to1000">$500 - $1,000</option>
-                <option value="1000to2000">$1,000 - $2,000</option>
-                <option value="over2000">Over $2,000</option>
-            </select>
-        </div>
+        <label class="tnow-filter-check" id="featuredFilter">
+            <input type="checkbox" id="featuredCheckbox">
+            <span class="tnow-check-mark"></span>
+            <span>Featured</span>
+        </label>
+        <select class="tnow-filter-select" id="sizeFilter">
+            <option value="all">All Sizes</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+            <option value="XL">XL</option>
+        </select>
+        <select class="tnow-filter-select" id="priceFilter">
+            <option value="all">All Prices</option>
+            <option value="under500">Under $500</option>
+            <option value="500to1000">$500 - $1,000</option>
+            <option value="1000to2000">$1,000 - $2,000</option>
+            <option value="over2000">Over $2,000</option>
+        </select>
     </div>
 
-    <!-- Category Navigation -->
+    <!-- Style Navigation -->
     <div class="tnow-gallery-nav" id="galleryNav">
         <button class="tnow-cat-btn" data-category="all" data-active="true">
-            <span class="tnow-cat-icon">✨</span>
-            <span class="tnow-cat-label">All</span>
+            <span class="tnow-cat-icon">🎨</span>
+            <span class="tnow-cat-label">All Styles</span>
         </button>
-        <!-- Dynamic category buttons + "More" link inserted here -->
+        <!-- Dynamic style buttons + "More" link inserted here -->
+    </div>
+
+    <!-- Subject Navigation -->
+    <div class="tnow-gallery-nav tnow-subject-nav" id="subjectNav">
+        <button class="tnow-cat-btn" data-subject="all" data-active="true">
+            <span class="tnow-cat-icon">🏷️</span>
+            <span class="tnow-cat-label">All Subjects</span>
+        </button>
+        <!-- Dynamic subject buttons inserted here -->
     </div>
 
     <!-- Loading State -->
@@ -115,6 +122,7 @@ with Airtable credentials configured.
                 </div>
                 <div class="tnow-modal-info">
                     <h2 class="tnow-modal-title" id="modalTitle"></h2>
+                    <a id="modalBookBtn" href="#" class="tnow-book-btn">Request This Design</a>
                     <div class="tnow-taken-notice" id="modalTakenNotice" style="display:none;">This design has been claimed and is no longer available.</div>
                     <div class="tnow-onetime-notice" id="modalOneTimeNotice" style="display:none;">This is a one-of-a-kind design meant to be tattooed only once.</div>
                     <p class="tnow-modal-desc" id="modalDescription"></p>
@@ -140,7 +148,6 @@ with Airtable credentials configured.
                             <span class="tnow-meta-value" id="modalCategory"></span>
                         </div>
                     </div>
-                    <a id="modalBookBtn" href="#" class="tnow-book-btn">Request This Design</a>
                 </div>
             </div>
         </div>
@@ -182,7 +189,10 @@ with Airtable credentials configured.
    FILTERS WRAP
    ================================================================= */
 .tnow-filters-wrap {
+    display: flex;
+    gap: 1rem;
     margin-bottom: 0;
+    flex-wrap: wrap;
     background: rgba(0, 3, 33, 0.6);
     padding: 1rem 1.25rem;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -197,14 +207,7 @@ with Airtable credentials configured.
     border-color: rgba(255, 255, 255, 0.12);
 }
 
-.tnow-filter-row {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-}
-
 .tnow-filter-select {
-    flex: 1;
     padding: 0.75rem 1rem;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -278,19 +281,21 @@ with Airtable credentials configured.
    ================================================================= */
 .tnow-search-wrap {
     position: relative;
+    flex: 1;
+    min-width: 200px;
 }
 
 .tnow-search-input {
     width: 100%;
-    padding: 0.875rem 3rem 0.875rem 2.75rem;
+    padding: 0.75rem 2.5rem 0.75rem 2.5rem;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     color: var(--tnow-white);
     font-family: var(--font-body);
-    font-size: 1rem;
+    font-size: 0.9rem;
     outline: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .tnow-search-input::placeholder {
@@ -304,10 +309,10 @@ with Airtable credentials configured.
 
 .tnow-search-icon {
     position: absolute;
-    left: 1rem;
+    left: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 1rem;
+    font-size: 0.9rem;
     pointer-events: none;
 }
 
@@ -347,10 +352,20 @@ with Airtable credentials configured.
     scrollbar-width: thin;
     scrollbar-color: var(--tnow-orange) transparent;
     background: rgba(0, 3, 33, 0.6);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-top: 1px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.tnow-gallery-nav:first-of-type {
+    border-radius: 0;
+}
+
+.tnow-subject-nav {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     margin-bottom: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .tnow-gallery-nav::-webkit-scrollbar {
@@ -404,6 +419,50 @@ with Airtable credentials configured.
     border-color: var(--tnow-orange);
     background: rgba(250, 145, 1, 0.15);
     color: var(--tnow-orange);
+}
+
+/* More Dropdown (for subjects) */
+.tnow-more-wrap {
+    position: relative;
+}
+
+.tnow-more-toggle {
+    cursor: pointer;
+}
+
+.tnow-more-toggle[data-active="true"] {
+    border-color: var(--tnow-orange);
+    background: rgba(250, 145, 1, 0.15);
+    color: var(--tnow-orange);
+}
+
+.tnow-more-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0.5rem;
+    background: var(--tnow-navy);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    min-width: 160px;
+}
+
+.tnow-more-dropdown .tnow-cat-btn {
+    width: 100%;
+    justify-content: flex-start;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.tnow-more-dropdown .tnow-cat-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 /* =================================================================
@@ -1002,14 +1061,18 @@ a.tnow-design-card {
 .tnow-modal-image {
     position: relative;
     width: 100%;
+    min-height: 200px;
     max-height: 50vh;
     background: var(--tnow-black);
+    flex-shrink: 0;
 }
 
 .tnow-modal-image img {
     width: 100%;
-    height: 100%;
+    height: auto;
+    max-height: 50vh;
     object-fit: contain;
+    display: block;
 }
 
 .tnow-modal-info {
@@ -1065,6 +1128,7 @@ a.tnow-design-card {
     display: block;
     width: 100%;
     padding: 1rem;
+    margin: 0.75rem 0 1rem 0;
     background: var(--tnow-orange);
     border: none;
     border-radius: var(--radius-md);
@@ -1132,18 +1196,30 @@ a.tnow-design-card {
     }
 }
 
-/* Mobile: Show All + 1 category + More link only */
+/* Mobile: Show only "All Styles" and "All Subjects" buttons */
 @media (max-width: 480px) {
     .tnow-cat-btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
     }
 
-    /* Hide category buttons beyond index 1 on mobile (show All + 1 cat + More) */
+    /* Hide all style/subject buttons except "All" */
+    .tnow-cat-btn[data-cat-index="1"],
     .tnow-cat-btn[data-cat-index="2"],
     .tnow-cat-btn[data-cat-index="3"],
-    .tnow-cat-btn[data-cat-index="4"] {
+    .tnow-cat-btn[data-cat-index="4"],
+    .tnow-more-link,
+    .tnow-cat-btn[data-sub-index="1"],
+    .tnow-cat-btn[data-sub-index="2"],
+    .tnow-cat-btn[data-sub-index="3"],
+    .tnow-cat-btn[data-sub-index="4"],
+    .tnow-more-wrap {
         display: none;
+    }
+
+    .tnow-gallery-nav {
+        padding: 0.5rem 0.75rem;
+        gap: 6px;
     }
 
     .tnow-design-info {
@@ -1165,11 +1241,20 @@ a.tnow-design-card {
     .tnow-cat-btn[data-cat-index="4"] {
         display: none;
     }
+
+    .tnow-cat-btn[data-sub-index="3"],
+    .tnow-cat-btn[data-sub-index="4"] {
+        display: none;
+    }
 }
 
 /* Medium tablet: Show All + 3 categories + More */
 @media (min-width: 641px) and (max-width: 900px) {
     .tnow-cat-btn[data-cat-index="4"] {
+        display: none;
+    }
+
+    .tnow-cat-btn[data-sub-index="4"] {
         display: none;
     }
 }
@@ -1215,15 +1300,17 @@ a.tnow-design-card {
     }
 
     var CONFIG = {
-        // API endpoint - UPDATE THIS to your n8n webhook URL
-        apiEndpoint: 'https://tn.reinventingai.com/webhook/5af3d2be-32f0-4d9d-8dfb-fb5053844eb4',
+        // Supabase REST API
+        supabaseUrl: 'https://ztueqtlqsjsfxskmyrgg.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0dWVxdGxxc2pzZnhza215cmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgzMzIwNSwiZXhwIjoyMDg2NDA5MjA1fQ.9bgNwxrYQST3iY6J7OKRgyxeogjU9_jOHFAf29nDGk8',
+        restBase: 'https://ztueqtlqsjsfxskmyrgg.supabase.co/rest/v1',
 
         // GHL Location ID - persisted across pages via localStorage
         locationId: getLocationId(),
 
         // Calendar booking URL - uses GHL custom value with fallback
         calendarUrl: window.TNOW_CALENDAR_URL || '{{custom_values.03__consultation_calendar}}',
-        defaultCalendarUrl: '/consultation', // Fallback if custom value not set
+        defaultCalendarUrl: '/consultation',
 
         // Categories page URL - for "More" link
         categoriesPageUrl: window.TNOW_CATEGORIES_URL || window.location.origin + '/tattoo-design-categories',
@@ -1236,6 +1323,37 @@ a.tnow-design-card {
         cacheTTL: 5 * 60 * 1000 // 5 minutes
     };
 
+    // Supabase headers for REST API calls
+    var SUPABASE_HEADERS = {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+        'Content-Type': 'application/json'
+    };
+
+    function supabaseFetch(path, options) {
+        var opts = options || {};
+        var headers = Object.assign({}, SUPABASE_HEADERS, opts.headers || {});
+        return fetch(CONFIG.restBase + path, {
+            method: opts.method || 'GET',
+            headers: headers
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Supabase error: ' + r.status);
+            var total = null;
+            var contentRange = r.headers.get('Content-Range');
+            if (contentRange) {
+                var parts = contentRange.split('/');
+                if (parts[1]) total = parseInt(parts[1], 10);
+            }
+            return r.json().then(function(data) {
+                return { rows: data, total: total };
+            });
+        });
+    }
+
+    // Category lookup cache (populated after categories fetch)
+    var categoryLookup = {}; // id -> { name, slug }
+
     // =================================================================
     // STATE
     // =================================================================
@@ -1244,7 +1362,10 @@ a.tnow-design-card {
     var state = {
         designs: [],          // Loaded designs (accumulates on Load More)
         categories: [],
+        styles: [],           // Categories with type !== 'subject'
+        subjects: [],         // Categories with type === 'subject'
         activeCategory: 'all',
+        activeSubject: 'all',
         searchQuery: '',      // Client-side search within loaded designs
         sizeFilter: 'all',    // Server-side filter
         priceFilter: 'all',   // Client-side filter (price ranges need parsing)
@@ -1268,6 +1389,7 @@ a.tnow-design-card {
     function cacheDOMElements() {
         els.root = document.getElementById('tattooGallery');
         els.nav = document.getElementById('galleryNav');
+        els.subjectNav = document.getElementById('subjectNav');
         els.grid = document.getElementById('galleryGrid');
         els.loading = document.getElementById('galleryLoading');
         els.error = document.getElementById('galleryError');
@@ -1287,6 +1409,12 @@ a.tnow-design-card {
     // API FETCHING
     // =================================================================
     function fetchData() {
+        if (!CONFIG.locationId) {
+            setLoading(false);
+            showError('Location not configured. Please contact support.');
+            console.error('Gallery error: locationId is null. Set window.TNOW_LOCATION_ID or pass ?locationId= in the URL.');
+            return;
+        }
         setLoading(true);
         hideError();
 
@@ -1300,19 +1428,22 @@ a.tnow-design-card {
         var categoriesPromise;
         if (cachedCategories) {
             state.categories = cachedCategories;
+            // Rebuild lookup
+            categoryLookup = {};
+            state.categories.forEach(function(c) { categoryLookup[c.id] = { name: c.name, slug: c.slug }; });
             renderCategories();
-            categoriesPromise = Promise.resolve({ success: true, categories: cachedCategories });
+            categoriesPromise = Promise.resolve();
         } else {
-            categoriesPromise = fetch(CONFIG.apiEndpoint + '?action=categories')
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (!data.success) {
-                        throw new Error('Failed to load categories');
-                    }
-                    state.categories = data.categories || [];
+            categoriesPromise = supabaseFetch('/categories?status=eq.Active&order=sort_order.asc&select=id,name,slug,icon,sort_order,type')
+                .then(function(result) {
+                    state.categories = result.rows.map(function(r) {
+                        return { id: r.id, name: r.name, slug: r.slug, icon: r.icon, designCount: 0, type: r.type };
+                    });
+                    // Build lookup for design -> category name mapping
+                    categoryLookup = {};
+                    state.categories.forEach(function(c) { categoryLookup[c.id] = { name: c.name, slug: c.slug }; });
                     saveCategoriesToCache();
                     renderCategories();
-                    return data;
                 });
         }
 
@@ -1334,58 +1465,83 @@ a.tnow-design-card {
     }
 
     function fetchDesignsPage(offset) {
-        // Build URL with server-side filters
-        var params = new URLSearchParams({
-            action: 'designs',
-            locationId: CONFIG.locationId,
-            offset: offset,
-            limit: state.pageSize
-        });
+        // Build Supabase PostgREST query
+        var filters = ['location_id=eq.' + encodeURIComponent(CONFIG.locationId), 'available=eq.true'];
 
         // Server-side filters
-        if (state.activeCategory !== 'all') {
-            params.append('category', state.activeCategory);
-        }
         if (state.sizeFilter !== 'all') {
-            params.append('size', state.sizeFilter);
+            filters.push('size_estimate=eq.' + encodeURIComponent(state.sizeFilter));
         }
         if (state.featuredFilter === 'featured') {
-            params.append('featured', 'true');
+            filters.push('featured=eq.true');
         }
         if (state.searchQuery) {
-            params.append('search', state.searchQuery);
+            filters.push('name=ilike.*' + encodeURIComponent(state.searchQuery) + '*');
+        }
+        // Category filter: find designs via junction table
+        if (state.activeCategory !== 'all') {
+            var cat = state.categories.find(function(c) {
+                return c.slug === state.activeCategory || c.id === state.activeCategory || c.name === state.activeCategory;
+            });
+            if (cat) {
+                filters.push('design_categories.category_id=eq.' + cat.id);
+            }
+        }
+
+        var url = '/designs?' + filters.join('&') +
+            '&select=*,design_categories!inner(category_id)' +
+            '&order=sort_order.asc,created_at.desc' +
+            '&offset=' + offset + '&limit=' + state.pageSize;
+
+        // For category filter we need !inner join; without category filter use regular join
+        if (state.activeCategory === 'all') {
+            url = '/designs?' + filters.join('&') +
+                '&select=*,design_categories(category_id)' +
+                '&order=sort_order.asc,created_at.desc' +
+                '&offset=' + offset + '&limit=' + state.pageSize;
         }
 
         var thisFetchId = ++fetchId;
 
-        return fetch(CONFIG.apiEndpoint + '?' + params.toString())
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                // Ignore stale responses from previous fetches
-                if (thisFetchId !== fetchId) return res;
+        return supabaseFetch(url, {
+            headers: { 'Prefer': 'count=exact', 'Range-Unit': 'items', 'Range': offset + '-' + (offset + state.pageSize - 1) }
+        })
+        .then(function(result) {
+            if (thisFetchId !== fetchId) return;
 
-                // Handle both success with empty results and error responses gracefully
-                if (!res.success && res.error) {
-                    console.warn('Designs API returned error:', res.error);
-                }
+            // Transform rows to frontend format
+            var designs = result.rows.map(function(row) {
+                var catIds = (row.design_categories || []).map(function(dc) { return dc.category_id; });
+                var catNames = catIds.map(function(id) {
+                    var c = categoryLookup[id];
+                    return c ? c.name : null;
+                }).filter(Boolean);
 
-                // First page or append - use empty array if no designs
-                var designs = res.designs || [];
-                if (offset === 0) {
-                    state.designs = designs;
-                } else {
-                    state.designs = state.designs.concat(designs);
-                }
-
-                // Update pagination state - handle missing pagination gracefully
-                var pagination = res.pagination || { offset: 0, total: designs.length, hasMore: false };
-                state.offset = pagination.offset;
-                state.total = pagination.total;
-                state.hasMore = pagination.hasMore;
-
-                renderDesigns();
-                return res;
+                return {
+                    id: row.id, name: row.name, description: row.description,
+                    image: row.image, thumbnail: row.thumbnail,
+                    sizeEstimate: row.size_estimate, timeEstimate: row.time_estimate,
+                    priceRange: row.price_range, bodyPart: row.body_part,
+                    featured: row.featured, status: row.status,
+                    oneTimeFlash: row.one_time_flash,
+                    categoryId: catIds[0] || null, categoryIds: catIds,
+                    categoryName: catNames[0] || '', categoryNames: catNames
+                };
             });
+
+            if (offset === 0) {
+                state.designs = designs;
+            } else {
+                state.designs = state.designs.concat(designs);
+            }
+
+            var total = result.total || designs.length;
+            state.offset = offset;
+            state.total = total;
+            state.hasMore = (offset + designs.length) < total;
+
+            renderDesigns();
+        });
     }
 
     function loadMoreFromServer() {
@@ -1480,35 +1636,42 @@ a.tnow-design-card {
     // =================================================================
     // RENDERING
     // =================================================================
+    function splitCategories() {
+        state.styles = state.categories.filter(function(c) { return c.type !== 'subject'; });
+        state.subjects = state.categories.filter(function(c) { return c.type === 'subject'; });
+    }
+
     function sortCategoriesByDesignCount() {
+        // Compute counts from loaded designs
+        var counts = {};
+        state.designs.forEach(function(d) {
+            var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+            catIds.forEach(function(id) { counts[id] = (counts[id] || 0) + 1; });
+        });
+        state.categories.forEach(function(cat) { cat.designCount = counts[cat.id] || 0; });
+
         state.categories.sort(function(a, b) {
-            var countA = a.designCount || 0;
-            var countB = b.designCount || 0;
-            return countB - countA; // Most designs first
+            return (b.designCount || 0) - (a.designCount || 0);
         });
-        // Remove categories with no designs
-        state.categories = state.categories.filter(function(cat) {
-            return (cat.designCount || 0) > 0;
-        });
+        splitCategories();
     }
 
     function renderCategories() {
-        // Show first N categories as main buttons, rest hidden (accessible via "More" link)
-        // Mobile: 2 categories + All + More = 4 buttons
-        // Tablet: 4 categories + All + More = 6 buttons
-        // Desktop: 4 categories + All + More = 6 buttons (or more if space)
-        var mainCount = 4;
-        var mainCategories = state.categories.slice(0, mainCount);
-        var moreCategories = state.categories.slice(mainCount);
+        splitCategories();
+        renderStyleNav();
+        renderSubjectNav();
+    }
 
-        // Build main buttons HTML - "All" button first
+    function renderStyleNav() {
+        var mainCount = 4;
+        var mainStyles = state.styles.slice(0, mainCount);
+
         var html = '<button class="tnow-cat-btn" data-category="all" data-cat-index="0" data-active="' + (state.activeCategory === 'all') + '">' +
-                   '<span class="tnow-cat-icon">✨</span>' +
-                   '<span class="tnow-cat-label">All</span>' +
+                   '<span class="tnow-cat-icon">🎨</span>' +
+                   '<span class="tnow-cat-label">All Styles</span>' +
                    '</button>';
 
-        // Add category buttons with index for responsive hiding
-        mainCategories.forEach(function(cat, index) {
+        mainStyles.forEach(function(cat, index) {
             var isActive = state.activeCategory === cat.slug;
             html += '<button class="tnow-cat-btn" data-category="' + cat.slug + '" data-cat-index="' + (index + 1) + '" data-active="' + isActive + '">' +
                     (cat.icon ? '<span class="tnow-cat-icon">' + cat.icon + '</span>' : '') +
@@ -1516,9 +1679,8 @@ a.tnow-design-card {
                     '</button>';
         });
 
-        // Always add "More" link to categories page (for full category browsing)
         var moreHasActive = state.activeCategory !== 'all' &&
-                           !mainCategories.some(function(cat) { return state.activeCategory === cat.slug; });
+                           !mainStyles.some(function(cat) { return state.activeCategory === cat.slug; });
 
         var categoriesUrl = CONFIG.categoriesPageUrl;
         if (CONFIG.locationId) {
@@ -1534,28 +1696,85 @@ a.tnow-design-card {
         bindCategoryEvents();
     }
 
+    function renderSubjectNav() {
+        if (!els.subjectNav) return;
+        var mainCount = 4;
+        var visibleSubjects = state.subjects.filter(function(s) { return (s.designCount || 0) > 0; });
+        var mainSubjects = visibleSubjects.slice(0, mainCount);
+        var moreSubjects = visibleSubjects.slice(mainCount);
+
+        var html = '<button class="tnow-cat-btn" data-subject="all" data-sub-index="0" data-active="' + (state.activeSubject === 'all') + '">' +
+                   '<span class="tnow-cat-icon">🏷️</span>' +
+                   '<span class="tnow-cat-label">All Subjects</span>' +
+                   '</button>';
+
+        mainSubjects.forEach(function(sub, index) {
+            var isActive = state.activeSubject === sub.slug;
+            html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-sub-index="' + (index + 1) + '" data-active="' + isActive + '">' +
+                    (sub.icon ? '<span class="tnow-cat-icon">' + sub.icon + '</span>' : '') +
+                    '<span class="tnow-cat-label">' + escapeHtml(sub.name) + '</span>' +
+                    '</button>';
+        });
+
+        if (moreSubjects.length > 0) {
+            var moreHasActive = state.activeSubject !== 'all' &&
+                               !mainSubjects.some(function(s) { return state.activeSubject === s.slug; });
+            html += '<div class="tnow-more-wrap">' +
+                    '<button class="tnow-cat-btn tnow-more-toggle" data-active="' + moreHasActive + '">' +
+                    '<span class="tnow-cat-icon">•••</span>' +
+                    '<span class="tnow-cat-label">More</span>' +
+                    '</button>' +
+                    '<div class="tnow-more-dropdown" style="display:none;">';
+            moreSubjects.forEach(function(sub) {
+                var isActive = state.activeSubject === sub.slug;
+                html += '<button class="tnow-cat-btn" data-subject="' + sub.slug + '" data-active="' + isActive + '">' +
+                        (sub.icon ? '<span class="tnow-cat-icon">' + sub.icon + '</span>' : '') +
+                        '<span class="tnow-cat-label">' + escapeHtml(sub.name) + '</span>' +
+                        '</button>';
+            });
+            html += '</div></div>';
+        }
+
+        els.subjectNav.innerHTML = html;
+        bindSubjectEvents();
+    }
+
     function renderDesigns() {
         // Client-side filtering (like admin does - more reliable)
         var filtered = state.designs;
 
-        // Apply client-side category filter (like admin does)
+        // Apply client-side style filter
         if (state.activeCategory !== 'all') {
             filtered = filtered.filter(function(d) {
-                // Find the category to match against
                 var cat = state.categories.find(function(c) {
                     return c.slug === state.activeCategory ||
                            c.id === state.activeCategory ||
                            c.name === state.activeCategory;
                 });
                 if (cat) {
-                    // Match by categoryIds array or fallback to single categoryId
                     var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
                     var catNames = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
                     return catIds.indexOf(cat.id) !== -1 || catNames.indexOf(cat.name) !== -1;
                 }
-                // Fallback: match by name directly
                 var names = d.categoryNames || (d.categoryName ? [d.categoryName] : []);
-                return names.indexOf(state.activeCategory) !== -1;
+                var lowerActive = state.activeCategory.toLowerCase();
+                return names.some(function(n) { return n.toLowerCase() === lowerActive; });
+            });
+        }
+
+        // Apply client-side subject filter
+        if (state.activeSubject !== 'all') {
+            filtered = filtered.filter(function(d) {
+                var sub = state.subjects.find(function(c) {
+                    return c.slug === state.activeSubject ||
+                           c.id === state.activeSubject ||
+                           c.name === state.activeSubject;
+                });
+                if (sub) {
+                    var catIds = d.categoryIds || (d.categoryId ? [d.categoryId] : []);
+                    return catIds.indexOf(sub.id) !== -1;
+                }
+                return false;
             });
         }
 
@@ -1587,7 +1806,7 @@ a.tnow-design-card {
                 emptyMsg.textContent = 'No designs found for "' + state.searchQuery + '"';
                 emptyAction.textContent = 'Clear Search';
                 emptyAction.onclick = function() { clearSearch(); };
-            } else if (state.activeCategory !== 'all' || state.sizeFilter !== 'all' || state.priceFilter !== 'all' || state.featuredFilter !== 'all') {
+            } else if (state.activeCategory !== 'all' || state.activeSubject !== 'all' || state.sizeFilter !== 'all' || state.priceFilter !== 'all' || state.featuredFilter !== 'all') {
                 emptyIcon.textContent = '🔍';
                 emptyMsg.textContent = 'No designs match the current filters.';
                 emptyAction.textContent = 'Clear Filters';
@@ -1601,7 +1820,7 @@ a.tnow-design-card {
             return;
         }
 
-        // Handle case where search/price filter finds nothing in loaded designs
+        // Handle case where client-side filter finds nothing in loaded designs
         if (filtered.length === 0) {
             els.grid.style.display = 'none';
             els.empty.style.display = 'block';
@@ -1614,11 +1833,16 @@ a.tnow-design-card {
                 emptyMsg.textContent = 'No designs found for "' + state.searchQuery + '"';
                 emptyAction.textContent = 'Clear Search';
                 emptyAction.onclick = function() { clearSearch(); };
-            } else {
+            } else if (state.priceFilter !== 'all') {
                 emptyIcon.textContent = '💰';
                 emptyMsg.textContent = 'No designs in this price range.';
                 emptyAction.textContent = 'Clear Price Filter';
                 emptyAction.onclick = function() { clearPriceFilter(); };
+            } else {
+                emptyIcon.textContent = '🔍';
+                emptyMsg.textContent = 'No designs match the current filters.';
+                emptyAction.textContent = 'Clear Filters';
+                emptyAction.onclick = function() { clearFilters(); };
             }
             return;
         }
@@ -1692,7 +1916,7 @@ a.tnow-design-card {
         document.getElementById('modalImage').src = design.image || '';
         document.getElementById('modalImage').alt = design.name;
         document.getElementById('modalTitle').textContent = design.name;
-        document.getElementById('modalDescription').textContent = design.description || 'No description available.';
+        document.getElementById('modalDescription').textContent = design.description || '';
 
         // Featured badge
         document.getElementById('modalFeatured').style.display = design.featured ? 'block' : 'none';
@@ -1869,6 +2093,62 @@ a.tnow-design-card {
         refetchDesigns();
     }
 
+    function bindSubjectEvents() {
+        if (!els.subjectNav) return;
+        els.subjectNav.querySelectorAll('.tnow-cat-btn[data-subject]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var subject = this.getAttribute('data-subject');
+                filterSubject(subject);
+                // Close dropdown after selection
+                var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            });
+        });
+        // More toggle
+        var moreToggle = els.subjectNav.querySelector('.tnow-more-toggle');
+        if (moreToggle) {
+            moreToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                if (dropdown) {
+                    var isOpen = dropdown.style.display !== 'none';
+                    dropdown.style.display = isOpen ? 'none' : 'flex';
+                }
+            });
+            // Close dropdown on outside click
+            document.addEventListener('click', function(e) {
+                var wrap = els.subjectNav.querySelector('.tnow-more-wrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+                    if (dropdown) dropdown.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    function filterSubject(subject) {
+        if (state.activeSubject === subject) return;
+
+        state.activeSubject = subject;
+
+        // Update active state on all subject buttons (main + dropdown)
+        els.subjectNav.querySelectorAll('.tnow-cat-btn[data-subject]').forEach(function(btn) {
+            var isActive = btn.getAttribute('data-subject') === subject;
+            btn.setAttribute('data-active', isActive.toString());
+        });
+
+        // Update More toggle active state (active if selection is in dropdown)
+        var moreToggle = els.subjectNav.querySelector('.tnow-more-toggle');
+        if (moreToggle) {
+            var dropdown = els.subjectNav.querySelector('.tnow-more-dropdown');
+            var inDropdown = dropdown && dropdown.querySelector('[data-subject="' + subject + '"]');
+            moreToggle.setAttribute('data-active', (!!inDropdown).toString());
+        }
+
+        // Client-side filter - just re-render
+        renderDesigns();
+    }
+
     function bindGlobalEvents() {
         // Keyboard navigation for modal
         document.addEventListener('keydown', function(e) {
@@ -1940,6 +2220,7 @@ a.tnow-design-card {
                           state.activeCategory !== 'all';
 
         state.activeCategory = 'all';
+        state.activeSubject = 'all';
         state.sizeFilter = 'all';
         state.priceFilter = 'all';
         state.featuredFilter = 'all';
@@ -1952,11 +2233,19 @@ a.tnow-design-card {
         if (els.searchInput) els.searchInput.value = '';
         if (els.searchClear) els.searchClear.style.display = 'none';
 
-        // Update category buttons
+        // Update style buttons
         els.nav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
             var isActive = btn.getAttribute('data-category') === 'all';
             btn.setAttribute('data-active', isActive.toString());
         });
+
+        // Update subject buttons
+        if (els.subjectNav) {
+            els.subjectNav.querySelectorAll('.tnow-cat-btn').forEach(function(btn) {
+                var isActive = btn.getAttribute('data-subject') === 'all';
+                btn.setAttribute('data-active', isActive.toString());
+            });
+        }
 
         if (needsRefetch) {
             refetchDesigns(); // Server-side filters changed

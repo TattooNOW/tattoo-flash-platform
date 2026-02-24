@@ -4,7 +4,7 @@
   Paste these into GoHighLevel page Custom Code elements.
   Each loader fetches the latest HTML from the Tattoo Asset Server.
 
-  Updated: 2026-02-13
+  Updated: 2026-02-12
   Domain: tn.reinventingai.com
 -->
 
@@ -12,13 +12,12 @@
 <!-- ============================================================
      1. CATEGORIES PAGE
      ============================================================
+     Optional: set window.TNOW_GALLERY_URL to override gallery link
 -->
+<div id="tnow-loader"></div>
 <script>
 window.TNOW_LOCATION_ID = '{{location.id}}';
 window.TNOW_GALLERY_URL = '{{custom_values.gallery_page_url}}';
-</script>
-<div id="tnow-loader"></div>
-<script>
 fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=categories')
   .then(function(r) { return r.text(); })
   .then(function(html) {
@@ -36,15 +35,14 @@ fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f
 <!-- ============================================================
      2. GALLERY PAGE ("Pick a Tattoo")
      ============================================================
+     Set window vars BEFORE fetch so GHL merge fields resolve.
 -->
+<div id="tnow-loader"></div>
 <script>
 window.TNOW_LOCATION_ID = '{{location.id}}';
 window.TNOW_CALENDAR_URL = '{{custom_values.03__consultation_calendar}}';
 window.TNOW_CATEGORIES_URL = '{{custom_values.categories_page_url}}';
 window.TNOW_DESIGN_FORM_URL = '{{custom_values.design_form_url}}';
-</script>
-<div id="tnow-loader"></div>
-<script>
 fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=gallery')
   .then(function(r) { return r.text(); })
   .then(function(html) {
@@ -62,10 +60,8 @@ fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f
 <!-- ============================================================
      3. ADMIN PAGE
      ============================================================
+     No merge fields needed — admin is internal.
 -->
-<script>
-window.TNOW_LOCATION_ID = '{{location.id}}';
-</script>
 <div id="tnow-loader"></div>
 <script>
 fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=gallery-admin')
@@ -85,13 +81,11 @@ fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f
 <!-- ============================================================
      4. DESIGN CARD (Thank-you / Confirmation pages)
      ============================================================
+     Set TNOW_DESIGN_ID if not passed via URL param.
 -->
-<script>
-window.TNOW_LOCATION_ID = '{{location.id}}';
-window.TNOW_DESIGN_ID = '{{custom_values.05._online_design_id}}';
-</script>
 <div id="tnow-loader"></div>
 <script>
+window.TNOW_DESIGN_ID = '{{custom_values.05._online_design_id}}';
 fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=design-card')
   .then(function(r) { return r.text(); })
   .then(function(html) {
@@ -110,9 +104,6 @@ fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f
      5. FAQ HEADER (Category navigation bar)
      ============================================================
 -->
-<script>
-window.TNOW_LOCATION_ID = '{{location.id}}';
-</script>
 <div id="tnow-loader"></div>
 <script>
 fetch('https://tn.reinventingai.com/webhook/092de222-dae8-41f0-8c19-803f3da6919f?file=faq-header')
