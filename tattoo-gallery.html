@@ -1321,7 +1321,7 @@ a.tnow-design-card {
         designFormUrl: window.TNOW_DESIGN_FORM_URL || '/tattoo-design-form',
 
         // Cache settings
-        cacheKey: 'tnow_gallery_cache',
+        cacheKey: 'tnow_gallery_v2',
         cacheTTL: 5 * 60 * 1000 // 5 minutes
     };
 
@@ -1599,7 +1599,9 @@ a.tnow-design-card {
     // =================================================================
     function loadCategoriesFromCache() {
         try {
-            // Categories are NOT location-specific, so cache without locationId
+            // Clean up old cache key from Airtable era
+            localStorage.removeItem('tnow_gallery_cache_categories');
+
             var key = CONFIG.cacheKey + '_categories';
             var cached = localStorage.getItem(key);
             if (cached) {
