@@ -1,43 +1,49 @@
-Phase,Priority,Task,Description,Owner,Status,Notes
-1 - Account Setup,P0 - Critical,Get GHL Location ID,"Obtain the client's GoHighLevel location ID from their account settings. This is the master key — every component filters data by it.",Internal,Not Started,Required before ANY other setup
-1 - Account Setup,P0 - Critical,Set Location ID in Platform,"Configure window.TNOW_LOCATION_ID or URL param ?locationId=XXX on all pages",Internal,Not Started,"Can also be set via localStorage once, persists across pages"
-1 - Account Setup,P0 - Critical,Verify n8n Webhook Access,"Confirm the client's location can reach the Gallery API (GET) and Admin API (POST) webhooks",Internal,Not Started,"Gallery: /webhook/5af3d2be-... | Admin: /webhook/tattoo-admin-api"
-1 - Account Setup,P1 - High,Set Studio Greeting Custom Value,"Create GHL custom value: 01__studio__greeting with the client's studio welcome message",Internal,Not Started,"Example: Welcome to [Studio Name]!"
-1 - Account Setup,P1 - High,Set Gallery Page URL Custom Value,"Create GHL custom value: gallery_page_url pointing to their tattoo gallery page",Internal,Not Started,"Example: https://clientdomain.com/tattoo-flash-designs-page"
-1 - Account Setup,P1 - High,Set Categories Page URL Custom Value,"Create GHL custom value: categories_page_url pointing to their categories page",Internal,Not Started,"Example: https://clientdomain.com/tattoo-flash-categories"
-1 - Account Setup,P1 - High,Set Design Form URL Custom Value,"Create GHL custom value: design_form_url pointing to their booking/request form",Internal,Not Started,"Example: https://clientdomain.com/book-design"
-1 - Account Setup,P1 - High,Set Consultation Calendar Custom Value,"Create GHL custom value: 03__consultation_calendar with their booking calendar URL",Internal,Not Started,Used by the gallery booking button
-2 - Page Creation,P0 - Critical,Create Categories Page,"Build GHL page at /tattoo-flash-categories — add Custom Code element with categories loader from ghl-loaders.html",Internal,Not Started,Responsive grid of tattoo style categories with featured images & counts
-2 - Page Creation,P0 - Critical,Create Gallery Page,"Build GHL page at /tattoo-flash-designs-page — add Custom Code element with gallery loader from ghl-loaders.html",Internal,Not Started,"Full gallery with search, filters, modal details, watermark protection, booking button"
-2 - Page Creation,P0 - Critical,Create Admin Dashboard Page,"Build GHL page at /tattoo-admin — add Custom Code element with admin loader from ghl-loaders.html",Internal,Not Started,"Admin CRUD dashboard — add/edit/delete designs, drag & drop image upload"
-2 - Page Creation,P1 - High,Create Booking Confirmation Page,"Build GHL page for thank-you/confirmation — add Custom Code element with design card loader",Internal,Not Started,"Displays selected design using custom value: 05._online_design_id"
-2 - Page Creation,P2 - Medium,Create Marketing Calculator Page (Optional),"Build GHL page at /marketing-calculator — add Custom Code element with marketing-calculator.html",Internal,Not Started,Interactive lead-gen tool for estimating marketing spend
-3 - Design Content,P0 - Critical,Set Up Categories in Supabase,"Seed the categories table with relevant style types (Traditional / Realism / Watercolor / Japanese / etc.) and subject types (Animals / Skulls / Flowers / etc.)",Internal,Not Started,"Categories are shared across locations; check if they already exist before adding duplicates"
-3 - Design Content,P0 - Critical,Collect Client's Flash Sheets / Design Images,"Gather all tattoo design images from the client — flash sheets or individual designs",Client,Not Started,"JPG/PNG format, min 400px wide, max 10MB per image"
-3 - Design Content,P0 - Critical,Process Flash Sheets (if applicable),"Use cut_flash.py to crop individual designs from composite flash sheet images",Internal,Not Started,"Define crop coordinates as percentages, outputs to /cut directory"
-3 - Design Content,P0 - Critical,Upload Initial Designs — Bulk,"Use upload_designs.py for large batches OR use the Admin Dashboard for smaller sets",Internal,Not Started,"Each design needs: name, image, category/style, size estimate, body part, price range"
-3 - Design Content,P1 - High,Set Featured Designs,"Mark 6-12 standout designs as 'featured' via the Admin Dashboard for homepage/category highlights",Internal,Not Started,Featured designs appear prominently in categories and gallery filters
-3 - Design Content,P1 - High,Set Pricing on All Designs,"Ensure every design has a price or price range set (used in gallery filters)",Internal,Not Started,"Options: exact price, price range, or 'Consultation Required'"
-3 - Design Content,P1 - High,Set Size Estimates on All Designs,"Assign size category to each design: Small / Medium / Large / Extra Large",Internal,Not Started,Used for gallery size filter
-3 - Design Content,P2 - Medium,Upload Line Sheets / Technical Drawings,"Add optional line art versions as supplementary images for artist reference",Client/Internal,Not Started,Optional but helpful for artists
-4 - FAQ Setup,P1 - High,Write FAQ Content (55 Questions),"Create Q&A content across 9 categories: Getting Started / Design Selection / Booking / Pricing / Preparation / Pain & Discomfort / Aftercare / Touch-Ups / Safety & Hygiene",Client/Internal,Not Started,"~6 questions per category, 55 total"
-4 - FAQ Setup,P1 - High,Enter FAQ Custom Values in GHL,"Populate all 55 Q&A pairs as GHL custom values: 02__faq_1q through 02__faq_55a",Internal,Not Started,"Pattern: 02__faq_Nq = question, 02__faq_Na = answer"
-4 - FAQ Setup,P1 - High,Create 9 FAQ Pages in GHL,"Build pages faq-page-1 through faq-page-9, each with FAQ accordion element + faq-admin-header.html navigation + faq-schema.js for SEO",Internal,Not Started,Each page covers one FAQ category
-4 - FAQ Setup,P2 - Medium,Verify FAQ Schema Markup,"Test JSON-LD structured data output with Google's Rich Results Test tool",Internal,Not Started,Ensures FAQ rich snippets appear in Google search results
-5 - Testing & QA,P0 - Critical,Test Gallery with Location ID,"Verify designs load correctly filtered by location, search works, filters work",Internal,Not Started,"Test all filters: size, price, featured, category"
-5 - Testing & QA,P0 - Critical,Test Admin Dashboard CRUD,"Create a test design / edit it / delete it — verify full lifecycle works",Internal,Not Started,"Test: image upload, multi-tab form, save, edit, delete, mark taken"
-5 - Testing & QA,P0 - Critical,Test Booking Flow End-to-End,"Click booking button in gallery → form → confirmation page with design card",Internal,Not Started,Verify design ID passes through to thank-you page
-5 - Testing & QA,P1 - High,Test Mobile Responsiveness,"Check all pages on mobile (380px+) and tablet (480px-1000px) breakpoints",Internal,Not Started,"Gallery, categories, admin, FAQ pages, design card"
-5 - Testing & QA,P1 - High,Verify Watermark Protection,"Confirm watermark overlay (logo tiles + text) appears on all gallery design previews",Internal,Not Started,Should prevent casual right-click downloading
-5 - Testing & QA,P1 - High,Test Category Navigation,"Click through all categories — verify correct designs show, counts match, back navigation works",Internal,Not Started,Categories page → Gallery filtered by category
-5 - Testing & QA,P1 - High,Test FAQ Navigation Header,"Verify faq-admin-header.html links navigate correctly across all 9 FAQ pages",Internal,Not Started,Each page should highlight the active category
-5 - Testing & QA,P2 - Medium,Cross-Browser Testing,"Test in Chrome / Safari / Firefox / Edge on both desktop and mobile",Internal,Not Started,Focus on gallery modal and image rendering
-6 - Client Training,P0 - Critical,Admin Dashboard Training,"Walk client through: adding designs / editing details / uploading images / marking as taken / deleting",Client/Internal,Not Started,Record a Loom video for future reference
-6 - Client Training,P1 - High,Design Management Best Practices,"Train on: image requirements (JPG/PNG min 400px max 10MB) / naming conventions / categorization / pricing",Client/Internal,Not Started,Provide a one-pager reference doc
-6 - Client Training,P1 - High,FAQ Content Updates,"Show client how to update FAQ custom values in GHL when answers change",Client/Internal,Not Started,Changes to custom values reflect immediately
-6 - Client Training,P2 - Medium,Gallery Analytics Overview,"Show client how to monitor gallery engagement / popular designs / booking conversions",Client/Internal,Not Started,Review GHL analytics dashboard
-7 - Go-Live,P0 - Critical,Final Content Review,"Client approves all designs / descriptions / pricing / FAQ content before go-live",Client,Not Started,Get written sign-off
-7 - Go-Live,P0 - Critical,DNS / URL Verification,"Confirm all page URLs resolve correctly and custom domain is properly configured",Internal,Not Started,"Test: categories, gallery, admin, FAQ, confirmation pages"
-7 - Go-Live,P1 - High,Enable Booking Automations,"Set up GHL workflows for: booking confirmation SMS/email, design selection notification to artist",Internal,Not Started,Triggers on form submission with design ID
-7 - Go-Live,P1 - High,Submit FAQ Pages for Google Indexing,"Request indexing via Google Search Console for all FAQ pages with schema markup",Internal,Not Started,Rich snippets may take 24-48 hours to appear
-7 - Go-Live,P2 - Medium,Monitor First Week,"Check for errors in console / broken images / failed API calls during first week after launch",Internal,Not Started,Set up a check-in call for day 3 and day 7
+Step,Sub-Item,Task,Description,Owner,Status,Launchpad Item ID,Video Tutorial,External Link,Notes
+1 - Welcome,—,Watch Welcome Video,"Watch the TattooNOW onboarding introduction video to understand the process and what's ahead.",Client,Not Started,—,KpW20D-lyfI,—,"First step — sets expectations for the entire onboarding"
+2 - Onboarding Form,—,Complete Onboarding Survey,"Fill out the vital info & current processes survey so we can customize your setup.",Client,Not Started,—,—,https://links.tattoonow.com/widget/survey/iciayX2aDCN3H0x5p8A4,"Survey auto-attaches locationId; opens in popup window"
+3 - Book Call,—,Book Onboarding Call,"Schedule your personalized onboarding call to walk through setup together.",Client,Not Started,—,—,https://links.tattoonow.com/widget/booking/OJd5PHlAGUXVp4nymHUx,"Calendar opens in popup window"
+4 - Setup Accounts,1 of 8,Domain Name,"Register your business domain name and configure it in TattooNOW.",Client,Not Started,domain-name,5Vtv9ZBpQFY,"{locationId}/settings/domain","Links to GHL domain settings for the client's location"
+4 - Setup Accounts,2 of 8,Professional Email,"Set up a professional email address with Google Workspace (e.g. you@yourstudio.com).",Client,Not Started,professional-email,ABDbwbF1BGE,https://workspace.google.com,—
+4 - Setup Accounts,3 of 8,Google Business Profile,"Claim and verify your Google Business Profile for local search visibility.",Client,Not Started,google-business,rSzlmnq_oWA,https://business.google.com,—
+4 - Setup Accounts,4 of 8,Local Service Ads,"Set up Google Local Service Ads to appear at the top of local search results.",Client,Not Started,local-service-ads,mTOI30cTKcM,https://ads.google.com/localservices,—
+4 - Setup Accounts,5 of 8,Google Search Console,"Connect Google Search Console to monitor your website's search performance.",Client,Not Started,google-search-console,uoQ-0xREQgQ,https://search.google.com/search-console,—
+4 - Setup Accounts,6 of 8,Google Analytics,"Set up Google Analytics (GA4) to track website traffic and visitor behavior.",Client,Not Started,google-analytics,UuE37-MM1ws,https://analytics.google.com,—
+4 - Setup Accounts,7 of 8,Google Ads,"Create a Google Ads account for paid search advertising.",Client,Not Started,google-ads,6zBXoupD-lw,https://ads.google.com,—
+4 - Setup Accounts,8 of 8,Connect Accounts to TattooNOW,"Link all your Google accounts to your TattooNOW dashboard.",Client,Not Started,connect-accounts,—,"{locationId}/settings/integrations/list","Final sub-item — step auto-completes when all 8 are done"
+5 - Social Media,1 of 13,YouTube,"Create your YouTube channel for tattoo content and studio promotion.",Client,Not Started,youtube,—,https://www.youtube.com/create_channel,—
+5 - Social Media,2 of 13,Instagram,"Create your Instagram business account for visual portfolio sharing.",Client,Not Started,instagram,—,https://www.instagram.com/accounts/emailsignup/,—
+5 - Social Media,3 of 13,Facebook,"Create your Facebook business page for community engagement.",Client,Not Started,facebook,—,https://www.facebook.com/pages/create,—
+5 - Social Media,4 of 13,TikTok,"Create your TikTok business account for short-form video content.",Client,Not Started,tiktok,—,https://www.tiktok.com/signup,—
+5 - Social Media,5 of 13,Pinterest,"Create your Pinterest business account to showcase designs.",Client,Not Started,pinterest,—,https://www.pinterest.com/business/create/,—
+5 - Social Media,6 of 13,Threads,"Create your Threads account for text-based social engagement.",Client,Not Started,threads,—,https://www.threads.net,—
+5 - Social Media,7 of 13,Bluesky,"Create your Bluesky account as an alternative social platform.",Client,Not Started,bluesky,—,https://bsky.app,—
+5 - Social Media,8 of 13,Yelp,"Claim your Yelp business page for reviews and local discovery.",Client,Not Started,yelp,—,https://biz.yelp.com/signup,—
+5 - Social Media,9 of 13,LinkedIn,"Create your LinkedIn company page for professional networking.",Client,Not Started,linkedin,—,https://www.linkedin.com/company/setup/new/,—
+5 - Social Media,10 of 13,D&B DUNS Number,"Get your Dun & Bradstreet DUNS number for business credibility.",Client,Not Started,duns,—,https://www.dnb.com/duns-number/get-a-duns.html,—
+5 - Social Media,11 of 13,BBB,"Get Better Business Bureau accreditation for trust and credibility.",Client,Not Started,bbb,—,https://www.bbb.org/get-accredited,—
+5 - Social Media,12 of 13,Tattoos.Social,"Create your profile on the Tattoos.Social community platform.",Client,Not Started,tattoos-social,—,https://groups.tattoos.social/,—
+5 - Social Media,13 of 13,Connect Social to TattooNOW,"Link all your social media accounts to TattooNOW for unified management.",Client,Not Started,connect-social,—,"{locationId}/marketing/social-planner/settings?tab=all","Final sub-item — step auto-completes when all 13 are done"
+6 - Import Contacts,1 of 2,Option 1: Upload Contacts Now,"If you have your contacts ready in CSV format upload them now.",Client,Not Started,upload-contacts-now,—,"{locationId}/contacts/import","Either option completes this step"
+6 - Import Contacts,2 of 2,Option 2: Wait for Onboarding Meeting,"Prefer to handle contact import during your onboarding call — we'll walk you through it.",Client,Not Started,wait-for-meeting,—,—,"Either option completes this step"
+7 - Mobile App,—,Download Lead Connector App,"Download the Lead Connector mobile app to manage conversations and respond to leads on the go.",Client,Not Started,—,—,"iOS: https://apps.apple.com/us/app/lead-connector/id1564302502 | Android: https://play.google.com/store/apps/details?id=com.LeadConnector","Login with same credentials as business.tattoonow.com"
+8 - Next Steps,—,Setup Complete — What Happens Next,"Expect emails from gabe@tattoonow.com with updates. We'll work behind the scenes before the onboarding call. You'll get access to members-exclusive content.",Internal/Client,Not Started,—,—,—,"Completion redirects to https://tools.tattoonow.com/tattoonow-subscribers"
+,,,,,,,,,,
+GOOGLE SHEET SYNC INFO,,,,,,,,,,
+Key,Value,,,,,,,,,
+Apps Script URL,https://script.google.com/macros/s/AKfycbwNjZ1kzDqvqCyi45CKgSljCVE5jGbW1Za1iInIXDo6uJvB5b9n7OP6sjV-O1Nu7MjL/exec,,,,,,,,,
+Secret Key,tattoonow_onboarding_2024,,,,,,,,,
+Save Action,"GET ?action=save&locationId=X&completedSteps=[...]&step4=[...]&step5=[...]&step6=[...]&currentStep=N&setupCompleted=bool&secretKey=X",,,,,,,,,
+Load Action,"GET ?action=load&locationId=X&secretKey=X",,,,,,,,,
+Completion Redirect,https://tools.tattoonow.com/tattoonow-subscribers,,,,,,,,,
+LocalStorage Key Pattern,launchpad_progress_{locationId},,,,,,,,,
+,,,,,,,,,,
+COMPLETION REQUIREMENTS,,,,,,,,,,
+Step,Requirement,,,,,,,,,
+Step 1 - Welcome,Click Mark Complete after watching video,,,,,,,,,
+Step 2 - Onboarding Form,Survey submission auto-completes OR manual mark,,,,,,,,,
+Step 3 - Book Call,Calendar booking auto-completes OR manual mark,,,,,,,,,
+Step 4 - Setup Accounts,All 8 sub-items must be individually marked complete,,,,,,,,,
+Step 5 - Social Media,All 13 sub-items must be individually marked complete,,,,,,,,,
+Step 6 - Import Contacts,At least 1 of 2 options must be marked complete,,,,,,,,,
+Step 7 - Mobile App,Click Mark Complete after downloading app,,,,,,,,,
+Step 8 - Next Steps,Click Mark Complete to finish — triggers confetti + redirect,,,,,,,,,
