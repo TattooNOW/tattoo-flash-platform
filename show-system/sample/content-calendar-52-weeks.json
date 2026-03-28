@@ -1,0 +1,482 @@
+{
+  "description": "52-week content calendar for The TattooNOW Show — Season 1",
+  "seasonStart": "2026-02-25",
+  "recordingDay": "Wednesday",
+  "releaseWindow": "Thursday-Friday",
+  "presentations": {
+    "P1": "Business Plan for Tattoo Artists",
+    "P2": "Getting Clients (Digital Marketing)",
+    "P3": "Network & Collaboration",
+    "P4": "Essentials of Running a Studio"
+  },
+  "weeks": [
+    {
+      "week": 1, "quarter": "Q1", "airDate": "2026-02-25",
+      "presentation": "P2", "slides": "14-18",
+      "episodeTitle": "Why Your Website Is Losing You Clients",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "5 things every tattoo website needs in 2026",
+      "meetingFocus": "Website audit — review your own site live",
+      "keyPoints": "Mobile-first design; 3-click booking rule; portfolio vs homepage; SEO basics for tattoo studios; Google Business Profile optimization"
+    },
+    {
+      "week": 2, "quarter": "Q1", "airDate": "2026-03-04",
+      "presentation": "P1", "slides": "1-5",
+      "episodeTitle": "You Don't Have a Business Plan (And That's Costing You)",
+      "theme": "Business Foundations",
+      "newsletterTopic": "The one-page business plan that actually works",
+      "meetingFocus": "Fill out your one-page business plan together",
+      "keyPoints": "Why most artists skip planning; one-page plan template; revenue targets vs goals; defining your ideal client; accountability partners"
+    },
+    {
+      "week": 3, "quarter": "Q1", "airDate": "2026-03-11",
+      "presentation": "P2", "slides": "19-24",
+      "episodeTitle": "Instagram Is Not a Marketing Strategy",
+      "theme": "Social Media Strategy",
+      "newsletterTopic": "The social media funnel: followers → bookings",
+      "meetingFocus": "Audit your Instagram bio and link-in-bio setup",
+      "keyPoints": "Platform diversification; owning your audience (email list); Instagram algorithm changes; converting followers to bookings; content batching"
+    },
+    {
+      "week": 4, "quarter": "Q1", "airDate": "2026-03-18",
+      "presentation": "P1", "slides": "6-10",
+      "episodeTitle": "Know Your Numbers or Lose Your Shop",
+      "theme": "Financial Management",
+      "newsletterTopic": "The 3 numbers every tattoo artist must track",
+      "meetingFocus": "Calculate your actual hourly rate",
+      "keyPoints": "Cost per tattoo; overhead calculation; hourly rate math; profit margins; when to raise prices"
+    },
+    {
+      "week": 5, "quarter": "Q1", "airDate": "2026-03-25",
+      "presentation": "P2", "slides": "25-30",
+      "episodeTitle": "Google Reviews: Your Secret Weapon for Bookings",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "How to get 5-star reviews without being awkward",
+      "meetingFocus": "Set up your review request system",
+      "keyPoints": "Review velocity; responding to negative reviews; Google Business Profile ranking factors; review request automation; QR codes in studio"
+    },
+    {
+      "week": 6, "quarter": "Q1", "airDate": "2026-04-01",
+      "presentation": "P1", "slides": "11-15",
+      "episodeTitle": "Pricing Your Flash Without Leaving Money on the Table",
+      "theme": "Financial Management",
+      "newsletterTopic": "Flash pricing formulas that work",
+      "meetingFocus": "Price your top 10 flash designs using the formula",
+      "keyPoints": "Size-based pricing; complexity multipliers; flash vs custom pricing psychology; market research; value-based pricing"
+    },
+    {
+      "week": 7, "quarter": "Q1", "airDate": "2026-04-08",
+      "presentation": "P2", "slides": "31-36",
+      "episodeTitle": "Email Marketing for Tattoo Artists (Yes, Really)",
+      "theme": "Marketing & Branding",
+      "newsletterTopic": "Your first email sequence — 3 emails that book clients",
+      "meetingFocus": "Write your welcome email together",
+      "keyPoints": "Building an email list; welcome sequences; flash drop announcements; re-engagement campaigns; email vs social ROI"
+    },
+    {
+      "week": 8, "quarter": "Q1", "airDate": "2026-04-15",
+      "presentation": "P1", "slides": "16-20",
+      "episodeTitle": "Setting Up Your Studio for Success",
+      "theme": "Studio Operations",
+      "newsletterTopic": "The studio setup checklist you didn't know you needed",
+      "meetingFocus": "Studio operations self-assessment",
+      "keyPoints": "Legal structure basics; insurance essentials; lease negotiation tips; equipment budgeting; building out your space"
+    },
+    {
+      "week": 9, "quarter": "Q1", "airDate": "2026-04-22",
+      "presentation": "P2", "slides": "37-42",
+      "episodeTitle": "Booking Systems That Don't Make Clients Run Away",
+      "theme": "Technology & Tools",
+      "newsletterTopic": "Online booking: the good, the bad, and the ugly",
+      "meetingFocus": "Compare booking systems — what features matter most",
+      "keyPoints": "Deposit systems; automated confirmations; no-show policies; consultation workflows; calendar management"
+    },
+    {
+      "week": 10, "quarter": "Q1", "airDate": "2026-04-29",
+      "presentation": "P1", "slides": "21-25",
+      "episodeTitle": "Building Your Brand Beyond the Tattoo Chair",
+      "theme": "Marketing & Branding",
+      "newsletterTopic": "Your personal brand is your most valuable asset",
+      "meetingFocus": "Define your brand statement in one sentence",
+      "keyPoints": "Personal brand vs studio brand; consistent visual identity; finding your niche; brand voice; merchandising"
+    },
+    {
+      "week": 11, "quarter": "Q1", "airDate": "2026-05-06",
+      "presentation": "P2", "slides": "43-48",
+      "episodeTitle": "The Portfolio That Prints Money",
+      "theme": "Portfolio Development",
+      "newsletterTopic": "Curate your portfolio like a gallery owner",
+      "meetingFocus": "Select your top 12 portfolio pieces and explain why",
+      "keyPoints": "Quality over quantity; storytelling through portfolio; healed vs fresh photos; lighting and photography basics; online portfolio optimization"
+    },
+    {
+      "week": 12, "quarter": "Q1", "airDate": "2026-05-13",
+      "presentation": "P1", "slides": "26-30",
+      "episodeTitle": "Goal Setting That Actually Sticks",
+      "theme": "Business Foundations",
+      "newsletterTopic": "Quarterly goals > yearly resolutions",
+      "meetingFocus": "Set your Q2 goals using the framework",
+      "keyPoints": "SMART goals for artists; quarterly vs annual planning; tracking progress; accountability systems; celebrating wins"
+    },
+    {
+      "week": 13, "quarter": "Q1", "airDate": "2026-05-20",
+      "presentation": "P2", "slides": "49-54",
+      "episodeTitle": "Q1 Wrap: What Worked, What Didn't",
+      "theme": "Case Study / Deep Dive",
+      "newsletterTopic": "Q1 retrospective — community wins and lessons",
+      "meetingFocus": "Share your biggest Q1 win and Q2 commitment",
+      "keyPoints": "Community success stories; common pitfalls; mid-year adjustments; accountability check-in; setting up Q2"
+    },
+    {
+      "week": 14, "quarter": "Q2", "airDate": "2026-05-27",
+      "presentation": "P3", "slides": "1-6",
+      "episodeTitle": "Networking Isn't Schmoozing — It's Strategy",
+      "theme": "Networking & Collaboration",
+      "newsletterTopic": "The introvert's guide to tattoo industry networking",
+      "meetingFocus": "Identify 3 artists you want to connect with this quarter",
+      "keyPoints": "Networking mindset shift; giving before asking; online vs in-person networking; building genuine relationships; collaboration opportunities"
+    },
+    {
+      "week": 15, "quarter": "Q2", "airDate": "2026-06-03",
+      "presentation": "P2", "slides": "55-60",
+      "episodeTitle": "TikTok and Reels: Short-Form Video for Tattoo Artists",
+      "theme": "Social Media Strategy",
+      "newsletterTopic": "Your first 30 days on TikTok — a roadmap",
+      "meetingFocus": "Film your first process reel together",
+      "keyPoints": "Platform differences; what performs well; time-lapse vs process videos; trending sounds; cross-posting strategy"
+    },
+    {
+      "week": 16, "quarter": "Q2", "airDate": "2026-06-10",
+      "presentation": "P3", "slides": "7-12",
+      "episodeTitle": "Convention Strategy: Making Every Show Count",
+      "theme": "Convention Strategy",
+      "newsletterTopic": "Convention ROI — is it worth the booth fee?",
+      "meetingFocus": "Plan your next convention appearance",
+      "keyPoints": "Choosing the right conventions; booth setup that attracts; pre-con marketing; follow-up systems; calculating convention ROI"
+    },
+    {
+      "week": 17, "quarter": "Q2", "airDate": "2026-06-17",
+      "presentation": "P2", "slides": "1-8",
+      "episodeTitle": "Referral Programs That Actually Work",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "Turn your best clients into your marketing team",
+      "meetingFocus": "Design your referral card or program",
+      "keyPoints": "Word-of-mouth amplification; referral incentives; loyalty programs; client experience = marketing; tracking referral sources"
+    },
+    {
+      "week": 18, "quarter": "Q2", "airDate": "2026-06-24",
+      "presentation": "P3", "slides": "13-18",
+      "episodeTitle": "Guest Spots and Travel Tattooing Done Right",
+      "theme": "Networking & Collaboration",
+      "newsletterTopic": "The guest spot playbook — from DM to deposit",
+      "meetingFocus": "Draft your guest spot inquiry message",
+      "keyPoints": "Finding guest spot opportunities; professional outreach; travel logistics; pricing for guest spots; building your travel calendar"
+    },
+    {
+      "week": 19, "quarter": "Q2", "airDate": "2026-07-01",
+      "presentation": "P2", "slides": "9-14",
+      "episodeTitle": "Content Creation Without Burning Out",
+      "theme": "Social Media Strategy",
+      "newsletterTopic": "The 2-hour content week — batch and forget",
+      "meetingFocus": "Plan your content for the next 2 weeks",
+      "keyPoints": "Content batching; repurposing one piece into many; scheduling tools; sustainable posting frequency; content pillars for tattoo artists"
+    },
+    {
+      "week": 20, "quarter": "Q2", "airDate": "2026-07-08",
+      "presentation": "P3", "slides": "19-24",
+      "episodeTitle": "Collaboration Over Competition",
+      "theme": "Networking & Collaboration",
+      "newsletterTopic": "How to find your tattoo tribe",
+      "meetingFocus": "Reach out to one artist for a collaboration project",
+      "keyPoints": "Joint flash events; shared social media takeovers; mentor/mentee relationships; skill trading; community building in your city"
+    },
+    {
+      "week": 21, "quarter": "Q2", "airDate": "2026-07-15",
+      "presentation": "P2", "slides": "15-20",
+      "episodeTitle": "Local SEO: Own Your City's Tattoo Searches",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "The local SEO checklist for tattoo studios",
+      "meetingFocus": "Google yourself — what do clients see?",
+      "keyPoints": "Google Business Profile deep dive; local keywords; citation building; map pack ranking; neighborhood-level targeting"
+    },
+    {
+      "week": 22, "quarter": "Q2", "airDate": "2026-07-22",
+      "presentation": "P3", "slides": "25-30",
+      "episodeTitle": "Building an Apprenticeship Program",
+      "theme": "Leadership & Mentorship",
+      "newsletterTopic": "Apprenticeships: passing the torch (and growing your studio)",
+      "meetingFocus": "Outline your ideal apprenticeship structure",
+      "keyPoints": "Finding the right apprentice; structured learning plans; setting expectations; compensation models; when you're ready to mentor"
+    },
+    {
+      "week": 23, "quarter": "Q2", "airDate": "2026-07-29",
+      "presentation": "P2", "slides": "21-26",
+      "episodeTitle": "Paid Ads for Tattoo Studios: Worth It or Waste?",
+      "theme": "Marketing & Branding",
+      "newsletterTopic": "Your first $100 Facebook/Instagram ad campaign",
+      "meetingFocus": "Create an ad targeting your ideal client",
+      "keyPoints": "Facebook/Instagram ads basics; targeting tattoo clients; budget management; ad creative that converts; measuring ad ROI"
+    },
+    {
+      "week": 24, "quarter": "Q2", "airDate": "2026-08-05",
+      "presentation": "P3", "slides": "31-36",
+      "episodeTitle": "Industry Associations and Getting Involved",
+      "theme": "Networking & Collaboration",
+      "newsletterTopic": "Why joining an industry group accelerates your career",
+      "meetingFocus": "Research one association or group to join",
+      "keyPoints": "APT and other organizations; benefits of membership; volunteering at conventions; industry advocacy; giving back to the community"
+    },
+    {
+      "week": 25, "quarter": "Q2", "airDate": "2026-08-12",
+      "presentation": "P2", "slides": "27-32",
+      "episodeTitle": "Client Communication That Prevents No-Shows",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "The client communication timeline — inquiry to aftercare",
+      "meetingFocus": "Write your pre-appointment message sequence",
+      "keyPoints": "Consultation scripts; deposit policies; appointment reminders; aftercare follow-up; handling difficult clients"
+    },
+    {
+      "week": 26, "quarter": "Q2", "airDate": "2026-08-19",
+      "presentation": "P3", "slides": "37-42",
+      "episodeTitle": "Mid-Year Check: Are You On Track?",
+      "theme": "Case Study / Deep Dive",
+      "newsletterTopic": "Halftime report — adjusting your 2026 game plan",
+      "meetingFocus": "Review your goals from Q1 and adjust for H2",
+      "keyPoints": "Mid-year financial review; goal progress check-in; pivoting vs persisting; community success spotlights; H2 planning"
+    },
+    {
+      "week": 27, "quarter": "Q3", "airDate": "2026-08-26",
+      "presentation": "P4", "slides": "1-6",
+      "episodeTitle": "Health and Longevity: Tattooing Is a Marathon",
+      "theme": "Studio Operations",
+      "newsletterTopic": "Ergonomics, stretching, and surviving a long career",
+      "meetingFocus": "Set up your workstation ergonomics",
+      "keyPoints": "Repetitive strain prevention; stretching routines; eye health; mental health in the industry; career longevity planning"
+    },
+    {
+      "week": 28, "quarter": "Q3", "airDate": "2026-09-02",
+      "presentation": "P1", "slides": "31-35",
+      "episodeTitle": "Hiring Your First Employee (Or Should You?)",
+      "theme": "Studio Operations",
+      "newsletterTopic": "Employee vs contractor — what's right for your studio",
+      "meetingFocus": "Map out your studio's org chart (even if it's just you)",
+      "keyPoints": "When to hire; employee vs independent contractor; job descriptions; studio culture; payroll basics"
+    },
+    {
+      "week": 29, "quarter": "Q3", "airDate": "2026-09-09",
+      "presentation": "P4", "slides": "7-12",
+      "episodeTitle": "Bloodborne Pathogens and Safety — No Shortcuts",
+      "theme": "Studio Operations",
+      "newsletterTopic": "Safety compliance refresh — are you up to date?",
+      "meetingFocus": "Review your studio safety protocols",
+      "keyPoints": "OSHA compliance; bloodborne pathogen training; cross-contamination prevention; sterilization best practices; documentation requirements"
+    },
+    {
+      "week": 30, "quarter": "Q3", "airDate": "2026-09-16",
+      "presentation": "P1", "slides": "36-40",
+      "episodeTitle": "Taxes Don't Have to Be Terrifying",
+      "theme": "Financial Management",
+      "newsletterTopic": "Tax deductions every tattoo artist misses",
+      "meetingFocus": "Organize your receipts and set up tracking",
+      "keyPoints": "Business structure and taxes; quarterly estimates; deductible expenses; record keeping; finding a good accountant"
+    },
+    {
+      "week": 31, "quarter": "Q3", "airDate": "2026-09-23",
+      "presentation": "P4", "slides": "13-18",
+      "episodeTitle": "Client Consultations That Close",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "The consultation framework that converts 80%+ of inquiries",
+      "meetingFocus": "Role-play a consultation scenario",
+      "keyPoints": "Active listening; setting expectations; design collaboration; pricing during consultation; saying no gracefully"
+    },
+    {
+      "week": 32, "quarter": "Q3", "airDate": "2026-09-30",
+      "presentation": "P1", "slides": "41-45",
+      "episodeTitle": "Multiple Revenue Streams for Tattoo Artists",
+      "theme": "Financial Management",
+      "newsletterTopic": "Beyond tattooing — diversifying your income",
+      "meetingFocus": "Brainstorm 3 potential revenue streams",
+      "keyPoints": "Teaching workshops; selling flash; merchandise; online courses; print sales; licensing your art"
+    },
+    {
+      "week": 33, "quarter": "Q3", "airDate": "2026-10-07",
+      "presentation": "P4", "slides": "19-24",
+      "episodeTitle": "Designing Flash Sheets That Sell",
+      "theme": "Portfolio Development",
+      "newsletterTopic": "Flash design principles — what sells and why",
+      "meetingFocus": "Sketch 3 flash designs based on trending styles",
+      "keyPoints": "Market research for flash; sizing for profitability; digital vs hand-drawn; seasonal flash strategies; flash release marketing"
+    },
+    {
+      "week": 34, "quarter": "Q3", "airDate": "2026-10-14",
+      "presentation": "P1", "slides": "46-50",
+      "episodeTitle": "Scaling Without Selling Out",
+      "theme": "Business Foundations",
+      "newsletterTopic": "Growth that stays true to your art",
+      "meetingFocus": "Define your non-negotiables as you grow",
+      "keyPoints": "Growth vs scaling; maintaining quality; delegation; systems that support artistry; knowing when to say no to growth"
+    },
+    {
+      "week": 35, "quarter": "Q3", "airDate": "2026-10-21",
+      "presentation": "P4", "slides": "25-30",
+      "episodeTitle": "Studio Culture: Why Your Vibe Matters",
+      "theme": "Leadership & Mentorship",
+      "newsletterTopic": "Building a studio culture that attracts top talent",
+      "meetingFocus": "Write your studio's core values",
+      "keyPoints": "Defining studio culture; toxic shop red flags; inclusive environments; team building; culture as a marketing tool"
+    },
+    {
+      "week": 36, "quarter": "Q3", "airDate": "2026-10-28",
+      "presentation": "P1", "slides": "1-10",
+      "episodeTitle": "The Business Plan Revisited: What's Changed?",
+      "theme": "Business Foundations",
+      "newsletterTopic": "Updating your business plan — a living document",
+      "meetingFocus": "Update your one-page business plan from Week 2",
+      "keyPoints": "Revisiting assumptions; market changes; updated financial projections; new opportunities; refining your vision"
+    },
+    {
+      "week": 37, "quarter": "Q3", "airDate": "2026-11-04",
+      "presentation": "P4", "slides": "31-36",
+      "episodeTitle": "Continuing Education: Never Stop Learning",
+      "theme": "Industry Trends",
+      "newsletterTopic": "Workshops, seminars, and learning from the best",
+      "meetingFocus": "Sign up for one learning opportunity this quarter",
+      "keyPoints": "Seminars and workshops; online learning platforms; learning from other industries; traveling to learn; investing in yourself"
+    },
+    {
+      "week": 38, "quarter": "Q3", "airDate": "2026-11-11",
+      "presentation": "P1", "slides": "11-20",
+      "episodeTitle": "Insurance, Contracts, and CYA Basics",
+      "theme": "Studio Operations",
+      "newsletterTopic": "Legal essentials — protecting your art and your business",
+      "meetingFocus": "Review your insurance coverage and contracts",
+      "keyPoints": "Liability insurance; consent forms; copyright basics; contract templates; when to consult a lawyer"
+    },
+    {
+      "week": 39, "quarter": "Q3", "airDate": "2026-11-18",
+      "presentation": "P4", "slides": "37-42",
+      "episodeTitle": "Q3 Wrap: Holiday Prep and Year-End Sprint",
+      "theme": "Case Study / Deep Dive",
+      "newsletterTopic": "Q3 lessons + holiday marketing prep",
+      "meetingFocus": "Plan your holiday flash release and gift card push",
+      "keyPoints": "Q3 wins and lessons; holiday gift card strategies; flash specials; year-end client appreciation; booking through the holidays"
+    },
+    {
+      "week": 40, "quarter": "Q4", "airDate": "2026-11-25",
+      "presentation": "P3", "slides": "1-8",
+      "episodeTitle": "Holiday Marketing That Doesn't Feel Desperate",
+      "theme": "Marketing & Branding",
+      "newsletterTopic": "Holiday campaigns that feel authentic to your brand",
+      "meetingFocus": "Draft your holiday campaign — flash, gift cards, or both",
+      "keyPoints": "Gift card strategies; holiday flash releases; Black Friday for tattoo studios; festive content creation; year-end thank you campaigns"
+    },
+    {
+      "week": 41, "quarter": "Q4", "airDate": "2026-12-02",
+      "presentation": "P4", "slides": "43-48",
+      "episodeTitle": "Managing Your Energy and Avoiding Burnout",
+      "theme": "Studio Operations",
+      "newsletterTopic": "Burnout is real — here's how to prevent it",
+      "meetingFocus": "Build your ideal weekly schedule with buffer time",
+      "keyPoints": "Recognizing burnout signs; scheduling recovery time; creative blocks; setting boundaries; sustainable pace"
+    },
+    {
+      "week": 42, "quarter": "Q4", "airDate": "2026-12-09",
+      "presentation": "P3", "slides": "9-16",
+      "episodeTitle": "Online Communities and Finding Your People",
+      "theme": "Networking & Collaboration",
+      "newsletterTopic": "The best online tattoo communities in 2026",
+      "meetingFocus": "Join or contribute to one new community this week",
+      "keyPoints": "Discord and Facebook groups; Reddit communities; avoiding online drama; being a positive voice; virtual networking"
+    },
+    {
+      "week": 43, "quarter": "Q4", "airDate": "2026-12-16",
+      "presentation": "P4", "slides": "49-54",
+      "episodeTitle": "Year in Review: Tattoo Industry 2026",
+      "theme": "Industry Trends",
+      "newsletterTopic": "The biggest tattoo industry trends and changes of 2026",
+      "meetingFocus": "What surprised you most about this year?",
+      "keyPoints": "Technology trends; style trends; regulatory changes; market shifts; predictions for 2027"
+    },
+    {
+      "week": 44, "quarter": "Q4", "airDate": "2026-12-23",
+      "presentation": "P3", "slides": "17-24",
+      "episodeTitle": "Holiday Special: Best Moments of Season 1",
+      "theme": "Case Study / Deep Dive",
+      "newsletterTopic": "Our favorite moments from 43 weeks of The TattooNOW Show",
+      "meetingFocus": "Holiday week — light session, community appreciation",
+      "keyPoints": "Best guest moments; most impactful episodes; community highlights; bloopers and fun; gratitude"
+    },
+    {
+      "week": 45, "quarter": "Q4", "airDate": "2026-12-30",
+      "presentation": "P4", "slides": "1-12",
+      "episodeTitle": "Planning Your Best Year Yet: 2027 Goal Setting",
+      "theme": "Business Foundations",
+      "newsletterTopic": "The 2027 planning workshop recap",
+      "meetingFocus": "Annual planning workshop — set your 2027 vision",
+      "keyPoints": "Annual review process; vision board for your studio; financial targets for 2027; skill development goals; personal and professional balance"
+    },
+    {
+      "week": 46, "quarter": "Q4", "airDate": "2027-01-06",
+      "presentation": "P3", "slides": "25-32",
+      "episodeTitle": "New Year, New Clients: January Marketing Blitz",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "Capture the January 'new tattoo' energy",
+      "meetingFocus": "Launch your January booking campaign",
+      "keyPoints": "New Year's resolution tattoos; flash events for January; social media reset strategy; email list revival; booking incentives"
+    },
+    {
+      "week": 47, "quarter": "Q4", "airDate": "2027-01-13",
+      "presentation": "P4", "slides": "13-20",
+      "episodeTitle": "Advanced Consultation Techniques",
+      "theme": "Client Acquisition",
+      "newsletterTopic": "Next-level consultations — reading between the lines",
+      "meetingFocus": "Practice advanced consultation scenarios",
+      "keyPoints": "Reading client body language; managing unrealistic expectations; collaborative design process; upselling ethically; building lifetime clients"
+    },
+    {
+      "week": 48, "quarter": "Q4", "airDate": "2027-01-20",
+      "presentation": "P3", "slides": "33-40",
+      "episodeTitle": "Cross-Promotion and Strategic Partnerships",
+      "theme": "Marketing & Branding",
+      "newsletterTopic": "Partnerships that multiply your reach",
+      "meetingFocus": "Identify 3 potential cross-promotion partners",
+      "keyPoints": "Local business partnerships; artist collaborations; brand ambassador opportunities; affiliate marketing; co-hosted events"
+    },
+    {
+      "week": 49, "quarter": "Q4", "airDate": "2027-01-27",
+      "presentation": "P4", "slides": "21-28",
+      "episodeTitle": "Technology Stack: Tools Every Modern Studio Needs",
+      "theme": "Technology & Tools",
+      "newsletterTopic": "The essential tech stack for tattoo studios in 2027",
+      "meetingFocus": "Evaluate your current tools and identify gaps",
+      "keyPoints": "CRM systems; booking software; accounting tools; design tools; AI assistance for business tasks"
+    },
+    {
+      "week": 50, "quarter": "Q4", "airDate": "2027-02-03",
+      "presentation": "P3", "slides": "41-48",
+      "episodeTitle": "Building Your Legacy in Tattooing",
+      "theme": "Leadership & Mentorship",
+      "newsletterTopic": "What legacy are you building?",
+      "meetingFocus": "Write your artist mission statement",
+      "keyPoints": "Long-term career vision; mentorship and giving back; industry contribution; documenting your journey; inspiring the next generation"
+    },
+    {
+      "week": 51, "quarter": "Q4", "airDate": "2027-02-10",
+      "presentation": "P4", "slides": "29-36",
+      "episodeTitle": "Convention Season Preview: Your 2027 Roadmap",
+      "theme": "Convention Strategy",
+      "newsletterTopic": "The 2027 convention calendar — which shows to hit",
+      "meetingFocus": "Map out your 2027 convention schedule",
+      "keyPoints": "Major 2027 conventions; budgeting for shows; booth improvements; travel planning; making conventions profitable"
+    },
+    {
+      "week": 52, "quarter": "Q4", "airDate": "2027-02-17",
+      "presentation": "P3", "slides": "49-54",
+      "episodeTitle": "Season 1 Finale: The State of Tattooing",
+      "theme": "Industry Trends",
+      "newsletterTopic": "Where is tattooing heading? Season 1 wrap-up",
+      "meetingFocus": "Season 1 retrospective — what we learned together",
+      "keyPoints": "Season 1 recap; community growth; industry outlook; Season 2 preview; thank you and celebration"
+    }
+  ]
+}

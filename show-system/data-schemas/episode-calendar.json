@@ -1,0 +1,144 @@
+{
+  "sheetName": "Episode Calendar",
+  "tabIndex": 0,
+  "description": "Master episode planning tracker — Tab 1 of the Show Planning spreadsheet",
+  "columns": [
+    {
+      "name": "Episode #",
+      "type": "number",
+      "autoIncrement": true,
+      "description": "Sequential episode number"
+    },
+    {
+      "name": "Air Date",
+      "type": "date",
+      "description": "Wednesday recording date"
+    },
+    {
+      "name": "Release Date",
+      "type": "date",
+      "description": "Post-production release date (typically Thu-Fri)"
+    },
+    {
+      "name": "Episode Title",
+      "type": "text",
+      "description": "Working title for the episode"
+    },
+    {
+      "name": "Theme/Topic",
+      "type": "dropdown",
+      "options": [
+        "Business Foundations",
+        "Client Acquisition",
+        "Portfolio Development",
+        "Social Media Strategy",
+        "Studio Operations",
+        "Financial Management",
+        "Networking & Collaboration",
+        "Convention Strategy",
+        "Marketing & Branding",
+        "Technology & Tools",
+        "Leadership & Mentorship",
+        "Industry Trends",
+        "Case Study / Deep Dive"
+      ],
+      "description": "Content calendar category"
+    },
+    {
+      "name": "Status",
+      "type": "dropdown",
+      "options": [
+        "Planning",
+        "Script Ready",
+        "Recorded",
+        "Editing",
+        "Published"
+      ],
+      "description": "Production status"
+    },
+    {
+      "name": "Presentation Source",
+      "type": "dropdown",
+      "options": [
+        "P1: Business Plan",
+        "P2: Getting Clients",
+        "P3: Network",
+        "P4: Essentials",
+        "Custom"
+      ],
+      "description": "Which master presentation the content draws from"
+    },
+    {
+      "name": "Source Slide(s)",
+      "type": "text",
+      "description": "Slide number(s) from source presentation"
+    },
+    {
+      "name": "Guest Artist",
+      "type": "lookup",
+      "lookupTab": "Talent Database",
+      "lookupColumn": "Artist Name",
+      "description": "Featured artist for this episode"
+    },
+    {
+      "name": "Guest Type",
+      "type": "dropdown",
+      "options": [
+        "Icon",
+        "Prodigy",
+        "Partner Artist",
+        "Industry Expert",
+        "Musical Guest"
+      ],
+      "description": "Category of guest appearance"
+    },
+    {
+      "name": "Talent Source Event",
+      "type": "dropdown",
+      "options": [
+        "Icons & Prodigies",
+        "Paradise Gathering",
+        "Partner Convention",
+        "Independent"
+      ],
+      "description": "Where the talent was sourced from"
+    },
+    {
+      "name": "Sponsor/Partner",
+      "type": "text",
+      "description": "Episode sponsor if applicable"
+    },
+    {
+      "name": "Key Talking Points",
+      "type": "longText",
+      "description": "3-5 bullet points for script generation"
+    },
+    {
+      "name": "Q&A Topic",
+      "type": "text",
+      "description": "Audience question theme for the interactive segment"
+    },
+    {
+      "name": "Call to Action",
+      "type": "text",
+      "description": "What viewers should do after watching"
+    },
+    {
+      "name": "Blog Post URL",
+      "type": "url",
+      "autoPopulated": true,
+      "description": "Auto-populated after blog publishing"
+    },
+    {
+      "name": "YouTube URL",
+      "type": "url",
+      "autoPopulated": true,
+      "description": "Auto-populated after YouTube upload"
+    },
+    {
+      "name": "Affiliate Folder Link",
+      "type": "url",
+      "description": "Link to cross-promo assets in Google Drive"
+    }
+  ]
+}

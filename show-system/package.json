@@ -1,0 +1,18 @@
+{
+  "name": "tattoonow-show-system",
+  "version": "0.1.0",
+  "description": "Production pipeline for The TattooNOW Show — weekly tattoo industry variety show",
+  "private": true,
+  "scripts": {
+    "generate-script": "node scripts/generate-script.js",
+    "generate-links": "node affiliate/link-generator.js"
+  },
+  "keywords": [
+    "tattoonow",
+    "show",
+    "production",
+    "automation"
+  ],
+  "author": "TattooNOW",
+  "license": "UNLICENSED"
+}

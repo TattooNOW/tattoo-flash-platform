@@ -1,0 +1,117 @@
+{
+  "name": "WS — Clip Generation (Future Enhancement)",
+  "description": "Triggered when YouTube URL is added to Episode Calendar. Downloads video, identifies clip moments, generates short-form clips via Shotstack.",
+  "triggerType": "webhook",
+  "instance": "tn.reinventingai.com",
+  "status": "Phase 5 — not yet implemented",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "n8n-nodes-base.webhook",
+      "name": "YouTube URL Added Trigger",
+      "parameters": {
+        "path": "ws-clip-generation",
+        "httpMethod": "POST"
+      },
+      "notes": "Triggered when YouTube URL is populated in Episode Calendar"
+    },
+    {
+      "id": "download_video",
+      "type": "n8n-nodes-base.executeCommand",
+      "name": "Download YouTube Video",
+      "parameters": {
+        "command": "yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' -o '/tmp/episode-{{ $json.episodeNumber }}.mp4' '{{ $json.youtubeUrl }}'"
+      },
+      "notes": "Download the full episode video for clip extraction"
+    },
+    {
+      "id": "identify_clips",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "AI: Identify Clip Moments",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "body": {
+          "model": "claude-sonnet-4-20250514",
+          "max_tokens": 2048,
+          "messages": [
+            {
+              "role": "user",
+              "content": "Given this episode script, identify the 5 best clip moments with timestamps. Clip types needed: 1) Hook Clip (15-30s), 2) Guest Spotlight (60-90s), 3) Tech Tip (60-90s), 4) Funny Moment (30-60s), 5) Quote Card text. Script: {{ $json.script }}"
+            }
+          ]
+        }
+      },
+      "notes": "Use AI to identify optimal clip timestamps from the script"
+    },
+    {
+      "id": "generate_clips",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Generate Clips via Shotstack",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.shotstack.io/edit/v1/render",
+        "notes": "Use Shotstack API to cut clips from the full video at identified timestamps. Reuse existing Shotstack template patterns from the IG-to-Blog pipeline."
+      },
+      "notes": "Render 9:16 vertical clips for Reels/Shorts"
+    },
+    {
+      "id": "upload_clips",
+      "type": "n8n-nodes-base.googleDrive",
+      "name": "Upload Clips to Affiliate Folder",
+      "parameters": {
+        "operation": "upload",
+        "folderId": "={{ $json.videoClipsFolderId }}"
+      },
+      "notes": "Upload rendered clips to the episode's Video Clips subfolder"
+    },
+    {
+      "id": "schedule_shorts",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Schedule Reels/Shorts Posts",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Social Post Scheduler API",
+        "body": {
+          "platforms": ["instagram_reels", "youtube_shorts", "tiktok"],
+          "scheduledDate": "Friday 12:00 PM"
+        }
+      },
+      "notes": "Schedule short-form clips for Friday publishing"
+    }
+  ],
+  "connections": {
+    "trigger": ["download_video"],
+    "download_video": ["identify_clips"],
+    "identify_clips": ["generate_clips"],
+    "generate_clips": ["upload_clips"],
+    "upload_clips": ["schedule_shorts"]
+  },
+  "clipStrategy": {
+    "hookClip": {
+      "duration": "15-30 seconds",
+      "format": "9:16 vertical",
+      "purpose": "Social media teaser"
+    },
+    "guestSpotlight": {
+      "duration": "60-90 seconds",
+      "format": "9:16 vertical",
+      "purpose": "Guest intro + best portfolio piece"
+    },
+    "techTip": {
+      "duration": "60-90 seconds",
+      "format": "9:16 vertical",
+      "purpose": "TattooNOW feature demo"
+    },
+    "funnyMoment": {
+      "duration": "30-60 seconds",
+      "format": "9:16 vertical",
+      "purpose": "Comedy segment or spontaneous humor"
+    },
+    "quoteCard": {
+      "type": "static image",
+      "format": "1080x1080",
+      "purpose": "Best one-liner over branded background"
+    }
+  }
+}

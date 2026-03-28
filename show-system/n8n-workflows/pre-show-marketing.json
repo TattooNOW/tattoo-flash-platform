@@ -1,0 +1,121 @@
+{
+  "name": "WS — Pre-Show Marketing",
+  "description": "Scheduled workflow triggered relative to episode Air Date. Sends Mon-Wed marketing sequence: announcement, guest spotlight, live reminder.",
+  "triggerType": "cron",
+  "instance": "tn.reinventingai.com",
+  "schedule": "Monday 9:00 AM (relative to episode Air Date)",
+  "nodes": [
+    {
+      "id": "trigger",
+      "type": "n8n-nodes-base.cron",
+      "name": "Monday Morning Check",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * 1" }]
+        }
+      },
+      "notes": "Runs every Monday at 9 AM. Checks if there's an episode this Wednesday."
+    },
+    {
+      "id": "fetch_episode",
+      "type": "n8n-nodes-base.googleSheets",
+      "name": "Get This Week's Episode",
+      "parameters": {
+        "operation": "read",
+        "sheetName": "Episode Calendar",
+        "filters": {
+          "Air Date": "this_wednesday",
+          "Status": ["Planning", "Script Ready"]
+        }
+      },
+      "notes": "Find the episode scheduled for this Wednesday"
+    },
+    {
+      "id": "check_exists",
+      "type": "n8n-nodes-base.if",
+      "name": "Episode Scheduled?",
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.episodeNumber }}", "operation": "isNotEmpty" }]
+        }
+      },
+      "notes": "Only continue if there's actually an episode this week"
+    },
+    {
+      "id": "monday_announcement",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Monday: Post Announcement",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Social Post Scheduler API",
+        "body": {
+          "platforms": ["instagram", "facebook", "twitter"],
+          "content": "🎬 This Wednesday on The TattooNOW Show!\n\n{{ $json.episodeTitle }}\n\nFeaturing {{ $json.guestName }} from {{ $json.guestStudio }}\n\nWe're diving into {{ $json.theme }} — you won't want to miss this.\n\n🔴 Live on YouTube this Wednesday!\n\n#TattooNOWShow #TattooIndustry #{{ $json.theme }}",
+          "scheduledDate": "Monday 10:00 AM"
+        }
+      },
+      "notes": "Schedule the episode announcement across all social platforms"
+    },
+    {
+      "id": "monday_email",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Monday: Newsletter Email",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Email Campaign API",
+        "body": {
+          "subject": "This Wednesday: {{ $json.episodeTitle }} ft. {{ $json.guestName }}",
+          "template": "pre-show-announcement",
+          "data": {
+            "episodeTitle": "={{ $json.episodeTitle }}",
+            "guestName": "={{ $json.guestName }}",
+            "theme": "={{ $json.theme }}",
+            "airDate": "={{ $json.airDate }}"
+          }
+        }
+      },
+      "notes": "Send 'This Wednesday on the show...' newsletter"
+    },
+    {
+      "id": "tuesday_spotlight",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Tuesday: Guest Spotlight",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Social Post Scheduler API",
+        "body": {
+          "platforms": ["instagram", "facebook"],
+          "content": "🎨 Guest Artist Spotlight\n\nMeet {{ $json.guestName }} — {{ $json.guestBio }}\n\n📍 {{ $json.guestStudio }}, {{ $json.guestLocation }}\n🎯 Style: {{ $json.guestStyle }}\n⏰ Tattooing since {{ $json.guestSince }}\n\nCatch them on The TattooNOW Show TOMORROW!\n\n#TattooNOWShow #ArtistSpotlight #{{ $json.guestStyle }}",
+          "imageUrl": "={{ $json.guestHeadshot }}",
+          "scheduledDate": "Tuesday 11:00 AM"
+        }
+      },
+      "notes": "Post guest artist spotlight with their headshot"
+    },
+    {
+      "id": "wednesday_reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Wednesday: Going Live Reminder",
+      "parameters": {
+        "method": "POST",
+        "url": "GHL Workflow Trigger API",
+        "body": {
+          "workflowId": "ws-going-live-reminder",
+          "channels": ["sms", "social", "push"],
+          "message": "🔴 LIVE in 2 hours! The TattooNOW Show #{{ $json.episodeNumber }}: {{ $json.episodeTitle }}\n\nWatch: youtube.com/@tattoonowgabe"
+        }
+      },
+      "notes": "Send SMS + social reminder 2 hours before going live"
+    }
+  ],
+  "connections": {
+    "trigger": ["fetch_episode"],
+    "fetch_episode": ["check_exists"],
+    "check_exists": {
+      "true": ["monday_announcement", "monday_email"],
+      "false": []
+    },
+    "monday_announcement": ["tuesday_spotlight"],
+    "tuesday_spotlight": ["wednesday_reminder"]
+  }
+}

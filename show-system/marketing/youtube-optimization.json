@@ -1,0 +1,49 @@
+{
+  "name": "YouTube Upload Optimization",
+  "description": "Standard metadata template for each episode upload",
+  "titleFormat": "The TattooNOW Show #{{EPISODE_NUMBER}}: {{EPISODE_TITLE}} ft. {{GUEST_NAME}}",
+  "descriptionTemplate": "{{EPISODE_TITLE}} — On this episode of The TattooNOW Show, we dive into {{THEME}} with {{GUEST_NAME}} from {{GUEST_STUDIO}}.\n\n{{TALKING_POINTS_EXPANDED}}\n\n⏱️ CHAPTERS:\n0:00 Cold Open\n0:30 Welcome & Intro\n2:00 Community Check-In\n5:00 Today's Topic: {{THEME}}\n8:00 Deep Dive Discussion\n20:00 Guest Spotlight: {{GUEST_NAME}}\n25:00 TattooNOW Tech Corner\n30:00 Q&A: {{QA_TOPIC}}\n40:00 Industry News\n45:00 Event Spotlight\n50:00 Special Segment\n55:00 Next Week Preview\n58:00 Sign Off\n\n🔗 LINKS:\n{{AFFILIATE_LINKS}}\n\n📍 Events:\n• Icons & Prodigies Venice: [link]\n• Paradise Tattoo Gathering: [link]\n\n🎨 Today's Guest:\n• {{GUEST_NAME}} — {{GUEST_INSTAGRAM}}\n• {{GUEST_STUDIO}}, {{GUEST_LOCATION}}\n\n💼 TattooNOW:\n• Website: https://longevity.tattoonow.com\n• Instagram: @tattoonow\n• Subscribe for weekly episodes!\n\n#TattooNOWShow #TattooIndustry #TattooBusiness #{{GUEST_STYLE}}",
+  "tags": [
+    "tattoo",
+    "tattoo business",
+    "tattoo artist",
+    "tattoo industry",
+    "TattooNOW",
+    "TattooNOW Show",
+    "tattoo tips",
+    "tattoo studio",
+    "{{GUEST_STYLE}}",
+    "{{GUEST_NAME}}",
+    "{{THEME}}"
+  ],
+  "thumbnail": {
+    "generator": "Placid",
+    "template": "show-thumbnail",
+    "size": "1280x720",
+    "elements": {
+      "background": "Episode screenshot or branded background",
+      "guestHeadshot": "{{GUEST_HEADSHOT}} — cutout, positioned right",
+      "title": "{{EPISODE_TITLE}} — Roboto Slab, white, left-aligned",
+      "episodeBadge": "Ep. {{EPISODE_NUMBER}} — orange badge top-left",
+      "logo": "TattooNOW logo bottom-left"
+    },
+    "brandColors": {
+      "background": "#0a0a0a",
+      "text": "#fafafa",
+      "accent": "#EA9320"
+    }
+  },
+  "endScreen": {
+    "elements": [
+      "Next episode (auto-populated)",
+      "Subscribe button",
+      "Show playlist"
+    ],
+    "duration": "20 seconds"
+  },
+  "cards": [
+    "Link to relevant past episode (based on theme)",
+    "Link to guest's previous appearance (if any)"
+  ],
+  "publishWindow": "Thursday-Friday optimal for YouTube"
+}

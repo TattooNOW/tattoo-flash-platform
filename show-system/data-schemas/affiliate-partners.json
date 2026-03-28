@@ -1,0 +1,88 @@
+{
+  "sheetName": "Affiliate Partners",
+  "tabIndex": 3,
+  "description": "Partner and affiliate tracking — Tab 4 of the Show Planning spreadsheet",
+  "columns": [
+    {
+      "name": "Partner Name",
+      "type": "text",
+      "required": true,
+      "description": "Convention or business name"
+    },
+    {
+      "name": "Partner Type",
+      "type": "dropdown",
+      "options": [
+        "Convention",
+        "Supply Company",
+        "Podcast",
+        "YouTube Channel",
+        "Studio"
+      ],
+      "description": "Category of partner"
+    },
+    {
+      "name": "Agreement Type",
+      "type": "dropdown",
+      "options": [
+        "Owned (I&P, Paradise)",
+        "Partnership",
+        "Affiliate"
+      ],
+      "description": "Level of relationship"
+    },
+    {
+      "name": "am_id",
+      "type": "text",
+      "required": true,
+      "description": "Affiliate tracking ID for URL params"
+    },
+    {
+      "name": "coupon_code",
+      "type": "text",
+      "description": "Coupon code if applicable"
+    },
+    {
+      "name": "Contact Name",
+      "type": "text",
+      "description": "Primary contact person"
+    },
+    {
+      "name": "Contact Email",
+      "type": "text",
+      "description": "For notification emails"
+    },
+    {
+      "name": "Cross-Promo Link",
+      "type": "url",
+      "formula": "=CONCAT(\"https://longevity.tattoonow.com/tattoonow-home?am_id=\", am_id, IF(coupon_code<>\"\", CONCAT(\"&coupon_code=\", coupon_code), \"\"))",
+      "description": "Auto-generated unique longevity.tattoonow.com link"
+    },
+    {
+      "name": "Logo URL",
+      "type": "url",
+      "description": "For slide decks and marketing assets"
+    },
+    {
+      "name": "Publishing Folder URL",
+      "type": "url",
+      "description": "Google Drive folder for their cross-promo assets"
+    },
+    {
+      "name": "Social Handles",
+      "type": "text",
+      "description": "Comma-separated social media handles for tagging"
+    },
+    {
+      "name": "Active",
+      "type": "checkbox",
+      "description": "Currently active partner"
+    },
+    {
+      "name": "Last Notified",
+      "type": "date",
+      "autoPopulated": true,
+      "description": "Date of last partner notification email"
+    }
+  ]
+}

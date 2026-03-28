@@ -1,0 +1,102 @@
+{
+  "sheetName": "Talent Database",
+  "tabIndex": 1,
+  "description": "Artist and guest talent roster — Tab 2 of the Show Planning spreadsheet",
+  "columns": [
+    {
+      "name": "Artist Name",
+      "type": "text",
+      "required": true,
+      "description": "Full name"
+    },
+    {
+      "name": "Instagram Handle",
+      "type": "text",
+      "description": "For content scraping/tagging (include @)"
+    },
+    {
+      "name": "Headshot URL",
+      "type": "url",
+      "description": "GHL media library link to headshot image"
+    },
+    {
+      "name": "Bio (Short)",
+      "type": "text",
+      "description": "2-3 sentence bio for slides and intros"
+    },
+    {
+      "name": "Style/Specialty",
+      "type": "dropdown",
+      "options": [
+        "Realism",
+        "Traditional",
+        "Japanese",
+        "Biomechanical",
+        "Geometric",
+        "Watercolor",
+        "Blackwork",
+        "Neo-Traditional",
+        "Portraiture",
+        "Lettering",
+        "Dotwork",
+        "Tribal",
+        "New School",
+        "Illustrative",
+        "Mixed/Multi-Style"
+      ],
+      "description": "Primary tattoo style"
+    },
+    {
+      "name": "Year Started Tattooing",
+      "type": "number",
+      "description": "The year they started — NOT years of experience (calculate dynamically)"
+    },
+    {
+      "name": "Studio Name",
+      "type": "text",
+      "description": "Current studio affiliation"
+    },
+    {
+      "name": "Studio Location",
+      "type": "text",
+      "description": "City, State/Country"
+    },
+    {
+      "name": "Source Event",
+      "type": "dropdown",
+      "options": [
+        "Icons & Prodigies",
+        "Paradise Gathering",
+        "Partner Convention",
+        "Independent"
+      ],
+      "description": "Where the artist was discovered/sourced"
+    },
+    {
+      "name": "Partner Convention Name",
+      "type": "text",
+      "description": "If sourced from a partner event, which one"
+    },
+    {
+      "name": "GHL Contact ID",
+      "type": "text",
+      "description": "GoHighLevel contact record ID for automation"
+    },
+    {
+      "name": "Episodes Appeared",
+      "type": "lookup",
+      "autoPopulated": true,
+      "description": "Auto-populated list of episode numbers they appeared in"
+    },
+    {
+      "name": "Social Media Kit Ready",
+      "type": "checkbox",
+      "description": "Has headshot, portfolio images, and bio been collected"
+    },
+    {
+      "name": "Media Kit URL",
+      "type": "url",
+      "description": "Link to their promotional asset folder"
+    }
+  ]
+}

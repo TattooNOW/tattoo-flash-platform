@@ -1,0 +1,49 @@
+{
+  "moduleId": "WS",
+  "description": "GHL workflow definitions for the TattooNOW Show system",
+  "workflows": [
+    {
+      "name": "WS - Episode Form to Spreadsheet",
+      "trigger": "Form submission (Episode Planning form)",
+      "actions": [
+        "Parse form data",
+        "POST to n8n webhook: ws-episode-setup",
+        "Apply tag: WS. [show] episode : planning"
+      ],
+      "n8nWebhook": "https://tn.reinventingai.com/webhook/ws-episode-setup"
+    },
+    {
+      "name": "WS - Pre-Show Countdown",
+      "trigger": "Air Date - 7 days (date-based trigger)",
+      "actions": [
+        "Monday: Schedule social announcement posts",
+        "Monday: Send newsletter email",
+        "Tuesday: Post guest spotlight",
+        "Wednesday AM: Send 'going live' SMS + push notification"
+      ],
+      "notes": "Marketing sequence runs Mon-Wed before each recording"
+    },
+    {
+      "name": "WS - Post-Show Distribution",
+      "trigger": "Manual trigger (after recording completes)",
+      "actions": [
+        "POST to n8n webhook: ws-post-show",
+        "Apply tag: WS. [show] episode : recorded",
+        "Queue Friday recap email"
+      ],
+      "n8nWebhook": "https://tn.reinventingai.com/webhook/ws-post-show"
+    },
+    {
+      "name": "WS - Guest Onboarding",
+      "trigger": "Tag applied: WS. [show] guest : confirmed",
+      "actions": [
+        "Send materials request form to guest",
+        "Wait 3 days",
+        "If materials not received: send reminder",
+        "When form submitted: apply tag WS. [show] guest : materials_received",
+        "Notify via Telegram: Guest materials received"
+      ],
+      "notes": "Collects headshot, bio, portfolio images, discussion topics"
+    }
+  ]
+}

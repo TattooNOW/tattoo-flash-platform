@@ -16,11 +16,15 @@ tattoo-flash-platform/
 ├── faq-schema.html                # FAQ structured data (JSON-LD for SEO)
 ├── faq-admin-header.html          # FAQ category navigation header
 ├── faq-schema.js                  # Dynamic FAQ schema generator
-└── Tattoo Flash/                  # Flash sheet processing
-    ├── cut_flash.py               # Image cropping utility
-    ├── upload_designs.py          # Bulk uploader to Airtable via n8n
-    ├── cut/                       # Individual cropped design images
-    └── *.JPG                      # Source flash sheet images
+├── Tattoo Flash/                  # Flash sheet processing
+│   ├── cut_flash.py               # Image cropping utility
+│   ├── upload_designs.py          # Bulk uploader to Airtable via n8n
+│   ├── cut/                       # Individual cropped design images
+│   └── *.JPG                      # Source flash sheet images
+└── show-system/                   # TattooNOW Weekly Show (separate module)
+    ├── CLAUDE.md                  # Show system docs & instructions
+    ├── INTEGRATION.md             # Cross-reference notes with flash system
+    └── ...                        # See show-system/CLAUDE.md for full structure
 ```
 
 ## Page Descriptions

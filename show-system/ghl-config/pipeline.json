@@ -1,0 +1,69 @@
+{
+  "pipelineName": "Weekly Show Production",
+  "moduleId": "WS",
+  "description": "Production pipeline tracking each episode from topic selection through published distribution",
+  "stages": [
+    {
+      "stageNumber": 1,
+      "name": "Topic Selected",
+      "description": "Theme/topic chosen, episode added to calendar",
+      "triggers": ["Episode added to Google Sheet"],
+      "nextActions": ["Find and invite guest artist"]
+    },
+    {
+      "stageNumber": 2,
+      "name": "Guest Confirmed",
+      "description": "Guest artist has confirmed their appearance",
+      "triggers": ["Guest responds to invite"],
+      "nextActions": ["Send materials request form", "Add to Talent Database"],
+      "tagApplied": "WS. [show] guest : confirmed"
+    },
+    {
+      "stageNumber": 3,
+      "name": "Materials Collected",
+      "description": "Guest headshot, bio, portfolio images, and topics collected",
+      "triggers": ["Guest submits materials form"],
+      "nextActions": ["Generate script", "Create slide deck"],
+      "tagApplied": "WS. [show] guest : materials_received"
+    },
+    {
+      "stageNumber": 4,
+      "name": "Script & Deck Ready",
+      "description": "AI-generated script reviewed, slide deck populated with episode data",
+      "triggers": ["n8n episode-setup workflow completes"],
+      "nextActions": ["Review script", "Start pre-show marketing"],
+      "tagApplied": "WS. [show] episode : script_ready"
+    },
+    {
+      "stageNumber": 5,
+      "name": "Pre-Show Marketing Active",
+      "description": "Mon-Wed marketing sequence is running",
+      "triggers": ["7 days before air date"],
+      "nextActions": ["Monitor social engagement", "Prepare for recording"]
+    },
+    {
+      "stageNumber": 6,
+      "name": "Recorded",
+      "description": "Live recording completed",
+      "triggers": ["Manual status update after recording"],
+      "nextActions": ["Begin post-production", "Trigger post-show workflow"],
+      "tagApplied": "WS. [show] episode : recorded"
+    },
+    {
+      "stageNumber": 7,
+      "name": "Post-Production",
+      "description": "Light editing, blog post, clips, affiliate folder population",
+      "triggers": ["Status changed to Recorded"],
+      "nextActions": ["Edit video", "Generate clips", "Write blog post"],
+      "tagApplied": "WS. [show] episode : editing"
+    },
+    {
+      "stageNumber": 8,
+      "name": "Published & Distributed",
+      "description": "Episode on YouTube, blog posted, clips scheduled, affiliates notified",
+      "triggers": ["YouTube URL added to calendar"],
+      "nextActions": ["Monitor analytics", "Collect feedback"],
+      "tagApplied": "WS. [show] episode : published"
+    }
+  ]
+}
